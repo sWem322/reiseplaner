@@ -12,7 +12,6 @@ export default {
   verbose: true,
   dbCredentials: {
     url:
-      process.env.DATABASE_URL ??
-      'postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner',
+      process.env.DATABASE_URL ?? 'postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner',
   },
 } satisfies Config;

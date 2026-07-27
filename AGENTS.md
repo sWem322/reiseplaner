@@ -76,12 +76,12 @@ Typdefinitionen, keine handgeschriebenen JSON-Schemas.
 
 Vier Ebenen mit klarer Aufgabenteilung:
 
-| Ebene | Ort | Prüft | Deterministisch |
-| --- | --- | --- | --- |
-| Unit | `src/**/*.test.ts` | Schemata, reine Funktionen, Slot-Logik | ja |
-| Integration | `tests/integration/` | Agenten-Loop, Adapter, Repositories | ja |
-| E2E | `tests/e2e/` | Ablauf von der Anfrage bis zum Vorschlag | ja |
-| Eval | `evals/` | Extraktionsqualität des Modells | nein |
+| Ebene       | Ort                  | Prüft                                    | Deterministisch |
+| ----------- | -------------------- | ---------------------------------------- | --------------- |
+| Unit        | `src/**/*.test.ts`   | Schemata, reine Funktionen, Slot-Logik   | ja              |
+| Integration | `tests/integration/` | Agenten-Loop, Adapter, Repositories      | ja              |
+| E2E         | `tests/e2e/`         | Ablauf von der Anfrage bis zum Vorschlag | ja              |
+| Eval        | `evals/`             | Extraktionsqualität des Modells          | nein            |
 
 Die ersten drei Ebenen laufen in CI und müssen grün sein. Evals laufen manuell:
 Sie sind kostenpflichtig und nicht-deterministisch — sie gehören nicht in einen

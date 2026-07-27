@@ -33,13 +33,13 @@ runAgent(input: {
 
 ### Ereignisse
 
-| Ereignis | Nutzlast |
-| --- | --- |
-| `text_delta` | Textfragment der Modellantwort |
-| `tool_started` | Werkzeugname, validierte Eingabe |
-| `tool_finished` | Werkzeugname, Ausgang, Dauer in Millisekunden |
-| `draft_updated` | aktueller Reise-Entwurf |
-| `finished` | `stopReason`, verbrauchte Tokens, Zahl der Iterationen |
+| Ereignis        | Nutzlast                                               |
+| --------------- | ------------------------------------------------------ |
+| `text_delta`    | Textfragment der Modellantwort                         |
+| `tool_started`  | Werkzeugname, validierte Eingabe                       |
+| `tool_finished` | Werkzeugname, Ausgang, Dauer in Millisekunden          |
+| `draft_updated` | aktueller Reise-Entwurf                                |
+| `finished`      | `stopReason`, verbrauchte Tokens, Zahl der Iterationen |
 
 ### Abbruchgründe
 
@@ -77,11 +77,11 @@ Ein Abbruch ist kein Fehler, sondern ein Ergebnis.
 
 ## Testplan
 
-| Fall | Ebene | Erwartung |
-| --- | --- | --- |
-| Antwort ohne Werkzeug | Integration | eine Iteration, `completed` |
-| Zwei Werkzeuge parallel | Integration | beide ausgeführt, ein Ergebnisblock |
-| Ungültige Werkzeugeingabe | Integration | `validation_error` als `tool_result`, Selbstkorrektur |
-| Anbieter nicht erreichbar | Integration | `upstream_error`, Loop läuft weiter |
-| Endlosschleife des Modells | Integration | `max_iterations` |
-| Budget aufgebraucht | Integration | `budget_exceeded` vor der nächsten Anfrage |
+| Fall                       | Ebene       | Erwartung                                             |
+| -------------------------- | ----------- | ----------------------------------------------------- |
+| Antwort ohne Werkzeug      | Integration | eine Iteration, `completed`                           |
+| Zwei Werkzeuge parallel    | Integration | beide ausgeführt, ein Ergebnisblock                   |
+| Ungültige Werkzeugeingabe  | Integration | `validation_error` als `tool_result`, Selbstkorrektur |
+| Anbieter nicht erreichbar  | Integration | `upstream_error`, Loop läuft weiter                   |
+| Endlosschleife des Modells | Integration | `max_iterations`                                      |
+| Budget aufgebraucht        | Integration | `budget_exceeded` vor der nächsten Anfrage            |

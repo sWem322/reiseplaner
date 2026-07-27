@@ -7,9 +7,7 @@ export const metadata: Metadata = {
     'Chat-Assistent fuer die Planung individueller Reisen — mit Agenten-Loop, Tool-Use und persistentem Reise-Entwurf.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="de">
       <body className="min-h-full antialiased">{children}</body>

@@ -14,16 +14,16 @@ später absichern soll, läuft bereits grün.
 
 ### Befehle
 
-| Befehl | Erwartung |
-| --- | --- |
-| `npm run dev` | startet ohne gesetzte Umgebungsvariablen |
-| `npm run lint` | ESLint mit Typinformation, keine Fehler |
-| `npm run typecheck` | `tsc --noEmit`, keine Fehler |
-| `npm test` | Unit-Tests, grün |
+| Befehl                     | Erwartung                                       |
+| -------------------------- | ----------------------------------------------- |
+| `npm run dev`              | startet ohne gesetzte Umgebungsvariablen        |
+| `npm run lint`             | ESLint mit Typinformation, keine Fehler         |
+| `npm run typecheck`        | `tsc --noEmit`, keine Fehler                    |
+| `npm test`                 | Unit-Tests, grün                                |
 | `npm run test:integration` | Integrationstests gegen echtes PostgreSQL, grün |
-| `npm run verify` | alle vier Prüfungen nacheinander |
-| `npm run db:up` | PostgreSQL über Docker Compose |
-| `npm run db:local` | PostgreSQL eingebettet, ohne Docker |
+| `npm run verify`           | alle vier Prüfungen nacheinander                |
+| `npm run db:up`            | PostgreSQL über Docker Compose                  |
+| `npm run db:local`         | PostgreSQL eingebettet, ohne Docker             |
 
 ### Struktur
 

@@ -8,8 +8,7 @@
  * Loop abbrechen und genau diese Selbstkorrektur verhindern.
  */
 export type Result<T, E = DomainError> =
-  | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly error: E };
+  { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: E };
 
 export const ERROR_KINDS = [
   'validation_error',
@@ -59,10 +58,7 @@ export function isErr<T, E>(
 }
 
 /** Wendet eine Funktion auf den Erfolgswert an und laesst Fehler unveraendert. */
-export function mapResult<T, U, E>(
-  result: Result<T, E>,
-  transform: (value: T) => U,
-): Result<U, E> {
+export function mapResult<T, U, E>(result: Result<T, E>, transform: (value: T) => U): Result<U, E> {
   return result.ok ? { ok: true, value: transform(result.value) } : result;
 }
 

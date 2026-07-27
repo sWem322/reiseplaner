@@ -32,17 +32,17 @@ Extraktor — die Demo bleibt vollständig bedienbar. Optionale Schlüssel sind 
 
 ## Befehle
 
-| Befehl | Zweck |
-| --- | --- |
-| `npm run dev` | Entwicklungsserver |
-| `npm run verify` | Lint, Typecheck und alle Tests nacheinander |
-| `npm run lint` | ESLint mit Typinformation |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | Unit-Tests |
-| `npm run test:integration` | Integrationstests gegen echtes PostgreSQL |
-| `npm run test:e2e` | Playwright gegen einen Produktionsbuild |
-| `npm run db:generate` | SQL-Migration aus dem Schema erzeugen |
-| `npm run db:migrate` | Migrationen anwenden |
+| Befehl                     | Zweck                                       |
+| -------------------------- | ------------------------------------------- |
+| `npm run dev`              | Entwicklungsserver                          |
+| `npm run verify`           | Lint, Typecheck und alle Tests nacheinander |
+| `npm run lint`             | ESLint mit Typinformation                   |
+| `npm run typecheck`        | `tsc --noEmit`                              |
+| `npm test`                 | Unit-Tests                                  |
+| `npm run test:integration` | Integrationstests gegen echtes PostgreSQL   |
+| `npm run test:e2e`         | Playwright gegen einen Produktionsbuild     |
+| `npm run db:generate`      | SQL-Migration aus dem Schema erzeugen       |
+| `npm run db:migrate`       | Migrationen anwenden                        |
 
 ## Architektur
 
@@ -79,15 +79,15 @@ und diese Selbstkorrektur verhindern.
 
 ## Technischer Stand
 
-| Bereich | Wahl |
-| --- | --- |
-| Sprache | TypeScript 6, `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` |
-| Frontend | Next.js 16 (App Router), React 19, Tailwind 4 |
-| API | tRPC 11, Zod 4 |
-| Daten | Drizzle ORM, PostgreSQL 18 |
-| Sprachmodell | Gemini über `LlmPort`, regelbasierter Ersatz ohne Schlüssel |
-| Tests | Vitest (Unit, Integration), Playwright (E2E), eigener Eval-Runner |
-| CI | GitHub Actions |
+| Bereich      | Wahl                                                                               |
+| ------------ | ---------------------------------------------------------------------------------- |
+| Sprache      | TypeScript 6, `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` |
+| Frontend     | Next.js 16 (App Router), React 19, Tailwind 4                                      |
+| API          | tRPC 11, Zod 4                                                                     |
+| Daten        | Drizzle ORM, PostgreSQL 18                                                         |
+| Sprachmodell | Gemini über `LlmPort`, regelbasierter Ersatz ohne Schlüssel                        |
+| Tests        | Vitest (Unit, Integration), Playwright (E2E), eigener Eval-Runner                  |
+| CI           | GitHub Actions                                                                     |
 
 Begründungen zu den einzelnen Entscheidungen stehen in
 [`specs/000-projekt-grundlagen.md`](specs/000-projekt-grundlagen.md);
