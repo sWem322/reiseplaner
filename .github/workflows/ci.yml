@@ -1,0 +1,138 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  statische-analyse:
+    name: Lint und Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: ESLint (mit Typinformation)
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Formatierung
+        run: npm run format:check
+
+  tests:
+    name: Unit- und Integrationstests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: reiseplaner
+          POSTGRES_PASSWORD: reiseplaner
+          POSTGRES_DB: reiseplaner
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U reiseplaner"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Migrationen anwenden
+        run: npm run db:migrate
+
+      - name: Tests mit Abdeckung
+        run: npm run test:coverage
+
+      - name: Integrationstests
+        run: npm run test:integration
+
+      - name: Abdeckungsbericht sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  e2e:
+    name: End-to-End-Tests
+    runs-on: ubuntu-latest
+    needs: [statische-analyse, tests]
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: reiseplaner
+          POSTGRES_PASSWORD: reiseplaner
+          POSTGRES_DB: reiseplaner
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U reiseplaner"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner
+      # Bewusst ohne Anbieter-Schluessel: der E2E-Lauf prueft genau den
+      # schluessellosen Pfad, den auch eine fremde Person vorfindet.
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Migrationen anwenden
+        run: npm run db:migrate
+
+      - name: Playwright-Browser installieren
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E-Tests
+        run: npm run test:e2e
+
+      - name: Bericht sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
