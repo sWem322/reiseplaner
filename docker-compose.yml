@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: reiseplaner-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: reiseplaner
+      POSTGRES_PASSWORD: reiseplaner
+      POSTGRES_DB: reiseplaner
+    ports:
+      - '5432:5432'
+    volumes:
+      - reiseplaner-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reiseplaner -d reiseplaner']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  reiseplaner-pgdata:
