@@ -59,6 +59,15 @@ Build, Typecheck, Lint und Tests bleiben grün.
 Beide laufen ausschließlich auf Entwicklungsrechnern und im CI-Container,
 niemals im ausgelieferten Programm.
 
+### Stand nach der Bearbeitung
+
+| Prüfung                | Vorher                 | Nachher               |
+| ---------------------- | ---------------------- | --------------------- |
+| `npm audit --omit=dev` | 3 hoch                 | **0**                 |
+| `npm audit`            | 16 (4 mittel, 12 hoch) | 13 (4 mittel, 9 hoch) |
+
+Verifiziert unter Linux und unter Windows mit npm 12.
+
 ## Akzeptanzkriterien
 
 1. `npm audit --omit=dev` meldet keine Befunde. ✔
