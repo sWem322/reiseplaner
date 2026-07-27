@@ -111,20 +111,18 @@ npm run test:e2e
 Das lokale Repository existiert bereits samt Historie — `git init` ist **nicht**
 nötig. Es fehlt nur die Gegenstelle.
 
-1. Auf <https://github.com/new> ein **leeres** Repository anlegen:
-   Name `ai-reiseplaner`, öffentlich, **ohne** README, `.gitignore` oder Lizenz.
-2. Dann:
+Erledigt: <https://github.com/sWem322/reiseplaner>
+
+Der übliche Ablauf nach jeder Etappe:
 
 ```powershell
 cd D:\portfolio\reiseplaner
-git remote add origin https://github.com/DEIN-NAME/ai-reiseplaner.git
-git push -u origin main
+git pull
+npm run verify
+git push
 ```
 
-Beim ersten Push öffnet sich ein Browser-Fenster zur Anmeldung bei GitHub.
-
-3. In `README.md` den Platzhalter `USER` in der Badge-Zeile durch den eigenen
-   GitHub-Namen ersetzen.
+`npm run verify` vor dem Push spart eine Runde roter CI-Läufe.
 
 ## Fehlerbehebung
 

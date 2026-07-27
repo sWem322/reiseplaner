@@ -1,6 +1,6 @@
 # AI-Reiseplaner
 
-[![CI](https://github.com/USER/ai-reiseplaner/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/ai-reiseplaner/actions/workflows/ci.yml)
+[![CI](https://github.com/sWem322/reiseplaner/actions/workflows/ci.yml/badge.svg)](https://github.com/sWem322/reiseplaner/actions/workflows/ci.yml)
 
 Chat-Assistent für die Planung individueller Reisen. Ein Agenten-Loop
 orchestriert Werkzeuge für Ziel-, Flug-, Hotel- und Wettersuche, extrahiert
