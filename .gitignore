@@ -1,0 +1,40 @@
+# Abhaengigkeiten
+node_modules/
+.pnp
+.pnp.js
+
+# Build-Ausgaben
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+
+# Tests und Berichte
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Lokale Datenbank (embedded-postgres)
+.postgres/
+
+# Umgebung
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Werkzeuge
+.eslintcache
+*.tsbuildinfo
+.vercel
+
+# Betriebssystem und Editoren
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
