@@ -75,6 +75,28 @@ npm run dev
 
 Die Anwendung läuft dann auf <http://localhost:3000>.
 
+## 5a. npm 12 und Install-Skripte
+
+npm 12 führt Install-Skripte von Abhängigkeiten nicht mehr automatisch aus.
+Erlaubte Pakete stehen im Feld `allowScripts` in `package.json` und sind im
+Repository bereits hinterlegt:
+
+| Paket                  | Wofür das Skript nötig ist                 |
+| ---------------------- | ------------------------------------------ |
+| `@embedded-postgres/*` | entpackt die PostgreSQL-Binärdateien       |
+| `esbuild`              | installiert die plattformeigene Binärdatei |
+| `sharp`                | Bildoptimierung von Next.js                |
+| `unrs-resolver`        | Auflösung von Importpfaden für ESLint      |
+
+Prüfen, ob noch etwas offen ist:
+
+```powershell
+npm approve-scripts --allow-scripts-pending
+```
+
+Die Ausgabe sollte leer sein. Erscheint ein Paket, das hier nicht aufgeführt
+ist, erst prüfen wofür es da ist — und nicht pauschal `--all` ausführen.
+
 ## 6. Playwright-Browser
 
 Einmalig, für die End-to-End-Tests:

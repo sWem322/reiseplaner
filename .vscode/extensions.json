@@ -1,0 +1,23 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "yoavbls.pretty-ts-errors",
+    "wallabyjs.console-ninja",
+    "humao.rest-client",
+    "mikestead.dotenv",
+    "ms-playwright.playwright",
+    "vitest.explorer",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-russian",
+    "streetsidesoftware.code-spell-checker-german",
+    "christian-kohler.path-intellisense",
+    "editorconfig.editorconfig",
+    "formulahendry.auto-rename-tag"
+  ],
+  "unwantedRecommendations": ["hookyqr.beautify", "ms-vscode.vscode-typescript-tslint-plugin"]
+}
