@@ -105,6 +105,26 @@ Pflicht-Negativfälle für jedes Werkzeug:
 4. `npm run verify` lokal ausführen (Lint, Typecheck, alle Tests).
 5. Commit mit aussagekräftiger Nachricht.
 
+### 5.1 Arbeitsumgebung eines Coding-Agenten
+
+Wer mit einer eigenen Sandbox arbeitet, hält sich an folgende Regeln — sie
+stammen aus einem konkreten Vorfall, bei dem die Sandbox durch mehrere
+parallele Projektkopien den Datenträger füllte und mitten in der Arbeit
+unbrauchbar wurde:
+
+- **Genau eine Arbeitskopie.** Prüfungen laufen in einem einzigen Verzeichnis.
+  Kein zweiter Klon für „nur kurz gegenprüfen".
+- **`node_modules` wird nie kopiert.** Wo Abhängigkeiten fehlen, wird
+  installiert oder verlinkt — nicht dupliziert. Ein `cp -r node_modules`
+  überträgt hunderte Megabyte.
+- **Temporäre Klone werden sofort nach Gebrauch gelöscht**, im selben Befehl,
+  nicht „später".
+- **Vor jedem Klonen oder Installieren freien Speicher prüfen** (`df -h`).
+
+Die Regel steht hier und nicht im Gedächtnis eines Agenten, weil ein Agent
+zwischen Sitzungen keines hat. Persistente Anweisungen sind der Ersatz dafür —
+genau das demonstriert dieses Projekt auch fachlich.
+
 ## 6. Commit-Konventionen
 
 Conventional Commits, Betreff auf Englisch, Imperativ, maximal 72 Zeichen:
