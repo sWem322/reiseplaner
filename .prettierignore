@@ -6,3 +6,7 @@ test-results
 drizzle/meta
 package-lock.json
 .editorconfig
+
+# Wird von Next.js beim Build automatisch umgeschrieben (jsx-Modus, Typpfade).
+# Eine Formatpruefung darauf wuerde nach jedem Build fehlschlagen.
+tsconfig.json

@@ -6,6 +6,10 @@ const IS_CI = process.env.CI !== undefined;
 
 export default defineConfig({
   testDir: './tests/e2e',
+  testMatch: '**/*.spec.ts',
+  // Startet eine eingebettete Datenbank und setzt DATABASE_URL, bevor der
+  // Webserver hochfaehrt. Kein Docker, keine Registry, keine Vorbedingungen.
+  globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 0,

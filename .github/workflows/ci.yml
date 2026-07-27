@@ -40,24 +40,9 @@ jobs:
     name: Unit- und Integrationstests
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_USER: reiseplaner
-          POSTGRES_PASSWORD: reiseplaner
-          POSTGRES_DB: reiseplaner
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U reiseplaner"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
-    env:
-      DATABASE_URL: postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner
-
+    # Kein Datenbank-Container: Die Integrationstests starten ihre eigene
+    # eingebettete PostgreSQL-Instanz. Damit haengt der Lauf weder an einem
+    # Docker-Daemon noch an der Verfuegbarkeit einer Container-Registry.
     steps:
       - uses: actions/checkout@v5
 
@@ -67,9 +52,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-
-      - name: Migrationen anwenden
-        run: npm run db:migrate
 
       - name: Tests mit Abdeckung
         run: npm run test:coverage
@@ -90,26 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [statische-analyse, tests]
 
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_USER: reiseplaner
-          POSTGRES_PASSWORD: reiseplaner
-          POSTGRES_DB: reiseplaner
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U reiseplaner"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
-    env:
-      DATABASE_URL: postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner
-      # Bewusst ohne Anbieter-Schluessel: der E2E-Lauf prueft genau den
-      # schluessellosen Pfad, den auch eine fremde Person vorfindet.
-
+    # Ebenfalls ohne Datenbank-Container: Das Playwright-Setup startet eine
+    # eingebettete Instanz und setzt DATABASE_URL, bevor der Webserver laeuft.
+    # Bewusst auch ohne Anbieter-Schluessel — geprueft wird genau der
+    # schluessellose Pfad, den auch eine fremde Person vorfindet.
     steps:
       - uses: actions/checkout@v5
 
@@ -119,9 +85,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-
-      - name: Migrationen anwenden
-        run: npm run db:migrate
 
       - name: Playwright-Browser installieren
         run: npx playwright install --with-deps chromium
