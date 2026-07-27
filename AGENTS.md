@@ -125,6 +125,12 @@ Die Regel steht hier und nicht im Gedächtnis eines Agenten, weil ein Agent
 zwischen Sitzungen keines hat. Persistente Anweisungen sind der Ersatz dafür —
 genau das demonstriert dieses Projekt auch fachlich.
 
+**Beobachtet:** Die Sandbox gehört zur Anwendung, nicht zur einzelnen Sitzung.
+Ein voller Datenträger bleibt auch in einer neu geöffneten Sitzung voll; erst
+ein Neustart der Anwendung setzt ihn zurück. Wer also in eine volle Sandbox
+läuft, empfiehlt den Neustart der Anwendung — nicht eine neue Sitzung, die
+nichts löst und den bisherigen Gesprächsverlauf kostet.
+
 ## 6. Commit-Konventionen
 
 Conventional Commits, Betreff auf Englisch, Imperativ, maximal 72 Zeichen:
