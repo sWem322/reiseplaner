@@ -89,25 +89,44 @@ async function main(key, wunschModell) {
     console.log(`  ${name}`);
   }
 
-  // --- Schritt 2: Ein Modell auswählen -----------------------------------
+  /*
+   * --- Schritt 2: Kandidaten in eine sinnvolle Reihenfolge bringen -------
+   *
+   * Die Liste oben sagt, welche Modelle es *gibt* — nicht, welche dieser
+   * Zugang benutzen darf. `gemini-2.5-flash` etwa steht in der Liste und
+   * antwortet trotzdem mit „no longer available to new users". Die einzige
+   * belastbare Prüfung ist der Aufruf selbst, deshalb wird der Reihe nach
+   * probiert.
+   *
+   * Reihenfolge der Vorliebe:
+   * 1. Was in .env steht — ausdrücklicher Wunsch geht vor.
+   * 2. Alias-Namen auf „latest" — sie überleben Umbenennungen.
+   * 3. Neuere Generationen vor älteren.
+   * 4. Volle Flash-Modelle vor Lite-Varianten.
+   */
+  const bewerte = (name) => {
+    let punkte = 0;
 
-  const modell =
-    wunschModell && verfuegbare.includes(wunschModell)
-      ? wunschModell
-      : (flashModelle.find((name) => !name.includes('lite') && !name.includes('image')) ??
-        flashModelle[0] ??
-        verfuegbare[0]);
+    if (name.includes('latest')) punkte += 100;
+    if (name.includes('lite')) punkte -= 20;
+    if (name.includes('image') || name.includes('tts')) punkte -= 200;
 
-  if (wunschModell && !verfuegbare.includes(wunschModell)) {
-    console.log('');
-    console.log(`⚠ „${wunschModell}" aus .env ist nicht verfügbar — nutze „${modell}".`);
-  }
+    const generation = /gemini-(\d+(?:\.\d+)?)/.exec(name);
+    if (generation?.[1] !== undefined) punkte += Number.parseFloat(generation[1]) * 10;
+
+    return punkte;
+  };
+
+  const kandidaten = [
+    ...(wunschModell !== undefined && wunschModell !== '' ? [wunschModell] : []),
+    ...flashModelle.filter((name) => name !== wunschModell).sort((a, b) => bewerte(b) - bewerte(a)),
+  ].slice(0, 6);
 
   console.log('');
-  console.log(`Testlauf mit: ${modell}`);
+  console.log(`Probiere der Reihe nach: ${kandidaten.join(', ')}`);
   console.log('');
 
-  // --- Schritt 3: Ein Aufruf mit Werkzeugnutzung -------------------------
+  // --- Schritt 3: Aufrufe mit Werkzeugnutzung, bis eines antwortet -------
 
   const werkzeug = {
     name: 'resolve_destination',
@@ -123,59 +142,73 @@ async function main(key, wunschModell) {
     },
   };
 
-  try {
-    const start = Date.now();
+  let letzterFehler;
 
-    const antwort = await client.models.generateContent({
-      model: modell,
-      contents: [
-        { role: 'user', parts: [{ text: 'Ich möchte im September nach Mallorca fliegen.' }] },
-      ],
-      config: {
-        systemInstruction:
-          'Du bist ein Reiseassistent. Löse Ortsnamen immer zuerst mit dem Werkzeug auf.',
-        tools: [{ functionDeclarations: [werkzeug] }],
-        temperature: 0.2,
-      },
-    });
+  for (const modell of kandidaten) {
+    try {
+      const start = Date.now();
 
-    const dauer = Date.now() - start;
-    const teile = antwort.candidates?.[0]?.content?.parts ?? [];
-    const aufrufe = teile.filter((teil) => teil.functionCall !== undefined);
-    const text = teile
-      .filter((teil) => typeof teil.text === 'string')
-      .map((teil) => teil.text)
-      .join('');
+      const antwort = await client.models.generateContent({
+        model: modell,
+        contents: [
+          { role: 'user', parts: [{ text: 'Ich möchte im September nach Mallorca fliegen.' }] },
+        ],
+        config: {
+          systemInstruction:
+            'Du bist ein Reiseassistent. Löse Ortsnamen immer zuerst mit dem Werkzeug auf.',
+          tools: [{ functionDeclarations: [werkzeug] }],
+          temperature: 0.2,
+        },
+      });
 
-    console.log(`✓ Antwort erhalten (${String(dauer)} ms)`);
-    console.log('');
+      const dauer = Date.now() - start;
+      const teile = antwort.candidates?.[0]?.content?.parts ?? [];
+      const aufrufe = teile.filter((teil) => teil.functionCall !== undefined);
+      const text = teile
+        .filter((teil) => typeof teil.text === 'string')
+        .map((teil) => teil.text)
+        .join('');
 
-    if (aufrufe.length > 0) {
-      console.log('✓ Werkzeugaufruf erkannt:');
-      for (const aufruf of aufrufe) {
-        console.log(`  ${aufruf.functionCall.name}(${JSON.stringify(aufruf.functionCall.args)})`);
+      console.log(`✓ ${modell} antwortet (${String(dauer)} ms)`);
+      console.log('');
+
+      if (aufrufe.length > 0) {
+        console.log('✓ Werkzeugaufruf erkannt:');
+        for (const aufruf of aufrufe) {
+          console.log(`  ${aufruf.functionCall.name}(${JSON.stringify(aufruf.functionCall.args)})`);
+        }
+      } else {
+        console.log('⚠ Kein Werkzeugaufruf — das Modell hat direkt geantwortet:');
+        console.log(`  „${text.trim().slice(0, 200)}"`);
       }
-    } else {
-      console.log('⚠ Kein Werkzeugaufruf — das Modell hat direkt geantwortet:');
-      console.log(`  „${text.trim().slice(0, 200)}"`);
-    }
 
-    console.log('');
-    console.log('Tokenverbrauch:');
-    console.log(`  Eingabe: ${String(antwort.usageMetadata?.promptTokenCount ?? '?')}`);
-    console.log(`  Ausgabe: ${String(antwort.usageMetadata?.candidatesTokenCount ?? '?')}`);
-    console.log('');
-    console.log('Der Gemini-Zugang funktioniert.');
-
-    if (modell !== wunschModell) {
+      console.log('');
+      console.log('Tokenverbrauch:');
+      console.log(`  Eingabe: ${String(antwort.usageMetadata?.promptTokenCount ?? '?')}`);
+      console.log(`  Ausgabe: ${String(antwort.usageMetadata?.candidatesTokenCount ?? '?')}`);
+      console.log('');
+      console.log('Der Gemini-Zugang funktioniert.');
       console.log('');
       console.log('Diesen Namen in .env eintragen, damit er fest steht:');
       console.log(`  GEMINI_MODEL="${modell}"`);
+
+      return;
+    } catch (error) {
+      letzterFehler = error;
+      const nachricht = error instanceof Error ? error.message : String(error);
+      const kurz = /no longer available/i.test(nachricht)
+        ? 'für neue Zugänge gesperrt'
+        : /\b404\b|NOT_FOUND/i.test(nachricht)
+          ? 'nicht gefunden'
+          : nachricht.slice(0, 80);
+
+      console.log(`  ✗ ${modell}: ${kurz}`);
     }
-  } catch (error) {
-    berichteFehler(error, modell);
-    process.exitCode = 1;
   }
+
+  console.log('');
+  berichteFehler(letzterFehler, kandidaten.at(-1));
+  process.exitCode = 1;
 }
 
 function berichteFehler(error, modell) {
