@@ -99,9 +99,37 @@ function HotelCard({ offer }: { offer: HotelOffer }) {
   );
 }
 
+/** Heutiges Datum als JJJJ-MM-TT — untere Grenze fuer die Hinreise. */
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Ein Tag nach dem uebergebenen Datum — untere Grenze fuer die Rueckreise. */
+function dayAfter(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+
+  return date.toISOString().slice(0, 10);
+}
+
 export default function DebugSearchPage() {
   const [result, setResult] = useState<SearchResult | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [departureDate, setDepartureDate] = useState('2026-09-05');
+  const [returnDate, setReturnDate] = useState('2026-09-12');
+
+  /*
+   * Die eigentliche Regel steht im Domaenenschema; diese Kopplung im Formular
+   * ist reine Bedienbarkeit: Ein Datum, das ohnehin abgelehnt wuerde, soll
+   * gar nicht erst auswaehlbar sein.
+   */
+  const handleDepartureChange = (value: string) => {
+    setDepartureDate(value);
+
+    if (value !== '' && returnDate <= value) {
+      setReturnDate(dayAfter(value));
+    }
+  };
 
   const handleSubmit = (formData: FormData) => {
     startTransition(() => {
@@ -146,7 +174,11 @@ export default function DebugSearchPage() {
           <input
             type="date"
             name="departureDate"
-            defaultValue="2026-09-05"
+            value={departureDate}
+            min={today()}
+            onChange={(event) => {
+              handleDepartureChange(event.target.value);
+            }}
             required
             className="rounded-md border border-slate-300 px-3 py-2"
           />
@@ -157,7 +189,11 @@ export default function DebugSearchPage() {
           <input
             type="date"
             name="returnDate"
-            defaultValue="2026-09-12"
+            value={returnDate}
+            min={departureDate === '' ? today() : dayAfter(departureDate)}
+            onChange={(event) => {
+              setReturnDate(event.target.value);
+            }}
             required
             className="rounded-md border border-slate-300 px-3 py-2"
           />

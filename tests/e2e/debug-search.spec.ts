@@ -39,6 +39,37 @@ test.describe('Schaufenster der Anbieter-Adapter', () => {
     await expect(page.getByText(/müssen sich unterscheiden/)).toBeVisible();
   });
 
+  test('verschiebt die Rueckreise mit, wenn die Hinreise spaeter wird', async ({ page }) => {
+    await page.goto('/debug/search');
+
+    await page.locator('input[name="departureDate"]').fill('2026-10-20');
+
+    // Die urspruengliche Rueckreise lag im September und waere nun ungueltig.
+    await expect(page.locator('input[name="returnDate"]')).toHaveValue('2026-10-21');
+  });
+
+  test('laesst keine Rueckreise vor der Hinreise zu', async ({ page }) => {
+    await page.goto('/debug/search');
+
+    await page.locator('input[name="departureDate"]').fill('2026-10-20');
+    const returnInput = page.locator('input[name="returnDate"]');
+
+    await expect(returnInput).toHaveAttribute('min', '2026-10-21');
+  });
+
+  test('zeigt die gewaehlten Daten auf den Angebotskarten', async ({ page }) => {
+    await page.goto('/debug/search');
+
+    await page.locator('input[name="departureDate"]').fill('2026-10-20');
+    await page.locator('input[name="returnDate"]').fill('2026-10-27');
+    await page.getByRole('button', { name: 'Suchen' }).click();
+
+    const ersteKarte = page.locator('section').filter({ hasText: 'Flüge' }).locator('li').first();
+
+    await expect(ersteKarte).toContainText('20.10.');
+    await expect(ersteKarte).toContainText('27.10.');
+  });
+
   test('liefert bei gleicher Anfrage dieselben Preise', async ({ page }) => {
     await page.goto('/debug/search');
     await page.getByRole('button', { name: 'Suchen' }).click();

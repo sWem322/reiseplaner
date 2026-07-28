@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import type { FlightOffer, HotelOffer, WeatherOutlook } from '@/domain/offers';
+import { emptyTripDraft, toTripQuery, tripDraftSchema } from '@/domain/trip/trip';
 import { createSeedProviders } from '@/server/adapters/factory';
 
 /**
@@ -66,20 +67,39 @@ export async function runSearch(formData: FormData): Promise<SearchResult> {
     return { ok: false, message: 'Orte konnten nicht aufgelöst werden.' };
   }
 
-  if (origin.iataCode === destination.iataCode) {
-    return { ok: false, message: 'Abflug- und Zielort müssen sich unterscheiden.' };
-  }
-
-  const query = {
+  /*
+   * Bewusst ueber das Domaenenschema statt mit eigenen Pruefungen an dieser
+   * Stelle: Regeln wie "Rueckreise nicht vor der Hinreise", "kein Datum in der
+   * Vergangenheit" oder "Abflug- und Zielort unterscheiden sich" gehoeren in
+   * die Domaene und gelten dann fuer jeden Aufrufer — diese Seite, den Agenten
+   * und spaeter die tRPC-Prozeduren. Eine zweite Pruefung hier waere eine
+   * zweite Wahrheit, die irgendwann auseinanderlaeuft.
+   */
+  const draft = {
+    ...emptyTripDraft(),
     origin,
     destination,
     departureDate: input.departureDate,
     returnDate: input.returnDate,
     adults: input.adults,
-    childAges: [],
-    budgetEuros: null,
-    preferences: [],
+    status: 'searching' as const,
   };
+
+  const validated = tripDraftSchema.safeParse(draft);
+
+  if (!validated.success) {
+    const firstIssue = validated.error.issues[0];
+
+    return { ok: false, message: firstIssue?.message ?? 'Die Angaben sind nicht plausibel.' };
+  }
+
+  const queryResult = toTripQuery(validated.data);
+
+  if (!queryResult.ok) {
+    return { ok: false, message: queryResult.error.message };
+  }
+
+  const query = queryResult.value;
 
   const [flightsResult, hotelsResult, weatherResult] = await Promise.all([
     providers.flights.search(query, 5),
