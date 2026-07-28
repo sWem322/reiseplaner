@@ -1,13 +1,17 @@
 import {
   bigserial,
+  boolean,
+  date,
   doublePrecision,
   index,
   integer,
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
@@ -28,8 +32,76 @@ export const messageRoleEnum = pgEnum('message_role', MESSAGE_ROLES);
 export const toolCallOutcomeEnum = pgEnum('tool_call_outcome', TOOL_CALL_OUTCOMES);
 export const tripDraftStatusEnum = pgEnum('trip_draft_status', TRIP_DRAFT_STATUS);
 
+// --- Konten und Sitzungen ----------------------------------------------
+
+/**
+ * Nutzerkonto.
+ *
+ * Ein Gastkonto ist ein vollwertiges Konto ohne E-Mail und ohne Passwort. So
+ * hängt alles Weitere — Dialoge, Kontingent, Zugriffsprüfung — an genau einer
+ * Kennung, statt zwei Wege parallel zu führen.
+ */
+export const user = pgTable(
+  'user',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email'),
+    name: text('name'),
+    /** Argon2id-Hash. Bei Gastkonten leer. */
+    passwordHash: text('password_hash'),
+    isGuest: boolean('is_guest').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('user_email_idx').on(table.email)],
+);
+
+/**
+ * Sitzung in der Datenbank statt im JWT.
+ *
+ * Ein Gastkonto ohne Passwort muss sich serverseitig widerrufen lassen; mit
+ * einem selbsttragenden Token ginge das erst nach dessen Ablauf.
+ */
+export const session = pgTable(
+  'session',
+  {
+    token: text('token').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('session_user_idx').on(table.userId)],
+);
+
+/**
+ * Tageskontingent je Konto.
+ *
+ * Ein Eintrag pro Konto und Tag. Der Zähler wird additiv in SQL erhöht, damit
+ * gleichzeitige Anfragen sich nicht gegenseitig überschreiben.
+ */
+export const usageQuota = pgTable(
+  'usage_quota',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    day: date('day').notNull(),
+    messageCount: integer('message_count').notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day] })],
+);
+
+// --- Dialoge -----------------------------------------------------------
+
 export const conversation = pgTable('conversation', {
   id: uuid('id').primaryKey().defaultRandom(),
+  /**
+   * Besitzer des Dialogs. Nullable, weil Dialoge aus Etappe 3 noch keinen
+   * haben — neue bekommen immer einen.
+   */
+  userId: uuid('user_id').references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title'),
   summary: text('summary'),
   /** Bis zu welcher Nachrichten-Folgenummer der Verlauf verdichtet wurde. */
   summarizedUntilSeq: integer('summarized_until_seq'),
@@ -135,10 +207,20 @@ export const toolCallLog = pgTable(
 
 // --- Beziehungen -------------------------------------------------------
 
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  conversations: many(conversation),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, { fields: [session.userId], references: [user.id] }),
+}));
+
 export const conversationRelations = relations(conversation, ({ many, one }) => ({
   messages: many(message),
   toolCallLogs: many(toolCallLog),
   tripDraft: one(tripDraft),
+  user: one(user, { fields: [conversation.userId], references: [user.id] }),
 }));
 
 export const messageRelations = relations(message, ({ one }) => ({
