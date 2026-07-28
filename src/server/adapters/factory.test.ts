@@ -24,6 +24,22 @@ describe('Auswahl der Anbieter', () => {
     expect(selection.llm.name).toBe('rule-based');
   });
 
+  it('wählt Gemini, sobald ein Schlüssel vorliegt', () => {
+    const selection = createProviders({
+      geminiApiKey: 'AQ.beispiel',
+      useNetworkProviders: false,
+    });
+
+    expect(selection.active.llm).toBe('gemini');
+    expect(selection.llm.name).toContain('gemini');
+  });
+
+  it('behandelt einen leeren Schlüssel wie einen fehlenden', () => {
+    const selection = createProviders({ geminiApiKey: '', useNetworkProviders: false });
+
+    expect(selection.active.llm).toBe('rule-based');
+  });
+
   it('waehlt Duffel, sobald ein Zugangstoken vorliegt', () => {
     const selection = createProviders({
       duffelAccessToken: 'duffel_test_abc',

@@ -28,6 +28,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "llm:check": "node scripts/llm-check.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test:all"
   },
   "allowScripts": {
@@ -41,6 +42,7 @@
     "unrs-resolver": true
   },
   "dependencies": {
+    "@google/genai": "2.13.0",
     "drizzle-orm": "0.45.2",
     "next": "16.2.12",
     "pg": "8.22.0",

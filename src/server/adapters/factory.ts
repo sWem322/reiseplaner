@@ -1,5 +1,6 @@
 import type { LlmPort } from '@/domain/ports/llm';
 import type { Providers } from '@/domain/ports/providers';
+import { createGeminiLlm } from '../agent/llm/gemini';
 import { createRuleBasedLlm } from '../agent/llm/rule-based';
 import { createDuffelFlightSearch } from './http/duffel';
 import { createOpenMeteoGeocoding, createOpenMeteoWeather } from './http/open-meteo';
@@ -68,7 +69,11 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
    * liefert im Eval die Vergleichslinie, an der sich zeigt, was das Modell
    * tatsaechlich beitraegt.
    */
-  const llm = createRuleBasedLlm();
+  const hasGemini = config.geminiApiKey !== undefined && config.geminiApiKey.length > 0;
+
+  const llm = hasGemini
+    ? createGeminiLlm({ apiKey: config.geminiApiKey ?? '' })
+    : createRuleBasedLlm();
 
   return {
     providers: { flights, hotels, geocoding, weather },
@@ -78,7 +83,7 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
       hotels: useNetwork ? 'overpass' : 'seed',
       geocoding: useNetwork ? 'open-meteo' : 'seed',
       weather: useNetwork ? 'open-meteo' : 'seed',
-      llm: 'rule-based',
+      llm: hasGemini ? 'gemini' : 'rule-based',
     },
   };
 }
