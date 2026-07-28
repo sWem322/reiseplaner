@@ -93,14 +93,22 @@ bevor die nächste Etappe beginnt.
       antwortete in 1451 ms und rief `resolve_destination({"query":"Mallorca"})`
       auf; 114 Eingabe- und 17 Ausgabe-Tokens
 
-## Etappe 4 — API und Authentifizierung
+## Etappe 4 — API und Authentifizierung ✔
 
-- [ ] tRPC-Router und -Kontext
-- [ ] Auth.js v5 mit Zugangsdaten und Gastzugang
-- [ ] Gästekontingent als Teil der Guardrails
-- [ ] SSE-Route für den Ereignisstrom des Agenten
-- [ ] Verdichtung der Historie über `LlmPort`
-- [ ] Integrationstests der Prozeduren
+**Eine Abweichung, abgestimmt festgehalten:** Statt Auth.js v5 entstand eine
+eigene, schmale Umsetzung von Konten und Sitzungen. Grund: Das Projekt braucht
+zwei Wege — Zugangsdaten und Gastzugang — und keinen einzigen Fremdanbieter.
+Auth.js hätte dafür eine Konfigurationsschicht, einen Datenbankadapter und ein
+zweites Sitzungsmodell mitgebracht, ohne dass ein Verhalten dazugekommen wäre.
+Was übernommen wurde: Sitzungen liegen in der Datenbank statt in einem
+selbsttragenden Token, damit sie sich widerrufen lassen.
+
+- [x] tRPC-Router und -Kontext
+- [x] Konten mit Zugangsdaten (Argon2id) und Gastzugang
+- [x] Gästekontingent als Teil der Guardrails
+- [x] SSE-Route für den Ereignisstrom des Agenten
+- [x] Verdichtung der Historie über `LlmPort`
+- [x] Integrationstests der Prozeduren
 
 ## Etappe 5 — Oberfläche
 
