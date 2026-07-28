@@ -19,6 +19,14 @@ function formatTime(isoTimestamp: string): string {
   return isoTimestamp.slice(11, 16);
 }
 
+/**
+ * Datum als TT.MM. — ohne Intl, weil dessen Ausgabe von der Systemsprache
+ * abhaengt und Server und Browser sich dann widersprechen koennen.
+ */
+function formatDate(isoTimestamp: string): string {
+  return `${isoTimestamp.slice(8, 10)}.${isoTimestamp.slice(5, 7)}.`;
+}
+
 function durationLabel(offer: FlightOffer): string {
   const first = offer.outbound[0];
   const last = offer.outbound[offer.outbound.length - 1];
@@ -49,16 +57,18 @@ function FlightCard({ offer }: { offer: FlightOffer }) {
 
       <dl className="mt-3 grid gap-1 text-sm text-slate-600">
         <div className="flex gap-2">
-          <dt className="w-16 text-slate-400">Hinflug</dt>
+          <dt className="w-16 shrink-0 text-slate-400">Hinflug</dt>
           <dd>
+            <span className="font-medium text-slate-800">{formatDate(outbound.departureAt)}</span>{' '}
             {formatTime(outbound.departureAt)} – {formatTime(outbound.arrivalAt)} ·{' '}
             {outbound.from.iataCode} → {outbound.to.iataCode} · {outbound.flightNumber} ·{' '}
             {durationLabel(offer)}
           </dd>
         </div>
         <div className="flex gap-2">
-          <dt className="w-16 text-slate-400">Rückflug</dt>
+          <dt className="w-16 shrink-0 text-slate-400">Rückflug</dt>
           <dd>
+            <span className="font-medium text-slate-800">{formatDate(inbound.departureAt)}</span>{' '}
             {formatTime(inbound.departureAt)} – {formatTime(inbound.arrivalAt)} ·{' '}
             {inbound.from.iataCode} → {inbound.to.iataCode} · {inbound.flightNumber}
           </dd>

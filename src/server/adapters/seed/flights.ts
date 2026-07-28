@@ -41,7 +41,10 @@ function hasService(origin: Place, destination: Place): boolean {
  * Buchung, Streuung zwischen den Angeboten.
  */
 function priceCents(query: TripQuery, meters: number, index: number): number {
-  const base = 4_500 + Math.round(meters / 1_000) * 22;
+  // Grundpreis je Person: Festbetrag plus Entfernungsanteil. Die Werte sind an
+  // realen Europapreisen geeicht — Düsseldorf–Palma landet damit im Bereich von
+  // 200 bis 280 € je Person in der Hauptsaison.
+  const base = 3_000 + Math.round(meters / 1_000) * 10;
 
   const month = Number.parseInt(query.departureDate.slice(5, 7), 10);
   const highSeason = month >= 6 && month <= 9;
