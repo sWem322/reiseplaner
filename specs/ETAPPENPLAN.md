@@ -51,9 +51,9 @@ bevor die nächste Etappe beginnt.
 - [x] Fabrik wählt nach vorhandenen Zugangsdaten
 - [x] Schaufensterseite `/debug/search`
 
-## Etappe 3 — Agenten-Kern (offen, pausiert)
+## Etappe 3 — Agenten-Kern (ein Punkt offen)
 
-**Stand:** sechs von zwölf Punkten erledigt.
+**Stand:** elf von zwölf Punkten erledigt. Offen ist allein der Lauf gegen die echte Schnittstelle — er kann in dieser Entwicklungsumgebung nicht ausgeführt werden.
 
 **Zwei Randbedingungen, die während der Vorbereitung sichtbar wurden:**
 
@@ -74,15 +74,15 @@ bevor die nächste Etappe beginnt.
 - [x] Loop mit paralleler Ausführung und Selbstkorrektur
 - [x] Skriptgesteuertes Ersatzmodell, Tests der Orchestrierung
 - [x] Regelbasierter Extraktor als schlüsselfreier Ersatz
-- [ ] **Gemini-Adapter auf Basis des offiziellen SDK `@google/genai`** —
+- [x] **Gemini-Adapter auf Basis des offiziellen SDK `@google/genai`** —
       Übersetzung zwischen `LlmPort` und der Gemini-Schnittstelle, inklusive
       Umbau der Werkzeug-Schemata auf den OpenAPI-Dialekt, Fehlerzuordnung und
       Token-Zählung
-- [ ] **Tests des Gemini-Adapters** gegen einen untergeschobenen SDK-Client —
+- [x] **Tests des Gemini-Adapters** gegen einen untergeschobenen SDK-Client —
       ohne Schlüssel, ohne Netz
-- [ ] **Systemprompt** als versionierte Datei unter `src/server/agent/prompts/`
-- [ ] **Fabrik wählt Gemini**, sobald `GEMINI_API_KEY` gesetzt ist
-- [ ] **Prüfskript `npm run llm:check`** — ein Aufruf gegen die echte
+- [x] **Systemprompt** als versionierte Datei unter `src/server/agent/prompts/`
+- [x] **Fabrik wählt Gemini**, sobald `GEMINI_API_KEY` gesetzt ist
+- [x] **Prüfskript `npm run llm:check`** — ein Aufruf gegen die echte
       Schnittstelle mit Werkzeugnutzung, gibt Antwort und Tokenverbrauch aus
 - [ ] **Ein Lauf gegen die echte Schnittstelle** mit einem gültigen Schlüssel
 
