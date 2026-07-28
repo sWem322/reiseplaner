@@ -9,6 +9,18 @@ import * as schema from '@/server/db/schema';
 
 const MIGRATIONS_FOLDER = './drizzle';
 
+/**
+ * Kodierung und Sortierung fest vorgeben.
+ *
+ * Ohne diese Flags uebernimmt initdb die Systemlokale des Entwicklungsrechners.
+ * Auf einem Windows-System mit russischer Lokale entsteht dabei ein Cluster in
+ * WIN1251 — und deutsche Umlaute lassen sich dort nicht speichern
+ * ("character with byte sequence 0xc3 0xbc has no equivalent"). Die Datenbank
+ * muss auf jedem Rechner identisch aufgesetzt sein, sonst laufen Tests je nach
+ * Spracheinstellung unterschiedlich.
+ */
+const INITDB_FLAGS = ['--encoding=UTF8', '--no-locale'];
+
 async function hasMigrations(): Promise<boolean> {
   try {
     await access(join(MIGRATIONS_FOLDER, 'meta', '_journal.json'));
@@ -42,6 +54,7 @@ export async function startTestDatabase(): Promise<TestDatabase> {
     password: 'test',
     port,
     persistent: false,
+    initdbFlags: INITDB_FLAGS,
     onLog: () => {
       // Server-Ausgabe unterdruecken, damit die Testausgabe lesbar bleibt.
     },

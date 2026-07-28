@@ -24,4 +24,23 @@ describe('Testdatenbank', () => {
 
     expect(result.rows[0]?.version).toMatch(/PostgreSQL/);
   });
+
+  it('ist auf UTF8 eingestellt', async () => {
+    // Ohne feste Kodierung uebernimmt initdb die Systemlokale. Auf einem
+    // Rechner mit kyrillischer Lokale entstand so ein WIN1251-Cluster, in dem
+    // sich "Düsseldorf" nicht speichern liess.
+    const result = await database.db.execute<{ encoding: string }>(
+      sql`select pg_encoding_to_char(encoding) as encoding from pg_database where datname = current_database()`,
+    );
+
+    expect(result.rows[0]?.encoding).toBe('UTF8');
+  });
+
+  it('speichert deutsche Umlaute und Eszett verlustfrei', async () => {
+    const probe = 'Düsseldorf, Köln, Zürich, Straße, Mallorca — 2 000 €';
+
+    const result = await database.db.execute<{ wert: string }>(sql`select ${probe}::text as wert`);
+
+    expect(result.rows[0]?.wert).toBe(probe);
+  });
 });

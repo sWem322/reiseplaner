@@ -30,6 +30,10 @@ const postgres = new EmbeddedPostgres({
   password: PASSWORD,
   port: PORT,
   persistent: true,
+  // Kodierung fest vorgeben, sonst uebernimmt initdb die Systemlokale. Auf
+  // einem Rechner mit nicht-westlicher Lokale entsteht sonst ein Cluster,
+  // in dem deutsche Umlaute nicht gespeichert werden koennen.
+  initdbFlags: ['--encoding=UTF8', '--no-locale'],
   onLog: () => {
     // Server-Logs bleiben stumm; nur unsere eigenen Meldungen sind relevant.
   },

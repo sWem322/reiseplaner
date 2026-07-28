@@ -8,6 +8,13 @@ import { join } from 'node:path';
 
 const MIGRATIONS_FOLDER = './drizzle';
 
+/**
+ * Siehe tests/integration/helpers/test-database.ts: Ohne feste Kodierung
+ * uebernimmt initdb die Systemlokale und legt auf manchen Rechnern einen
+ * Cluster an, der keine Umlaute speichern kann.
+ */
+const INITDB_FLAGS = ['--encoding=UTF8', '--no-locale'];
+
 async function hasMigrations(): Promise<boolean> {
   try {
     await access(join(MIGRATIONS_FOLDER, 'meta', '_journal.json'));
@@ -38,6 +45,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     password: 'e2e',
     port,
     persistent: false,
+    initdbFlags: INITDB_FLAGS,
     onLog: () => {
       // Server-Ausgabe unterdruecken.
     },
