@@ -22,7 +22,7 @@ const envSchema = z.object({
 
   // --- Optionale Anbieter. Fehlen sie, greift der Seed-Adapter. ---
   GEMINI_API_KEY: z.string().min(1).optional(),
-  GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  GEMINI_MODEL: z.string().min(1).default('gemini-flash-latest'),
   DUFFEL_ACCESS_TOKEN: z.string().min(1).optional(),
   TRAVELPAYOUTS_TOKEN: z.string().min(1).optional(),
 

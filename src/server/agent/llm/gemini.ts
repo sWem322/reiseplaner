@@ -21,7 +21,16 @@ import { toGeminiSchema } from './gemini-schema';
  * Punkt drei ist der Grund, warum der Adapter nicht zustandslos sein kann.
  */
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+/**
+ * Alias statt fester Version.
+ *
+ * Google benennt Modelle laufend um und entzieht ältere Namen neuen Konten —
+ * `gemini-2.5-flash` etwa antwortet seit Mitte 2026 mit „no longer available
+ * to new users". Der Alias zeigt immer auf die aktuelle Flash-Generation.
+ * Welcher Name konkret dahintersteht, zeigt `npm run llm:check`; wer ihn
+ * festschreiben will, setzt GEMINI_MODEL in der .env.
+ */
+export const DEFAULT_GEMINI_MODEL = 'gemini-flash-latest';
 
 /** Schmale Sicht auf das SDK — nur das, was dieser Adapter braucht. */
 export interface GeminiClient {
