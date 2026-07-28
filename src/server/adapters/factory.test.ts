@@ -14,7 +14,14 @@ describe('Auswahl der Anbieter', () => {
       hotels: 'seed',
       geocoding: 'seed',
       weather: 'seed',
+      llm: 'rule-based',
     });
+  });
+
+  it('stellt ohne Schlüssel ein arbeitsfähiges Modell bereit', () => {
+    const selection = createProviders({ useNetworkProviders: false });
+
+    expect(selection.llm.name).toBe('rule-based');
   });
 
   it('waehlt Duffel, sobald ein Zugangstoken vorliegt', () => {
@@ -55,7 +62,7 @@ describe('Auswahl der Anbieter', () => {
     const selection = createProviders({ useNetworkProviders: false });
 
     expect(describeSelection(selection)).toBe(
-      'Flüge: seed · Unterkünfte: seed · Orte: seed · Wetter: seed',
+      'Flüge: seed · Unterkünfte: seed · Orte: seed · Wetter: seed · Modell: rule-based',
     );
   });
 });

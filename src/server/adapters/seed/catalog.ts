@@ -423,6 +423,22 @@ function matchScore(entry: CatalogEntry, term: string): number {
 }
 
 /**
+ * Nur exakte Treffer auf einen Alias.
+ *
+ * Gedacht fuer Stellen, an denen ohne Kontext geraten wuerde: Wer jedes Wort
+ * eines Satzes gegen den Katalog haelt, findet in „wie geht es dir" das
+ * Praefix von „Wien". Ein Praefixtreffer ist bei gezielter Ortssuche
+ * hilfreich und beim Durchsuchen von Fliesstext irrefuehrend.
+ */
+export function findExact(term: string): CatalogEntry | undefined {
+  const normalized = normalizeSearchTerm(term);
+
+  return CATALOG.find((entry) =>
+    entry.aliases.some((alias) => normalizeSearchTerm(alias) === normalized),
+  );
+}
+
+/**
  * Orte zu einem Suchbegriff, beste Treffer zuerst.
  * Bei gleichem Rang entscheidet der IATA-Code — damit die Reihenfolge stabil
  * bleibt und Tests nicht von der Katalogreihenfolge abhaengen.
