@@ -53,10 +53,20 @@ bevor die nächste Etappe beginnt.
 
 ## Etappe 3 — Agenten-Kern (offen, pausiert)
 
-**Stand:** sechs von elf Punkten erledigt. Die Etappe ruht, bis ein
-Gemini-Schlüssel vorliegt — so ausdrücklich entschieden, damit der Adapter
-sofort gegen die echte Schnittstelle geprüft werden kann statt nur gegen eine
-Attrappe.
+**Stand:** sechs von zwölf Punkten erledigt.
+
+**Zwei Randbedingungen, die während der Vorbereitung sichtbar wurden:**
+
+1. Google stellt die Schlüssel um: Neue Schlüssel beginnen mit `AQ.` statt mit
+   `AIzaSy`. Alte Standardschlüssel werden im September 2026 abgeschaltet. Ein
+   `AQ.`-Schlüssel funktioniert nicht mit dem einfachen REST-Aufruf
+   `?key=…` — deshalb baut der Adapter auf dem offiziellen SDK auf, das beide
+   Formate kennt. Ursprünglich war ein eigener fetch-Aufruf vorgesehen; die
+   Änderung wurde ausdrücklich abgestimmt.
+2. Die Entwicklungs-Sandbox erreicht `generativelanguage.googleapis.com` nicht.
+   Der Adapter wird deshalb gegen einen untergeschobenen SDK-Client getestet;
+   den Lauf gegen den echten Dienst führt die auftraggebende Person mit
+   `npm run llm:check` aus.
 
 - [x] `LlmPort`, Ereignisse, Abbruchgründe
 - [x] Registry mit sechs Werkzeugen, JSON-Schema aus Zod abgeleitet
@@ -64,13 +74,16 @@ Attrappe.
 - [x] Loop mit paralleler Ausführung und Selbstkorrektur
 - [x] Skriptgesteuertes Ersatzmodell, Tests der Orchestrierung
 - [x] Regelbasierter Extraktor als schlüsselfreier Ersatz
-- [ ] **Gemini-Adapter** — Übersetzung zwischen `LlmPort` und der
-      Gemini-Schnittstelle, inklusive Umbau der Werkzeug-Schemata auf den
-      OpenAPI-Dialekt, Fehlerzuordnung und Token-Zählung
-- [ ] **Tests des Gemini-Adapters** gegen eine fetch-Attrappe — ohne Schlüssel,
-      ohne Netz
+- [ ] **Gemini-Adapter auf Basis des offiziellen SDK `@google/genai`** —
+      Übersetzung zwischen `LlmPort` und der Gemini-Schnittstelle, inklusive
+      Umbau der Werkzeug-Schemata auf den OpenAPI-Dialekt, Fehlerzuordnung und
+      Token-Zählung
+- [ ] **Tests des Gemini-Adapters** gegen einen untergeschobenen SDK-Client —
+      ohne Schlüssel, ohne Netz
 - [ ] **Systemprompt** als versionierte Datei unter `src/server/agent/prompts/`
 - [ ] **Fabrik wählt Gemini**, sobald `GEMINI_API_KEY` gesetzt ist
+- [ ] **Prüfskript `npm run llm:check`** — ein Aufruf gegen die echte
+      Schnittstelle mit Werkzeugnutzung, gibt Antwort und Tokenverbrauch aus
 - [ ] **Ein Lauf gegen die echte Schnittstelle** mit einem gültigen Schlüssel
 
 ## Etappe 4 — API und Authentifizierung
