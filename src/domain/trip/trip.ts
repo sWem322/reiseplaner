@@ -14,14 +14,20 @@ import { fail, ok, type Result } from '../result';
 
 // --- Bausteine ---------------------------------------------------------
 
+/*
+ * Fehlermeldungen der Schemata sind Text, den sowohl das Sprachmodell als auch
+ * die reisende Person zu lesen bekommt — sie stehen deshalb in korrektem
+ * Deutsch mit Umlauten. Nur Kommentare und Bezeichner im Code verzichten
+ * darauf (siehe AGENTS.md).
+ */
 export const iataCodeSchema = z
   .string()
-  .regex(/^[A-Z]{3}$/, 'IATA-Code besteht aus genau drei Grossbuchstaben');
+  .regex(/^[A-Z]{3}$/, 'IATA-Code besteht aus genau drei Großbuchstaben');
 
 export const isoDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Datum im Format JJJJ-MM-TT erwartet')
-  .refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), 'Kein gueltiges Datum');
+  .refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), 'Kein gültiges Datum');
 
 export const placeSchema = z.object({
   name: z.string().min(1, 'Ortsname darf nicht leer sein'),
@@ -36,18 +42,18 @@ const adultsSchema = z
   .number()
   .int('Anzahl Erwachsener muss ganzzahlig sein')
   .min(1, 'Mindestens eine erwachsene Person')
-  .max(9, 'Hoechstens neun erwachsene Personen');
+  .max(9, 'Höchstens neun erwachsene Personen');
 
 const childAgeSchema = z
   .number()
   .int('Alter muss ganzzahlig sein')
   .min(0, 'Alter darf nicht negativ sein')
-  .max(17, 'Ab 18 Jahren zaehlt eine Person als erwachsen');
+  .max(17, 'Ab 18 Jahren zählt eine Person als erwachsen');
 
 const budgetSchema = z
   .number()
   .int('Budget in ganzen Euro angeben')
-  .positive('Budget muss groesser als null sein');
+  .positive('Budget muss größer als null sein');
 
 // --- Status ------------------------------------------------------------
 
@@ -84,7 +90,7 @@ const tripDraftShape = z.object({
   departureDate: isoDateSchema.nullable(),
   returnDate: isoDateSchema.nullable(),
   adults: adultsSchema.nullable(),
-  childAges: z.array(childAgeSchema).max(9, 'Hoechstens neun Kinder'),
+  childAges: z.array(childAgeSchema).max(9, 'Höchstens neun Kinder'),
   budgetEuros: budgetSchema.nullable(),
   preferences: z.array(z.string().min(1)).max(20),
   status: tripDraftStatusSchema,
@@ -106,7 +112,7 @@ export const tripDraftSchema = tripDraftShape
       draft.departureDate === null || draft.returnDate === null
         ? true
         : daysBetween(draft.departureDate, draft.returnDate) >= 0,
-    { message: 'Rueckreise darf nicht vor der Hinreise liegen', path: ['returnDate'] },
+    { message: 'Rückreise darf nicht vor der Hinreise liegen', path: ['returnDate'] },
   )
   .refine((draft) => draft.departureDate === null || draft.departureDate >= todayIso(), {
     message: 'Abflugdatum darf nicht in der Vergangenheit liegen',
@@ -117,14 +123,14 @@ export const tripDraftSchema = tripDraftShape
       draft.departureDate === null || draft.returnDate === null
         ? true
         : daysBetween(draft.departureDate, draft.returnDate) <= MAX_TRIP_DURATION_DAYS,
-    { message: 'Reisedauer von ueber einem Jahr wird nicht unterstuetzt', path: ['returnDate'] },
+    { message: 'Reisedauer von über einem Jahr wird nicht unterstützt', path: ['returnDate'] },
   )
   .refine(
     (draft) =>
       draft.origin === null || draft.destination === null
         ? true
         : draft.origin.iataCode !== draft.destination.iataCode,
-    { message: 'Abflug- und Zielort muessen sich unterscheiden', path: ['destination'] },
+    { message: 'Abflug- und Zielort müssen sich unterscheiden', path: ['destination'] },
   );
 
 export type TripDraft = z.infer<typeof tripDraftShape>;
