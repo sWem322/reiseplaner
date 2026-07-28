@@ -39,7 +39,9 @@
     "@embedded-postgres/windows-x64": true,
     "esbuild": true,
     "sharp": true,
-    "unrs-resolver": true
+    "unrs-resolver": true,
+    "@google/genai": true,
+    "protobufjs": true
   },
   "dependencies": {
     "@google/genai": "2.13.0",

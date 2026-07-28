@@ -51,9 +51,9 @@ bevor die nächste Etappe beginnt.
 - [x] Fabrik wählt nach vorhandenen Zugangsdaten
 - [x] Schaufensterseite `/debug/search`
 
-## Etappe 3 — Agenten-Kern (ein Punkt offen)
+## Etappe 3 — Agenten-Kern ✔
 
-**Stand:** elf von zwölf Punkten erledigt. Offen ist allein der Lauf gegen die echte Schnittstelle — er kann in dieser Entwicklungsumgebung nicht ausgeführt werden.
+**Stand:** vollständig abgeschlossen.
 
 **Zwei Randbedingungen, die während der Vorbereitung sichtbar wurden:**
 
@@ -67,6 +67,11 @@ bevor die nächste Etappe beginnt.
    Der Adapter wird deshalb gegen einen untergeschobenen SDK-Client getestet;
    den Lauf gegen den echten Dienst führt die auftraggebende Person mit
    `npm run llm:check` aus.
+3. Feste Modellnamen halten nicht: `gemini-2.5-flash` steht zwar in der Liste
+   von `models.list()`, wird neuen Zugängen aber verweigert. Die Auflistung
+   sagt, was es _gibt_, nicht was dieser Schlüssel benutzen darf — belastbar
+   ist allein der Aufruf. Deshalb probiert das Prüfskript Kandidaten der Reihe
+   nach, und als Standard dient der Alias `gemini-flash-latest`.
 
 - [x] `LlmPort`, Ereignisse, Abbruchgründe
 - [x] Registry mit sechs Werkzeugen, JSON-Schema aus Zod abgeleitet
@@ -84,7 +89,9 @@ bevor die nächste Etappe beginnt.
 - [x] **Fabrik wählt Gemini**, sobald `GEMINI_API_KEY` gesetzt ist
 - [x] **Prüfskript `npm run llm:check`** — ein Aufruf gegen die echte
       Schnittstelle mit Werkzeugnutzung, gibt Antwort und Tokenverbrauch aus
-- [ ] **Ein Lauf gegen die echte Schnittstelle** mit einem gültigen Schlüssel
+- [x] **Ein Lauf gegen die echte Schnittstelle** — `gemini-flash-latest`
+      antwortete in 1451 ms und rief `resolve_destination({"query":"Mallorca"})`
+      auf; 114 Eingabe- und 17 Ausgabe-Tokens
 
 ## Etappe 4 — API und Authentifizierung
 
