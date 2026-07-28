@@ -131,6 +131,26 @@ ein Neustart der Anwendung setzt ihn zurück. Wer also in eine volle Sandbox
 läuft, empfiehlt den Neustart der Anwendung — nicht eine neue Sitzung, die
 nichts löst und den bisherigen Gesprächsverlauf kostet.
 
+### 5.2 Etappenplan einhalten
+
+`specs/ETAPPENPLAN.md` legt fest, was zu welcher Etappe gehört. Verbindlich:
+
+- **Vor Beginn** einer Etappe wird ihre Punkteliste vorgelesen und die Freigabe
+  abgewartet.
+- Eine Etappe gilt erst als abgeschlossen, wenn **jeder** ihrer Punkte erledigt
+  ist. Punkte werden nicht stillschweigend in spätere Etappen verschoben.
+- **Am Ende** wird die Liste zeilenweise abgeglichen und berichtet — jeder
+  Punkt einzeln, offene ausdrücklich als offen.
+- Eine Verschiebung braucht die ausdrückliche Zustimmung der auftraggebenden
+  Person und wird in der Tabelle am Ende des Etappenplans eingetragen.
+- Fehlt ein externer Zugang, wird der Code trotzdem vollständig geschrieben und
+  gegen eine Attrappe getestet. Nur der Lauf gegen den echten Dienst wartet.
+- **Nichts hinzuerfinden.** Was nicht in der Liste steht, wird vorgeschlagen
+  statt einfach gebaut.
+
+Anlass der Regel: Etappe 3 wurde als fertig gemeldet, obwohl der zugesagte
+Gemini-Adapter fehlte und ohne Rückfrage auf Etappe 6 verschoben worden war.
+
 ## 6. Commit-Konventionen
 
 Conventional Commits, Betreff auf Englisch, Imperativ, maximal 72 Zeichen:

@@ -1,0 +1,111 @@
+# Etappenplan — verbindliche Reihenfolge
+
+Diese Datei ist die einzige Wahrheit darüber, was zu welcher Etappe gehört.
+Sie entstand, nachdem eine Etappe für abgeschlossen erklärt wurde, obwohl ein
+zugesagter Bestandteil fehlte (der Gemini-Adapter in Etappe 3). Solche
+Verschiebungen sind ab hier ausgeschlossen: Was hier steht, wird erledigt,
+bevor die nächste Etappe beginnt.
+
+## Regeln
+
+1. **Vor Beginn einer Etappe** wird ihre Punkteliste vollständig vorgelesen und
+   die ausdrückliche Freigabe abgewartet. Kein Beginn ohne dieses „starte".
+2. **Keine Etappe gilt als abgeschlossen, solange nicht jeder Punkt ihrer
+   Abschlussbedingungen erfüllt ist.** Ein Punkt darf nicht in eine spätere
+   Etappe verschoben werden.
+3. **Am Ende jeder Etappe steht ein zeilenweiser Bericht** entlang dieser
+   Liste: jeder Punkt einzeln, mit Haken oder als offen gekennzeichnet.
+   Kein „fertig" ohne diesen Abgleich Punkt für Punkt.
+4. **Verschiebungen sind nur mit ausdrücklicher Zustimmung möglich** und werden
+   in der Tabelle am Ende dieser Datei festgehalten — mit Grund und neuer
+   Etappe.
+5. **Fehlt ein externer Zugang**, wird der Code trotzdem vollständig
+   geschrieben und gegen eine Attrappe getestet. Nur der Lauf gegen den echten
+   Dienst wird nachgeholt — nicht die Implementierung.
+6. **Jede Etappe endet grün**: Lint, Typecheck, alle Tests, Build.
+7. **Innerhalb einer Etappe wird nichts hinzuerfunden.** Fällt unterwegs etwas
+   Sinnvolles auf, das nicht in der Liste steht, wird es vorgeschlagen und
+   erst nach Zustimmung ergänzt — in dieser Datei und dann im Code.
+
+## Etappe 0 — Grundgerüst ✔
+
+- [x] Next.js, TypeScript streng, ESLint mit Typinformation, Prettier
+- [x] Vitest (Unit + Integration), Playwright
+- [x] PostgreSQL über Docker **und** eingebettet
+- [x] GitHub Actions: Lint, Typecheck, Format, Tests, E2E
+- [x] `AGENTS.md`, `specs/000`, README
+
+## Etappe 1 — Domänenmodell ✔
+
+- [x] `TripDraft`, `TripQuery`, Statusmodell, fehlende Slots
+- [x] Dialog, Nachrichten mit Inhaltsblöcken, Werkzeug-Protokoll
+- [x] Repository-Ports ohne ORM-Wissen
+- [x] Tabellen, erste Migration, Drizzle-Implementierungen
+- [x] Integrationstests gegen echtes PostgreSQL
+
+## Etappe 2 — Ports und Adapter ✔
+
+- [x] Vier Anbieter-Ports
+- [x] Seed-Adapter, deterministisch, ~20 Flughäfen + Ziele
+- [x] Open-Meteo, Overpass, Duffel als HTTP-Adapter
+- [x] Fabrik wählt nach vorhandenen Zugangsdaten
+- [x] Schaufensterseite `/debug/search`
+
+## Etappe 3 — Agenten-Kern (offen, pausiert)
+
+**Stand:** sechs von elf Punkten erledigt. Die Etappe ruht, bis ein
+Gemini-Schlüssel vorliegt — so ausdrücklich entschieden, damit der Adapter
+sofort gegen die echte Schnittstelle geprüft werden kann statt nur gegen eine
+Attrappe.
+
+- [x] `LlmPort`, Ereignisse, Abbruchgründe
+- [x] Registry mit sechs Werkzeugen, JSON-Schema aus Zod abgeleitet
+- [x] Guardrails: Iterationen, Werkzeugaufrufe, Token-Budget
+- [x] Loop mit paralleler Ausführung und Selbstkorrektur
+- [x] Skriptgesteuertes Ersatzmodell, Tests der Orchestrierung
+- [x] Regelbasierter Extraktor als schlüsselfreier Ersatz
+- [ ] **Gemini-Adapter** — Übersetzung zwischen `LlmPort` und der
+      Gemini-Schnittstelle, inklusive Umbau der Werkzeug-Schemata auf den
+      OpenAPI-Dialekt, Fehlerzuordnung und Token-Zählung
+- [ ] **Tests des Gemini-Adapters** gegen eine fetch-Attrappe — ohne Schlüssel,
+      ohne Netz
+- [ ] **Systemprompt** als versionierte Datei unter `src/server/agent/prompts/`
+- [ ] **Fabrik wählt Gemini**, sobald `GEMINI_API_KEY` gesetzt ist
+- [ ] **Ein Lauf gegen die echte Schnittstelle** mit einem gültigen Schlüssel
+
+## Etappe 4 — API und Authentifizierung
+
+- [ ] tRPC-Router und -Kontext
+- [ ] Auth.js v5 mit Zugangsdaten und Gastzugang
+- [ ] Gästekontingent als Teil der Guardrails
+- [ ] SSE-Route für den Ereignisstrom des Agenten
+- [ ] Verdichtung der Historie über `LlmPort`
+- [ ] Integrationstests der Prozeduren
+
+## Etappe 5 — Oberfläche
+
+- [ ] Chat mit Streaming
+- [ ] Seitenleiste mit dem Reise-Entwurf, gefüllte Felder hervorgehoben
+- [ ] Karten für Flüge und Unterkünfte
+- [ ] Anzeige des gerade laufenden Werkzeugs
+- [ ] Liste vergangener Reisen
+- [ ] Schaufensterseiten `/debug/*` entfernen
+- [ ] E2E über den vollständigen Ablauf
+
+## Etappe 6 — Eval, Dokumentation, Deployment
+
+- [ ] Eval-Datensatz mit 20 Fällen auf Deutsch
+- [ ] Eval-Runner mit Slot-Genauigkeit
+- [ ] Vergleich regelbasiert gegen Gemini im README
+- [ ] README auf Deutsch: Aufgabe, Architektur, Start, Entscheidungen
+- [ ] GIF der Demo
+- [ ] Deployment, öffentliche Adresse
+- [ ] Prüfung gegen die Definition of Done der Aufgabenstellung
+
+## Verschiebungen
+
+Bisher keine bewilligten Verschiebungen.
+
+| Datum | Punkt | Von | Nach | Grund | Zustimmung |
+| ----- | ----- | --- | ---- | ----- | ---------- |
+| —     | —     | —   | —    | —     | —          |
