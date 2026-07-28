@@ -1,6 +1,7 @@
-import { and, asc, eq, gt, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, sql } from 'drizzle-orm';
 import type {
   ConversationRepository,
+  ConversationSummary,
   MessageRepository,
   Repositories,
   ToolCallLogRepository,
@@ -29,8 +30,11 @@ import {
 
 function createConversationRepository(db: Database): ConversationRepository {
   return {
-    async create(): Promise<Conversation> {
-      const [row] = await db.insert(conversation).values({}).returning();
+    async create(userId?: string): Promise<Conversation> {
+      const [row] = await db
+        .insert(conversation)
+        .values(userId === undefined ? {} : { userId })
+        .returning();
 
       if (row === undefined) {
         throw new Error('Dialog konnte nicht angelegt werden');
@@ -43,6 +47,42 @@ function createConversationRepository(db: Database): ConversationRepository {
       const [row] = await db.select().from(conversation).where(eq(conversation.id, id)).limit(1);
 
       return row === undefined ? null : toConversation(row);
+    },
+
+    async listByUser(userId: string): Promise<ConversationSummary[]> {
+      const rows = await db
+        .select({
+          id: conversation.id,
+          title: conversation.title,
+          createdAt: conversation.createdAt,
+          updatedAt: conversation.updatedAt,
+        })
+        .from(conversation)
+        .where(eq(conversation.userId, userId))
+        .orderBy(desc(conversation.updatedAt));
+
+      return rows;
+    },
+
+    async belongsTo(conversationId: string, userId: string): Promise<boolean> {
+      const [row] = await db
+        .select({ id: conversation.id })
+        .from(conversation)
+        .where(and(eq(conversation.id, conversationId), eq(conversation.userId, userId)))
+        .limit(1);
+
+      return row !== undefined;
+    },
+
+    async setTitle(id: string, title: string): Promise<void> {
+      await db
+        .update(conversation)
+        .set({ title, updatedAt: new Date() })
+        .where(eq(conversation.id, id));
+    },
+
+    async remove(id: string): Promise<void> {
+      await db.delete(conversation).where(eq(conversation.id, id));
     },
 
     async addTokenUsage(id, usage): Promise<void> {

@@ -20,10 +20,35 @@ import type { Result } from '../result';
  *    dieser Schnittstellen, kein Umbau der Fachlogik.
  */
 
+export interface ConversationSummary {
+  readonly id: string;
+  readonly title: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
 export interface ConversationRepository {
-  create(): Promise<Conversation>;
+  /** `userId` ist optional, damit Tests ohne Kontenverwaltung auskommen. */
+  create(userId?: string): Promise<Conversation>;
 
   findById(id: string): Promise<Conversation | null>;
+
+  /** Reisen einer Person, neueste zuerst. */
+  listByUser(userId: string): Promise<ConversationSummary[]>;
+
+  /**
+   * Gehört der Dialog dieser Person?
+   *
+   * Eigene Abfrage statt „laden und vergleichen": So kann eine Prozedur den
+   * Zugriff prüfen, ohne vorher Daten zu lesen, die sie womöglich gar nicht
+   * sehen darf.
+   */
+  belongsTo(conversationId: string, userId: string): Promise<boolean>;
+
+  /** Setzt den Titel, sobald das Ziel feststeht. */
+  setTitle(id: string, title: string): Promise<void>;
+
+  remove(id: string): Promise<void>;
 
   /** Zaehlt verbrauchte Tokens hoch. Additiv, damit parallele Laeufe nichts ueberschreiben. */
   addTokenUsage(id: string, usage: { inputTokens: number; outputTokens: number }): Promise<void>;
