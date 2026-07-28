@@ -470,7 +470,7 @@ describe('Zustandsfuehrung', () => {
       ],
     });
 
-    const events = await collectEvents(runAgent(baseInput({ llm, tools: createTools(drafts) })));
+    await collectEvents(runAgent(baseInput({ llm, tools: createTools(drafts) })));
 
     expect(drafts.current().destination?.iataCode).toBe('PMI');
     expect(drafts.current().adults).toBe(2);
@@ -573,10 +573,9 @@ describe('Protokollierung', () => {
               });
 
               return Promise.resolve({
-                id: '00000000-0000-4000-8000-000000000000',
-                conversationId: CONVERSATION_ID,
-                createdAt: new Date(),
                 ...entry,
+                id: '00000000-0000-4000-8000-000000000000',
+                createdAt: new Date(),
               });
             },
             listByConversation: () => Promise.resolve([]),
