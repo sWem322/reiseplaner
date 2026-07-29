@@ -1,12 +1,11 @@
 {
-  "llm": "rule-based",
-  "zeitpunkt": "2026-07-29T13:10:19.602Z",
+  "llm": "gemini:gemini-flash-latest",
+  "zeitpunkt": "2026-07-29T12:59:09.552Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
       "beschreibung": "Alle Pflichtangaben in einer einzigen Nachricht",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -39,10 +38,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 2,
+      "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
+      "antwort": "Für Ihren Flug von Düsseldorf nach Mallorca vom 8. bis 15. Oktober 2026 zu zweit gibt es verschiedene Direktverbindungen. Bitte beachten Sie, dass es sich hierbei um Beispielpreise zur Veranschaulichung handelt. Die günstigsten Angebote starten bei 426 Euro Gesamtkosten für zwei Personen mit Demo Air, wobei die Abflugzeiten morgens und abends variieren. Alternativ bieten Fluggesellschaften wie Beispiel Airways und Testjet Verbindungen zwischen 435 und 440 Euro an.",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -70,7 +69,6 @@
       "id": "schrittweise",
       "beschreibung": "Angaben über mehrere Nachrichten verteilt",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -93,8 +91,8 @@
         {
           "slot": "returnDate",
           "erwartet": "2026-09-19",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "2026-09-19",
+          "urteil": "richtig"
         },
         {
           "slot": "adults",
@@ -103,10 +101,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Für die Strecke von Düsseldorf nach Barcelona vom 12.09. bis 19.09.2026 für zwei Erwachsene gibt es Demo-Beispielpreise ab 553 Euro mit Demo Air für Direktflüge. Die Angebote liegen preislich alle sehr nah beieinander, sodass Sie bequem nach Ihren Wunschzeiten entscheiden können; der günstigste Flug startet bereits früh morgens um 6:00 Uhr. \n\nSoll ich direkt nach passenden Unterkünften in Barcelona für diesen Zeitraum suchen?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -121,20 +119,19 @@
           "longitude": 2.0785
         },
         "departureDate": "2026-09-12",
-        "returnDate": null,
+        "returnDate": "2026-09-19",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "deutsches-datumsformat",
       "beschreibung": "TT.MM.JJJJ statt ISO",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -157,8 +154,8 @@
         {
           "slot": "returnDate",
           "erwartet": "2026-11-12",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "2026-11-12",
+          "urteil": "richtig"
         },
         {
           "slot": "adults",
@@ -167,10 +164,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 5,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Für die Reise von Frankfurt nach Lissabon vom 05.11. bis 12.11.2026 für zwei Personen (Beispielpreise zur Veranschaulichung) liegen die Direktflüge sehr nah beieinander. Das günstigste Angebot von Musterflug kostet 607 Euro für beide zusammen, gefolgt von Demo Air für 613 Euro am frühen Morgen. Alle angezeigten Flüge sind Nonstop-Verbindungen, sodass Sie preislich kaum Unterschiede haben und nach den Abflugzeiten entscheiden können. Im November erwarten Sie in Lissabon milde Höchstwerte um 23 Grad, allerdings gibt es im Schnitt auch rund 13 Regentage.\n\nSoll ich direkt passende Unterkünfte in Lissabon für Sie heraussuchen?",
       "entwurf": {
         "origin": {
           "name": "Frankfurt am Main",
@@ -185,20 +182,19 @@
           "longitude": -9.1342
         },
         "departureDate": "2026-11-05",
-        "returnDate": null,
+        "returnDate": "2026-11-12",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "monat-ohne-datum",
       "beschreibung": "Ein Monat ist kein Zeitraum — es muss nachgefragt werden",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -215,8 +211,8 @@
         {
           "slot": "departureDate",
           "erwartet": null,
-          "tatsaechlich": "2026-10-15",
-          "urteil": "erfunden"
+          "tatsaechlich": null,
+          "urteil": "richtig"
         },
         {
           "slot": "returnDate",
@@ -225,10 +221,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "antwort": "Nach Mallorca im Oktober zu zweit — das klingt nach einer wunderbaren Reisezeit, da es dann meist noch angenehm mild ist. \n\nUm nach passenden Flügen zu suchen, brauche ich noch Ihren Abflugort. Von wo aus möchten Sie starten?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -237,7 +233,7 @@
           "latitude": 39.5517,
           "longitude": 2.7388
         },
-        "departureDate": "2026-10-15",
+        "departureDate": null,
         "returnDate": null,
         "adults": 2,
         "childAges": [],
@@ -251,7 +247,6 @@
       "id": "land-statt-stadt",
       "beschreibung": "Ein Land ist kein Ziel",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -260,10 +255,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 0,
+      "werkzeugaufrufe": 1,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wohin soll die Reise gehen?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -275,31 +270,30 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
       "id": "reisende-nicht-genannt",
       "beschreibung": "Ohne Angabe keine Zahl im Entwurf",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
           "erwartet": "HAM",
-          "tatsaechlich": "HAM",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
           "erwartet": "VIE",
-          "tatsaechlich": "VIE",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "departureDate",
           "erwartet": "2026-09-03",
-          "tatsaechlich": "2026-09-03",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "adults",
@@ -308,24 +302,14 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Hamburg",
-          "iataCode": "HAM",
-          "latitude": 53.6304,
-          "longitude": 9.9882
-        },
-        "destination": {
-          "name": "Wien",
-          "iataCode": "VIE",
-          "latitude": 48.1103,
-          "longitude": 16.5697
-        },
-        "departureDate": "2026-09-03",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
         "adults": null,
         "childAges": [],
@@ -339,13 +323,12 @@
       "id": "irgendwann-naechstes-jahr",
       "beschreibung": "Sehr vage Zeitangabe",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
           "erwartet": "HER",
-          "tatsaechlich": "HER",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "departureDate",
@@ -360,18 +343,13 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
         "origin": null,
-        "destination": {
-          "name": "Kreta Heraklion",
-          "iataCode": "HER",
-          "latitude": 35.3397,
-          "longitude": 25.1803
-        },
+        "destination": null,
         "departureDate": null,
         "returnDate": null,
         "adults": null,
@@ -386,56 +364,42 @@
       "id": "kinder-mit-alter",
       "beschreibung": "Kinder samt Alter werden übernommen",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
           "erwartet": "MUC",
-          "tatsaechlich": "MUC",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
           "erwartet": "AYT",
-          "tatsaechlich": "AYT",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": 2,
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "childAges",
-          "erwartet": [
-            6,
-            9
-          ],
+          "erwartet": [6, 9],
           "tatsaechlich": null,
           "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "München",
-          "iataCode": "MUC",
-          "latitude": 48.3538,
-          "longitude": 11.7861
-        },
-        "destination": {
-          "name": "Antalya",
-          "iataCode": "AYT",
-          "latitude": 36.8987,
-          "longitude": 30.8005
-        },
-        "departureDate": "2026-08-15",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
@@ -447,145 +411,112 @@
       "id": "nach-kindern-fragen",
       "beschreibung": "Nach der Zahl der Erwachsenen kommt genau eine Frage nach Kindern",
       "nochOffen": true,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
           "erwartet": "BER",
-          "tatsaechlich": "BER",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
           "erwartet": "RHO",
-          "tatsaechlich": "RHO",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": 2,
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 2,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Berlin Brandenburg",
-          "iataCode": "BER",
-          "latitude": 52.3667,
-          "longitude": 13.5033
-        },
-        "destination": {
-          "name": "Rhodos",
-          "iataCode": "RHO",
-          "latitude": 36.4054,
-          "longitude": 28.0862
-        },
-        "departureDate": "2026-09-05",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
       "id": "frage-statt-antwort",
       "beschreibung": "Eine Frage wird beantwortet, nicht übergangen",
       "nochOffen": true,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
           "erwartet": "PMI",
-          "tatsaechlich": "PMI",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": 2,
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Düsseldorf",
-          "iataCode": "DUS",
-          "latitude": 51.2895,
-          "longitude": 6.7668
-        },
-        "destination": {
-          "name": "Palma de Mallorca",
-          "iataCode": "PMI",
-          "latitude": 39.5517,
-          "longitude": 2.7388
-        },
-        "departureDate": "2026-10-08",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
       "id": "beste-daten-im-monat",
       "beschreibung": "Mehrere Zeiträume prüfen und mit Preisen gegenüberstellen",
       "nochOffen": true,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
           "erwartet": "PMI",
-          "tatsaechlich": "PMI",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "origin",
           "erwartet": "DUS",
-          "tatsaechlich": "DUS",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": 2,
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Düsseldorf",
-          "iataCode": "DUS",
-          "latitude": 51.2895,
-          "longitude": 6.7668
-        },
-        "destination": {
-          "name": "Palma de Mallorca",
-          "iataCode": "PMI",
-          "latitude": 39.5517,
-          "longitude": 2.7388
-        },
-        "departureDate": "2026-10-15",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
@@ -597,108 +528,21 @@
       "id": "wetterfrage",
       "beschreibung": "Klimafrage vor der Buchung",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
           "erwartet": "TFS",
-          "tatsaechlich": "TFS",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
         "origin": null,
-        "destination": {
-          "name": "Teneriffa Süd",
-          "iataCode": "TFS",
-          "latitude": 28.0445,
-          "longitude": -16.5725
-        },
-        "departureDate": "2026-10-15",
-        "returnDate": null,
-        "adults": null,
-        "childAges": [],
-        "budgetEuros": null,
-        "preferences": [],
-        "status": "collecting"
-      },
-      "bestanden": true
-    },
-    {
-      "id": "buchung-nicht-moeglich",
-      "beschreibung": "Der Assistent bucht nicht und sagt das offen",
-      "nochOffen": false,
-      "nichtGemessen": false,
-      "befunde": [
-        {
-          "slot": "origin",
-          "erwartet": "CGN",
-          "tatsaechlich": "CGN",
-          "urteil": "richtig"
-        },
-        {
-          "slot": "destination",
-          "erwartet": "FAO",
-          "tatsaechlich": "FAO",
-          "urteil": "richtig"
-        }
-      ],
-      "werkzeugaufrufe": 1,
-      "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
-      "entwurf": {
-        "origin": {
-          "name": "Köln/Bonn",
-          "iataCode": "CGN",
-          "latitude": 50.8659,
-          "longitude": 7.1427
-        },
-        "destination": {
-          "name": "Faro",
-          "iataCode": "FAO",
-          "latitude": 37.0144,
-          "longitude": -7.9659
-        },
-        "departureDate": "2026-09-10",
-        "returnDate": null,
-        "adults": 2,
-        "childAges": [],
-        "budgetEuros": null,
-        "preferences": [],
-        "status": "collecting"
-      },
-      "bestanden": true
-    },
-    {
-      "id": "ziel-geaendert",
-      "beschreibung": "Ein späterer Wunsch ersetzt den früheren",
-      "nochOffen": false,
-      "nichtGemessen": false,
-      "befunde": [
-        {
-          "slot": "destination",
-          "erwartet": "NAP",
-          "tatsaechlich": "NAP",
-          "urteil": "richtig"
-        }
-      ],
-      "werkzeugaufrufe": 2,
-      "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchtest du starten?",
-      "entwurf": {
-        "origin": null,
-        "destination": {
-          "name": "Neapel",
-          "iataCode": "NAP",
-          "latitude": 40.886,
-          "longitude": 14.2908
-        },
+        "destination": null,
         "departureDate": null,
         "returnDate": null,
         "adults": null,
@@ -707,77 +551,129 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
-      "id": "datum-verschoben",
-      "beschreibung": "Verschiebung der Reise wird übernommen",
-      "nochOffen": true,
-      "nichtGemessen": false,
+      "id": "buchung-nicht-moeglich",
+      "beschreibung": "Der Assistent bucht nicht und sagt das offen",
+      "nochOffen": false,
       "befunde": [
         {
           "slot": "origin",
-          "erwartet": "STR",
-          "tatsaechlich": "STR",
-          "urteil": "richtig"
+          "erwartet": "CGN",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
-          "erwartet": "ATH",
-          "tatsaechlich": "ATH",
-          "urteil": "richtig"
-        },
-        {
-          "slot": "adults",
-          "erwartet": 2,
-          "tatsaechlich": 2,
-          "urteil": "richtig"
+          "erwartet": "FAO",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Stuttgart",
-          "iataCode": "STR",
-          "latitude": 48.6899,
-          "longitude": 9.2219
-        },
-        "destination": {
-          "name": "Athen",
-          "iataCode": "ATH",
-          "latitude": 37.9364,
-          "longitude": 23.9445
-        },
-        "departureDate": "2026-09-04",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
+    },
+    {
+      "id": "ziel-geaendert",
+      "beschreibung": "Ein späterer Wunsch ersetzt den früheren",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "NAP",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        }
+      ],
+      "werkzeugaufrufe": 0,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
+      "entwurf": {
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "datum-verschoben",
+      "beschreibung": "Verschiebung der Reise wird übernommen",
+      "nochOffen": true,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "STR",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "ATH",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        }
+      ],
+      "werkzeugaufrufe": 0,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
+      "entwurf": {
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
     },
     {
       "id": "rueckflug-vor-hinflug",
       "beschreibung": "Unmögliche Reihenfolge wird nicht stillschweigend gespeichert",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
           "erwartet": "HAJ",
-          "tatsaechlich": "HAJ",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
           "erwartet": "VCE",
-          "tatsaechlich": "VCE",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "returnDate",
@@ -786,50 +682,39 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Hannover",
-          "iataCode": "HAJ",
-          "latitude": 52.4611,
-          "longitude": 9.6851
-        },
-        "destination": {
-          "name": "Venedig",
-          "iataCode": "VCE",
-          "latitude": 45.5053,
-          "longitude": 12.3519
-        },
-        "departureDate": "2026-10-20",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
       "id": "datum-in-der-vergangenheit",
       "beschreibung": "Ein vergangenes Datum wird zurückgewiesen",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
           "erwartet": "BRE",
-          "tatsaechlich": "BRE",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
           "erwartet": "AGP",
-          "tatsaechlich": "AGP",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "departureDate",
@@ -838,38 +723,27 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Bremen",
-          "iataCode": "BRE",
-          "latitude": 53.0475,
-          "longitude": 8.7867
-        },
-        "destination": {
-          "name": "Málaga",
-          "iataCode": "AGP",
-          "latitude": 36.6749,
-          "longitude": -4.4991
-        },
+        "origin": null,
+        "destination": null,
         "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
       "id": "unbekanntes-ziel",
       "beschreibung": "Ein Ort ausserhalb des Katalogs",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -881,7 +755,7 @@
       "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wohin soll die Reise gehen?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -899,7 +773,6 @@
       "id": "ausser-thema",
       "beschreibung": "Kein Reisethema — der Entwurf bleibt leer",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -929,7 +802,7 @@
       "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wohin soll die Reise gehen?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -947,25 +820,24 @@
       "id": "budget-und-praeferenz",
       "beschreibung": "Budget und Wunsch werden festgehalten",
       "nochOffen": false,
-      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
           "erwartet": "NUE",
-          "tatsaechlich": "NUE",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "destination",
           "erwartet": "PMI",
-          "tatsaechlich": "PMI",
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": 2,
-          "urteil": "richtig"
+          "tatsaechlich": null,
+          "urteil": "fehlt"
         },
         {
           "slot": "budgetEuros",
@@ -974,26 +846,16 @@
           "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Ich kann gerade nicht auf den Sprachdienst zugreifen. Bitte versuche es in einem Moment noch einmal.",
       "entwurf": {
-        "origin": {
-          "name": "Nürnberg",
-          "iataCode": "NUE",
-          "latitude": 49.4987,
-          "longitude": 11.0781
-        },
-        "destination": {
-          "name": "Palma de Mallorca",
-          "iataCode": "PMI",
-          "latitude": 39.5517,
-          "longitude": 2.7388
-        },
-        "departureDate": "2026-09-19",
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
         "returnDate": null,
-        "adults": 2,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
@@ -1004,15 +866,14 @@
   ],
   "kennzahlen": {
     "slotsGesamt": 61,
-    "richtig": 56,
+    "richtig": 30,
     "falsch": 0,
-    "erfunden": 1,
-    "fehlt": 4,
-    "genauigkeit": 0.9180327868852459,
-    "werkzeugaufrufeJeFall": 1.15,
+    "erfunden": 0,
+    "fehlt": 31,
+    "genauigkeit": 0.4918032786885246,
+    "werkzeugaufrufeJeFall": 0.95,
     "anteilMisslungenerAufrufe": 0,
-    "bestandeneFaelle": 12,
-    "offeneFaelle": 4,
-    "nichtGemesseneFaelle": 0
+    "bestandeneFaelle": 5,
+    "offeneFaelle": 4
   }
 }

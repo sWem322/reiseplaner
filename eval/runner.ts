@@ -146,6 +146,32 @@ export async function runEval({ llm, providers, faelle }: RunOptions): Promise<E
     ergebnisse.push(await runFall(fall, llm, providers));
   }
 
+  return neuBerechnet({ llm: llm.name, zeitpunkt: '', faelle: [], kennzahlen: LEER }, ergebnisse);
+}
+
+const LEER: EvalBericht['kennzahlen'] = {
+  slotsGesamt: 0,
+  richtig: 0,
+  falsch: 0,
+  erfunden: 0,
+  fehlt: 0,
+  genauigkeit: 0,
+  werkzeugaufrufeJeFall: 0,
+  anteilMisslungenerAufrufe: 0,
+  bestandeneFaelle: 0,
+  offeneFaelle: 0,
+  nichtGemesseneFaelle: 0,
+};
+
+/**
+ * Rechnet die Kennzahlen aus einer Fallliste neu.
+ *
+ * Getrennt vom Lauf, weil ein Bericht auch aus mehreren Läufen entstehen
+ * kann: Reicht das Kontingent nicht für zwanzig Gespräche am Stück, werden
+ * die fehlenden später nachgeholt und hier zusammengezählt.
+ */
+export function neuBerechnet(vorlage: EvalBericht, faelle: readonly FallErgebnis[]): EvalBericht {
+  const ergebnisse = [...faelle];
   const alleBefunde = ergebnisse.flatMap((ergebnis) => ergebnis.befunde);
   const zaehle = (urteil: SlotBefund['urteil']): number =>
     alleBefunde.filter((befund) => befund.urteil === urteil).length;
@@ -154,7 +180,7 @@ export async function runEval({ llm, providers, faelle }: RunOptions): Promise<E
   const misslungen = ergebnisse.reduce((summe, e) => summe + e.misslungeneAufrufe, 0);
 
   return {
-    llm: llm.name,
+    llm: vorlage.llm,
     zeitpunkt: new Date().toISOString(),
     faelle: ergebnisse,
     kennzahlen: {

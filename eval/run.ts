@@ -1,6 +1,6 @@
 // Muss als Erstes stehen: füllt process.env, bevor `@/env` es liest.
 import './load-env';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { env } from '@/env';
 import { createGeminiLlm } from '@/server/agent/llm/gemini';
@@ -9,7 +9,7 @@ import { createRuleBasedLlm } from '@/server/agent/llm/rule-based';
 import { createSeedProviders } from '@/server/adapters/factory';
 import { EVAL_FAELLE } from './faelle';
 import { withPatience } from './patient-llm';
-import { runEval, type EvalBericht } from './runner';
+import { neuBerechnet, runEval, type EvalBericht } from './runner';
 
 /**
  * Einstiegspunkt des Eval-Laufs.
@@ -23,6 +23,17 @@ import { runEval, type EvalBericht } from './runner';
  */
 
 const mitLlm = process.argv.includes('--llm');
+
+/**
+ * Bereits gemessene Fälle überspringen und den Bericht ergänzen.
+ *
+ * Das kostenlose Kontingent reicht nicht immer für zwanzig Gespräche am
+ * Stück. Statt den ganzen Lauf zu verlieren, wird er fortgesetzt: Was schon
+ * im gespeicherten Bericht steht, wird nicht noch einmal gefragt.
+ *
+ *   npm run eval -- --llm --weiter
+ */
+const fortsetzen = process.argv.includes('--weiter');
 
 async function main(): Promise<void> {
   if (mitLlm && env.GEMINI_API_KEY === undefined) {
@@ -43,14 +54,31 @@ async function main(): Promise<void> {
       )
     : createRuleBasedLlm();
 
-  console.log(`Eval gegen ${llm.name} — ${String(EVAL_FAELLE.length)} Fälle`);
+  const name = mitLlm ? 'gemini' : 'rule-based';
+  const frueher = fortsetzen ? await lieseBericht(name) : null;
+  const fertig = new Set(frueher?.faelle.map((fall) => fall.id) ?? []);
+  const offen = EVAL_FAELLE.filter((fall) => !fertig.has(fall.id));
+
+  if (fertig.size > 0) {
+    console.log(`${String(fertig.size)} Fälle liegen bereits vor, ${String(offen.length)} offen.`);
+  }
+
+  if (offen.length === 0) {
+    console.log('Nichts mehr zu tun.');
+
+    return;
+  }
+
+  console.log(`Eval gegen ${llm.name} — ${String(offen.length)} Fälle`);
   console.log('');
 
-  const bericht = await runEval({
+  const neu = await runEval({
     llm,
     providers: createSeedProviders(),
-    faelle: EVAL_FAELLE,
+    faelle: offen,
   });
+
+  const bericht = vereinige(frueher, neu);
 
   zeigeBericht(bericht);
 
@@ -63,6 +91,22 @@ async function main(): Promise<void> {
    * Datei geraten, aus der spaeter eine Tabelle im README wird.
    */
   if (bericht.kennzahlen.nichtGemesseneFaelle > 0) {
+    /*
+     * Was gemessen wurde, bleibt erhalten — nur die ungemessenen Faelle
+     * fallen weg. Beim naechsten Mal mit `--weiter` werden genau sie
+     * nachgeholt, statt das Kontingent noch einmal fuer alles auszugeben.
+     */
+    const brauchbar = bericht.faelle.filter((fall) => !fall.nichtGemessen);
+
+    if (brauchbar.length > 0) {
+      await schreibeBericht(neuBerechnet(bericht, brauchbar), name);
+      console.error('');
+      console.error(
+        `  ${String(brauchbar.length)} gemessene Fälle wurden gesichert — ` +
+          'Fortsetzung mit: npm run eval -- --llm --weiter',
+      );
+    }
+
     console.error('');
     console.error(
       `✗ ${String(bericht.kennzahlen.nichtGemesseneFaelle)} von ` +
@@ -76,7 +120,27 @@ async function main(): Promise<void> {
     return;
   }
 
-  await schreibeBericht(bericht, mitLlm ? 'gemini' : 'rule-based');
+  await schreibeBericht(bericht, name);
+}
+
+/** Liest einen früheren Bericht, falls vorhanden. */
+async function lieseBericht(name: string): Promise<EvalBericht | null> {
+  try {
+    const roh = await readFile(join(process.cwd(), 'eval', 'ergebnisse', `${name}.json`), 'utf8');
+
+    return JSON.parse(roh) as EvalBericht;
+  } catch {
+    return null;
+  }
+}
+
+/** Fügt einen früheren und einen neuen Bericht zusammen. */
+function vereinige(frueher: EvalBericht | null, neu: EvalBericht): EvalBericht {
+  if (frueher === null) {
+    return neu;
+  }
+
+  return neuBerechnet(neu, [...frueher.faelle, ...neu.faelle]);
 }
 
 function zeigeBericht(bericht: EvalBericht): void {
