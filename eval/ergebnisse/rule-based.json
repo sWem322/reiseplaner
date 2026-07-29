@@ -1,11 +1,12 @@
 {
   "llm": "rule-based",
-  "zeitpunkt": "2026-07-29T12:50:10.968Z",
+  "zeitpunkt": "2026-07-29T13:01:43.920Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
       "beschreibung": "Alle Pflichtangaben in einer einzigen Nachricht",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -69,6 +70,7 @@
       "id": "schrittweise",
       "beschreibung": "Angaben über mehrere Nachrichten verteilt",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -132,6 +134,7 @@
       "id": "deutsches-datumsformat",
       "beschreibung": "TT.MM.JJJJ statt ISO",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -195,6 +198,7 @@
       "id": "monat-ohne-datum",
       "beschreibung": "Ein Monat ist kein Zeitraum — es muss nachgefragt werden",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -247,6 +251,7 @@
       "id": "land-statt-stadt",
       "beschreibung": "Ein Land ist kein Ziel",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -276,6 +281,7 @@
       "id": "reisende-nicht-genannt",
       "beschreibung": "Ohne Angabe keine Zahl im Entwurf",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -333,6 +339,7 @@
       "id": "irgendwann-naechstes-jahr",
       "beschreibung": "Sehr vage Zeitangabe",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -379,6 +386,7 @@
       "id": "kinder-mit-alter",
       "beschreibung": "Kinder samt Alter werden übernommen",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -436,6 +444,7 @@
       "id": "nach-kindern-fragen",
       "beschreibung": "Nach der Zahl der Erwachsenen kommt genau eine Frage nach Kindern",
       "nochOffen": true,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -487,6 +496,7 @@
       "id": "frage-statt-antwort",
       "beschreibung": "Eine Frage wird beantwortet, nicht übergangen",
       "nochOffen": true,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -532,6 +542,7 @@
       "id": "beste-daten-im-monat",
       "beschreibung": "Mehrere Zeiträume prüfen und mit Preisen gegenüberstellen",
       "nochOffen": true,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -583,6 +594,7 @@
       "id": "wetterfrage",
       "beschreibung": "Klimafrage vor der Buchung",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -617,6 +629,7 @@
       "id": "buchung-nicht-moeglich",
       "beschreibung": "Der Assistent bucht nicht und sagt das offen",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -662,6 +675,7 @@
       "id": "ziel-geaendert",
       "beschreibung": "Ein späterer Wunsch ersetzt den früheren",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -696,6 +710,7 @@
       "id": "datum-verschoben",
       "beschreibung": "Verschiebung der Reise wird übernommen",
       "nochOffen": true,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -747,6 +762,7 @@
       "id": "rueckflug-vor-hinflug",
       "beschreibung": "Unmögliche Reihenfolge wird nicht stillschweigend gespeichert",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -798,6 +814,7 @@
       "id": "datum-in-der-vergangenheit",
       "beschreibung": "Ein vergangenes Datum wird zurückgewiesen",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -849,6 +866,7 @@
       "id": "unbekanntes-ziel",
       "beschreibung": "Ein Ort ausserhalb des Katalogs",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -878,6 +896,7 @@
       "id": "ausser-thema",
       "beschreibung": "Kein Reisethema — der Entwurf bleibt leer",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
@@ -925,6 +944,7 @@
       "id": "budget-und-praeferenz",
       "beschreibung": "Budget und Wunsch werden festgehalten",
       "nochOffen": false,
+      "nichtGemessen": false,
       "befunde": [
         {
           "slot": "origin",
@@ -989,6 +1009,7 @@
     "werkzeugaufrufeJeFall": 1.15,
     "anteilMisslungenerAufrufe": 0,
     "bestandeneFaelle": 12,
-    "offeneFaelle": 4
+    "offeneFaelle": 4,
+    "nichtGemesseneFaelle": 0
   }
 }

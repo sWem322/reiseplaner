@@ -1,4 +1,3 @@
-import type { AgentEvent } from '@/domain/agent';
 import { DEFAULT_AGENT_LIMITS } from '@/domain/agent';
 import type { ContentBlock } from '@/domain/conversation';
 import type { LlmMessage, LlmPort } from '@/domain/ports/llm';
@@ -30,6 +29,11 @@ export interface FallErgebnis {
   readonly id: string;
   readonly beschreibung: string;
   readonly nochOffen: boolean;
+  /**
+   * Der Lauf endete, weil das Modell nicht erreichbar war — gemessen wurde
+   * hier nichts. Ein solcher Fall darf nicht als „falsch" gezaehlt werden.
+   */
+  readonly nichtGemessen: boolean;
   readonly befunde: readonly SlotBefund[];
   readonly werkzeugaufrufe: number;
   readonly misslungeneAufrufe: number;
@@ -55,6 +59,8 @@ export interface EvalBericht {
     readonly anteilMisslungenerAufrufe: number;
     readonly bestandeneFaelle: number;
     readonly offeneFaelle: number;
+    /** Faelle ohne Messung — der Bericht ist nur ohne sie aussagekraeftig. */
+    readonly nichtGemesseneFaelle: number;
   };
 }
 
@@ -162,6 +168,7 @@ export async function runEval({ llm, providers, faelle }: RunOptions): Promise<E
       anteilMisslungenerAufrufe: aufrufe === 0 ? 0 : misslungen / aufrufe,
       bestandeneFaelle: ergebnisse.filter((e) => e.bestanden).length,
       offeneFaelle: ergebnisse.filter((e) => e.nochOffen).length,
+      nichtGemesseneFaelle: ergebnisse.filter((e) => e.nichtGemessen).length,
     },
   };
 }
@@ -179,13 +186,12 @@ async function runFall(fall: EvalFall, llm: LlmPort, providers: Providers): Prom
   let misslungeneAufrufe = 0;
   let hatGesucht = false;
   let letzteAntwort = '';
+  let nichtGemessen = false;
 
   for (const nachricht of fall.nachrichten) {
     verlauf.push({ role: 'user', blocks: [{ type: 'text', text: nachricht }] });
 
     let text = '';
-
-    const events: AgentEvent[] = [];
 
     for await (const event of runAgent({
       conversationId,
@@ -200,8 +206,6 @@ async function runFall(fall: EvalFall, llm: LlmPort, providers: Providers): Prom
         verlauf.push({ role: message.role, blocks: [...message.blocks] as ContentBlock[] });
       },
     })) {
-      events.push(event);
-
       if (event.type === 'text_delta') {
         text += event.text;
       }
@@ -216,6 +220,11 @@ async function runFall(fall: EvalFall, llm: LlmPort, providers: Providers): Prom
 
       if (event.type === 'tool_finished' && event.outcome !== 'ok') {
         misslungeneAufrufe += 1;
+      }
+
+      // Kam das Modell gar nicht zu Wort, ist dieser Fall keine Messung.
+      if (event.type === 'finished' && event.stopReason === 'llm_error') {
+        nichtGemessen = true;
       }
     }
 
@@ -236,6 +245,7 @@ async function runFall(fall: EvalFall, llm: LlmPort, providers: Providers): Prom
     id: fall.id,
     beschreibung: fall.beschreibung,
     nochOffen: fall.nochOffen === true,
+    nichtGemessen,
     befunde,
     werkzeugaufrufe,
     misslungeneAufrufe,

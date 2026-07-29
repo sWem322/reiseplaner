@@ -8,6 +8,7 @@ import { buildModelChain } from '@/server/agent/llm/model-rotation';
 import { createRuleBasedLlm } from '@/server/agent/llm/rule-based';
 import { createSeedProviders } from '@/server/adapters/factory';
 import { EVAL_FAELLE } from './faelle';
+import { withPatience } from './patient-llm';
 import { runEval, type EvalBericht } from './runner';
 
 /**
@@ -32,10 +33,14 @@ async function main(): Promise<void> {
   }
 
   const llm = mitLlm
-    ? createGeminiLlm({
-        apiKey: env.GEMINI_API_KEY ?? '',
-        models: buildModelChain(env.GEMINI_MODEL),
-      })
+    ? // Geduldig, weil der Eval ein Stapellauf ist: Lieber langsam und
+      // vollstaendig als schnell und unbrauchbar.
+      withPatience(
+        createGeminiLlm({
+          apiKey: env.GEMINI_API_KEY ?? '',
+          models: buildModelChain(env.GEMINI_MODEL),
+        }),
+      )
     : createRuleBasedLlm();
 
   console.log(`Eval gegen ${llm.name} — ${String(EVAL_FAELLE.length)} Fälle`);
@@ -48,6 +53,29 @@ async function main(): Promise<void> {
   });
 
   zeigeBericht(bericht);
+
+  /*
+   * Ein Bericht mit ungemessenen Faellen sieht aus wie eine Messung und ist
+   * keine. Genau das ist einmal passiert: Nach drei Faellen war das
+   * Minutenkontingent erschoepft, die restlichen siebzehn liefen ins Leere,
+   * und unten stand eine Genauigkeit von 49 Prozent — eine Zahl ueber die
+   * Drosselung, nicht ueber das Modell. Solche Zahlen duerfen nicht in eine
+   * Datei geraten, aus der spaeter eine Tabelle im README wird.
+   */
+  if (bericht.kennzahlen.nichtGemesseneFaelle > 0) {
+    console.error('');
+    console.error(
+      `✗ ${String(bericht.kennzahlen.nichtGemesseneFaelle)} von ` +
+        `${String(bericht.faelle.length)} Fällen wurden nicht gemessen — ` +
+        'das Modell war nicht erreichbar.',
+    );
+    console.error('  Der Bericht wird nicht gespeichert; die Zahlen oben sind wertlos.');
+    console.error('  Später erneut versuchen, wenn das Kontingent zurückgesetzt ist.');
+    process.exitCode = 1;
+
+    return;
+  }
+
   await schreibeBericht(bericht, mitLlm ? 'gemini' : 'rule-based');
 }
 
@@ -85,6 +113,10 @@ function zeigeBericht(bericht: EvalBericht): void {
   );
   console.log(`Werkzeugaufrufe/Fall:  ${k.werkzeugaufrufeJeFall.toFixed(1)}`);
   console.log(`Misslungene Aufrufe:   ${(k.anteilMisslungenerAufrufe * 100).toFixed(1)} %`);
+
+  if (k.nichtGemesseneFaelle > 0) {
+    console.log(`Nicht gemessen:        ${String(k.nichtGemesseneFaelle)}`);
+  }
 }
 
 async function schreibeBericht(bericht: EvalBericht, name: string): Promise<void> {
