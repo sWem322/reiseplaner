@@ -195,8 +195,16 @@ async function main(key, wunschModell) {
 
       console.log('Der Gemini-Zugang funktioniert.');
       console.log('');
-      console.log('Diesen Namen in .env eintragen, damit er fest steht:');
-      console.log(`  GEMINI_MODEL="${modell}"`);
+      /*
+       * Frueher stand hier die Empfehlung, den Namen in die .env zu schreiben.
+       * Sie war schaedlich: Ein gesetztes GEMINI_MODEL stellt sich an den
+       * Anfang der Kette und haengt damit die Reihenfolge nach Tageskontingent
+       * aus. Genau so lief die Anwendung wochenlang gegen ein Modell mit
+       * zwanzig Anfragen am Tag, obwohl eines mit fuenfhundert bereitstand.
+       */
+      console.log(`Geantwortet hat: ${modell}`);
+      console.log('GEMINI_MODEL bleibt am besten leer — dann wählt die Kette selbst,');
+      console.log('und zwar nach Tageskontingent, nicht nach Modellname.');
 
       return;
     } catch (error) {

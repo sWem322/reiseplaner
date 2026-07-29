@@ -27,7 +27,11 @@ const envSchema = z.object({
 
   // --- Optionale Anbieter. Fehlen sie, greift der Seed-Adapter. ---
   GEMINI_API_KEY: z.string().min(1).optional(),
-  GEMINI_MODEL: z.string().min(1).default('gemini-flash-latest'),
+  /**
+   * Wunschmodell. Ohne Angabe entscheidet die Modellkette — sie hat keinen
+   * einzelnen Standard mehr, sondern eine Reihenfolge nach Ausdauer.
+   */
+  GEMINI_MODEL: z.string().min(1).optional(),
   DUFFEL_ACCESS_TOKEN: z.string().min(1).optional(),
   TRAVELPAYOUTS_TOKEN: z.string().min(1).optional(),
 
@@ -53,8 +57,27 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/**
+ * Eine leere Zeichenkette heisst „nicht gesetzt".
+ *
+ * `.env.example` gibt jede optionale Variable als `NAME=""` vor — so sieht
+ * man auf einen Blick, was es überhaupt gibt. Wer die Datei kopiert und nur
+ * einen Wert ausfüllt, hinterlässt genau solche leeren Einträge. Ohne diesen
+ * Schritt scheitert die Prüfung an ihnen („expected string to have >=1
+ * characters"), und das Projekt startet ausgerechnet bei dem nicht, der der
+ * Anleitung gefolgt ist.
+ */
+function ohneLeere(quelle: NodeJS.ProcessEnv): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(quelle).filter(
+      (eintrag): eintrag is [string, string] =>
+        typeof eintrag[1] === 'string' && eintrag[1].trim() !== '',
+    ),
+  );
+}
+
 function loadEnv(): Env {
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = envSchema.safeParse(ohneLeere(process.env));
 
   if (!parsed.success) {
     const issues = parsed.error.issues
