@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import type { Providers } from '@/domain/ports/providers';
 import type { TripDraftRepository } from '@/domain/ports/repositories';
-import { iataCodeSchema, isoDateSchema, missingSlots, type TripDraft } from '@/domain/trip/trip';
+import {
+  iataCodeSchema,
+  isoDateSchema,
+  missingSlots,
+  tripDraftSchema,
+  type TripDraft,
+} from '@/domain/trip/trip';
 import { nightsBetween } from '@/domain/offers';
 import { fail, ok, type Result } from '@/domain/result';
 import { createRegistry, type Tool, type ToolRegistry } from './registry';
@@ -290,6 +296,14 @@ const updateDraftInput = z.object({
 });
 
 /** Uebernimmt nur die Felder, die der Aufruf tatsaechlich genannt hat. */
+/** Entfernt beanstandete Felder aus der Eingabe; der Rest bleibt erhalten. */
+function ohneFelder(
+  patch: z.infer<typeof updateDraftInput>,
+  felder: ReadonlySet<string>,
+): z.infer<typeof updateDraftInput> {
+  return Object.fromEntries(Object.entries(patch).filter(([feld]) => !felder.has(feld)));
+}
+
 function mergeDraft(current: TripDraft, patch: z.infer<typeof updateDraftInput>): TripDraft {
   return {
     ...current,
@@ -336,8 +350,29 @@ function updateDraftTool(deps: ToolDependencies): Tool<z.infer<typeof updateDraf
         });
       }
 
-      const merged = mergeDraft(current, input);
-      const saved = await deps.tripDrafts.save(context.conversationId, merged);
+      /*
+       * Eine beanstandete Angabe darf die uebrigen nicht mitreissen.
+       *
+       * Vorher lehnte die Pruefung den ganzen Entwurf ab, sobald ein Feld
+       * nicht passte: Wer „von Bremen nach Malaga am 2020-05-01" sagte,
+       * verlor mit dem vergangenen Datum auch Abflugort und Ziel. Jetzt wird
+       * nur das beanstandete Feld verworfen — und ausdruecklich benannt,
+       * damit das Modell es ansprechen kann, statt es zu verschweigen.
+       */
+      const geprueft = tripDraftSchema.safeParse(mergeDraft(current, input));
+
+      const abgelehnt = geprueft.success
+        ? []
+        : geprueft.error.issues.map((issue) => ({
+            feld: String(issue.path[0] ?? 'unbekannt'),
+            grund: issue.message,
+          }));
+
+      const bereinigt = geprueft.success
+        ? geprueft.data
+        : mergeDraft(current, ohneFelder(input, new Set(abgelehnt.map((eintrag) => eintrag.feld))));
+
+      const saved = await deps.tripDrafts.save(context.conversationId, bereinigt);
 
       if (!saved.ok) {
         return saved;
@@ -349,6 +384,7 @@ function updateDraftTool(deps: ToolDependencies): Tool<z.infer<typeof updateDraf
         draft: saved.value,
         missing,
         readyToSearch: missing.length === 0,
+        ...(abgelehnt.length === 0 ? {} : { abgelehnt }),
       });
     },
   };

@@ -1,6 +1,6 @@
 {
   "llm": "rule-based",
-  "zeitpunkt": "2026-07-29T12:41:27.122Z",
+  "zeitpunkt": "2026-07-29T12:50:10.968Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -79,14 +79,14 @@
         {
           "slot": "destination",
           "erwartet": "BCN",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "BCN",
+          "urteil": "richtig"
         },
         {
           "slot": "departureDate",
           "erwartet": "2026-09-12",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "2026-09-12",
+          "urteil": "richtig"
         },
         {
           "slot": "returnDate",
@@ -97,11 +97,11 @@
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": 2,
+          "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
       "antwort": "Wie lange soll die Reise dauern?",
@@ -112,10 +112,15 @@
           "latitude": 51.2895,
           "longitude": 6.7668
         },
-        "destination": null,
-        "departureDate": null,
+        "destination": {
+          "name": "Barcelona",
+          "iataCode": "BCN",
+          "latitude": 41.2971,
+          "longitude": 2.0785
+        },
+        "departureDate": "2026-09-12",
         "returnDate": null,
-        "adults": null,
+        "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
@@ -447,11 +452,11 @@
         {
           "slot": "adults",
           "erwartet": 2,
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": 2,
+          "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
       "antwort": "Wie lange soll die Reise dauern?",
@@ -470,13 +475,13 @@
         },
         "departureDate": "2026-09-05",
         "returnDate": null,
-        "adults": null,
+        "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "frage-statt-antwort",
@@ -661,21 +666,21 @@
         {
           "slot": "destination",
           "erwartet": "NAP",
-          "tatsaechlich": "IBZ",
-          "urteil": "falsch"
+          "tatsaechlich": "NAP",
+          "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
       "antwort": "Von welchem Flughafen möchtest du starten?",
       "entwurf": {
         "origin": null,
         "destination": {
-          "name": "Ibiza",
-          "iataCode": "IBZ",
-          "latitude": 38.8729,
-          "longitude": 1.3731
+          "name": "Neapel",
+          "iataCode": "NAP",
+          "latitude": 40.886,
+          "longitude": 14.2908
         },
         "departureDate": null,
         "returnDate": null,
@@ -685,7 +690,7 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "datum-verschoben",
@@ -797,14 +802,14 @@
         {
           "slot": "origin",
           "erwartet": "BRE",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "BRE",
+          "urteil": "richtig"
         },
         {
           "slot": "destination",
           "erwartet": "AGP",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "AGP",
+          "urteil": "richtig"
         },
         {
           "slot": "departureDate",
@@ -814,21 +819,31 @@
         }
       ],
       "werkzeugaufrufe": 1,
-      "misslungeneAufrufe": 1,
+      "misslungeneAufrufe": 0,
       "hatGesucht": false,
       "antwort": "Wie lange soll die Reise dauern?",
       "entwurf": {
-        "origin": null,
-        "destination": null,
+        "origin": {
+          "name": "Bremen",
+          "iataCode": "BRE",
+          "latitude": 53.0475,
+          "longitude": 8.7867
+        },
+        "destination": {
+          "name": "Málaga",
+          "iataCode": "AGP",
+          "latitude": 36.6749,
+          "longitude": -4.4991
+        },
         "departureDate": null,
         "returnDate": null,
-        "adults": null,
+        "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "unbekanntes-ziel",
@@ -867,8 +882,8 @@
         {
           "slot": "destination",
           "erwartet": null,
-          "tatsaechlich": "IST",
-          "urteil": "erfunden"
+          "tatsaechlich": null,
+          "urteil": "richtig"
         },
         {
           "slot": "origin",
@@ -889,18 +904,13 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "antwort": "Wohin soll die Reise gehen?",
       "entwurf": {
         "origin": null,
-        "destination": {
-          "name": "Istanbul",
-          "iataCode": "IST",
-          "latitude": 41.2753,
-          "longitude": 28.7519
-        },
+        "destination": null,
         "departureDate": null,
         "returnDate": null,
         "adults": null,
@@ -909,7 +919,7 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "budget-und-praeferenz",
@@ -971,14 +981,14 @@
   ],
   "kennzahlen": {
     "slotsGesamt": 61,
-    "richtig": 48,
-    "falsch": 1,
-    "erfunden": 2,
-    "fehlt": 10,
-    "genauigkeit": 0.7868852459016393,
-    "werkzeugaufrufeJeFall": 0.95,
-    "anteilMisslungenerAufrufe": 0.05263157894736842,
-    "bestandeneFaelle": 8,
+    "richtig": 56,
+    "falsch": 0,
+    "erfunden": 1,
+    "fehlt": 4,
+    "genauigkeit": 0.9180327868852459,
+    "werkzeugaufrufeJeFall": 1.15,
+    "anteilMisslungenerAufrufe": 0,
+    "bestandeneFaelle": 12,
     "offeneFaelle": 4
   }
 }

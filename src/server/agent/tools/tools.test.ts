@@ -250,7 +250,39 @@ describe('update_trip_draft und get_trip_draft', () => {
     expect(value.draft.budgetEuros).toBe(900);
   });
 
-  it('gibt einen ungueltigen Entwurf als Validierungsfehler zurueck', async () => {
+  /**
+   * Eine beanstandete Angabe reisst die uebrigen nicht mit.
+   *
+   * Der Eval fand den Fall: „von Bremen nach Malaga am 2020-05-01" verlor mit
+   * dem vergangenen Datum auch Abflugort und Ziel, weil die Pruefung den
+   * ganzen Entwurf ablehnte. Verworfen wird jetzt nur das beanstandete Feld —
+   * und es wird benannt, damit das Modell es ansprechen kann.
+   */
+  it('behaelt gueltige Angaben, wenn eine einzelne beanstandet wird', async () => {
+    const drafts = createDrafts();
+
+    const result = await call(
+      'update_trip_draft',
+      {
+        origin: { name: 'Bremen', iataCode: 'BRE', latitude: 53.05, longitude: 8.79 },
+        destination: { name: 'Malaga', iataCode: 'AGP', latitude: 36.67, longitude: -4.5 },
+        departureDate: '2020-05-01',
+      },
+      drafts,
+    );
+
+    const value = unwrap(result) as {
+      draft: TripDraft;
+      abgelehnt?: { feld: string; grund: string }[];
+    };
+
+    expect(value.draft.origin?.iataCode).toBe('BRE');
+    expect(value.draft.destination?.iataCode).toBe('AGP');
+    expect(value.draft.departureDate).toBeNull();
+    expect(value.abgelehnt?.[0]?.feld).toBe('departureDate');
+  });
+
+  it('nennt den Grund der Ablehnung im Klartext', async () => {
     const drafts = createDrafts();
 
     const result = await call(
@@ -259,7 +291,11 @@ describe('update_trip_draft und get_trip_draft', () => {
       drafts,
     );
 
-    expect(result.ok).toBe(false);
+    const value = unwrap(result) as { abgelehnt?: { feld: string; grund: string }[] };
+
+    // Kein Fehler mehr, aber auch kein Schweigen: Der Satz steht im Ergebnis.
+    expect(result.ok).toBe(true);
+    expect(value.abgelehnt?.[0]?.grund).toContain('Vergangenheit');
   });
 
   it('meldet einen fehlenden Entwurf statt still zu scheitern', async () => {

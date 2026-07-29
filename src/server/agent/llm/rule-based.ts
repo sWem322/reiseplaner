@@ -252,6 +252,16 @@ function extractPlaces(text: string): { origin: string | null; destination: stri
       continue;
     }
 
+    /*
+     * Ein Wort aus drei Buchstaben gilt nur als IATA-Code, wenn es auch wie
+     * einer geschrieben ist. Sonst wird aus „Wie ist das Rezept fuer
+     * Tiramisu?" eine Reise nach Istanbul — das deutsche „ist" trifft auf den
+     * Code IST. Der Eval hat genau diesen Fall gefunden.
+     */
+    if (word.length === 3 && word !== word.toUpperCase()) {
+      continue;
+    }
+
     const hit = findExact(word);
 
     if (hit !== undefined && hit.iataCode !== origin) {
@@ -356,6 +366,50 @@ function accumulate(request: LlmRequest, today: Date): ExtractedTripParameters {
   return gesammelt;
 }
 
+/** Was frühere `update_trip_draft`-Aufrufe bereits festgehalten haben. */
+function ausVerlauf(request: LlmRequest): ExtractedTripParameters {
+  let stand = leereParameter();
+
+  for (const message of request.messages) {
+    for (const block of message.blocks) {
+      if (block.type === 'tool_use' && block.toolName === 'update_trip_draft') {
+        const teil = fromDraftPatch(block.input);
+
+        stand = {
+          originIata: teil.originIata ?? stand.originIata,
+          destinationIata: teil.destinationIata ?? stand.destinationIata,
+          departureDate: teil.departureDate ?? stand.departureDate,
+          returnDate: teil.returnDate ?? stand.returnDate,
+          adults: teil.adults ?? stand.adults,
+          budgetEuros: teil.budgetEuros ?? stand.budgetEuros,
+          nights: stand.nights,
+        };
+      }
+    }
+  }
+
+  return stand;
+}
+
+/** Nur die Felder, die sich gegenüber dem bisherigen Stand geändert haben. */
+function nurNeues(
+  erkannt: ExtractedTripParameters,
+  bekannt: ExtractedTripParameters,
+): ExtractedTripParameters {
+  const neuOder = <T>(wert: T | null, alt: T | null): T | null =>
+    wert === null || wert === alt ? null : wert;
+
+  return {
+    originIata: neuOder(erkannt.originIata, bekannt.originIata),
+    destinationIata: neuOder(erkannt.destinationIata, bekannt.destinationIata),
+    departureDate: neuOder(erkannt.departureDate, bekannt.departureDate),
+    returnDate: neuOder(erkannt.returnDate, bekannt.returnDate),
+    adults: neuOder(erkannt.adults, bekannt.adults),
+    budgetEuros: neuOder(erkannt.budgetEuros, bekannt.budgetEuros),
+    nights: erkannt.nights,
+  };
+}
+
 function leereParameter(): ExtractedTripParameters {
   return {
     originIata: null,
@@ -434,14 +488,24 @@ export function createRuleBasedLlm(): LlmPort {
 
       const usage = { inputTokens: 0, outputTokens: 0 };
 
-      // Schritt 1: Erkannte Angaben in den Entwurf schreiben.
-      if (!alreadyCalled(request, 'update_trip_draft') && hasAnything(neu)) {
+      /*
+       * Schritt 1: Neu Erkanntes in den Entwurf schreiben.
+       *
+       * Frueher galt: hoechstens ein Schreibvorgang je Gespraech. Damit blieb
+       * alles unberuecksichtigt, was nach der ersten Nachricht kam — „nach
+       * Barcelona", „vom 12. bis 19." und „zu zweit" landeten nirgends. Jetzt
+       * entscheidet, ob die Angabe schon im Verlauf steht.
+       */
+      const bereitsGeschrieben = ausVerlauf(request);
+      const zuSchreiben = nurNeues(neu, bereitsGeschrieben);
+
+      if (hasAnything(zuSchreiben)) {
         const blocks: ContentBlock[] = [
           {
             type: 'tool_use',
             toolCallId: `rb_${String(callCounter)}`,
             toolName: 'update_trip_draft',
-            input: buildDraftPatch(neu),
+            input: buildDraftPatch(zuSchreiben),
           },
         ];
 
