@@ -80,9 +80,43 @@ auch die, die heute noch scheitern:
 - Kinder, nach denen nie gefragt wurde
 - die Bitte, mehrere Zeiträume zu vergleichen
 
-Der letzte Punkt ist heute nicht erfüllt: Der Prompt verbietet dem Agenten,
-Daten selbst zu wählen — und damit auch, zwei Zeiträume zu prüfen und
-gegenüberzustellen. Die Regel entstand gegen das Erfinden und trifft dabei das
-Mitdenken. Der Datensatz beschreibt deshalb das gewünschte Verhalten, nicht
-das heutige; die roten Fälle sind die Arbeitsliste für die Prompt-Überarbeitung
-und der Beleg, dass sie gewirkt hat.
+## Was dabei herauskam
+
+| Lauf                 | Slot-Genauigkeit | erfunden | bestanden | Werkzeuge/Fall |
+| -------------------- | ---------------- | -------- | --------- | -------------- |
+| regelbasiert         | 91,8 %           | 2        | 12/20     | 1,1            |
+| Gemini, Prompt 1.1.0 | 96,7 %           | 1        | 16/20     | 3,6            |
+| Gemini, Prompt 1.3.0 | **100 %**        | **0**    | **20/20** | 4,1            |
+
+Der Weg dorthin ist die eigentliche Geschichte:
+
+**Der erste Lauf fand einen Fehler, den drei Wochen Handbetrieb übersehen
+hatten.** Auf „Wie ist das Rezept für Tiramisu?" trug der regelbasierte
+Extraktor Istanbul in den Entwurf ein — das deutsche „ist" traf den IATA-Code
+IST. Dazu zwei weitere: Er schrieb den Entwurf nur ein einziges Mal je
+Gespräch, und eine beanstandete Angabe verwarf alle übrigen gleich mit.
+
+**Drei der vier roten Fälle im Gemini-Lauf waren falsche Erwartungen**, nicht
+falsches Verhalten. Der Agent fragte nach dem Abflugort, wo der Datensatz nach
+dem Datum verlangte — und hielt sich dabei genau an `MISSING_SLOT_ORDER`. Ein
+Eval prüft nicht nur den Code; er prüft auch, ob man verstanden hat, was man
+wollte.
+
+**Der vierte war echt:** „Ich möchte nach Ulan-Bator fliegen" wurde zu `ULN`
+samt ausgedachter Koordinaten, ohne dass ein Werkzeug den Ort je bestätigt
+hatte.
+
+**Und der letzte Fall entlarvte eine Regel, die ich selbst geschrieben
+hatte.** In Prompt 1.1.0 stand „Du kannst keine flexiblen Zeiträume
+vergleichen". Das war schlicht falsch — der Loop darf mehrere Werkzeuge
+aufrufen, drei Flugsuchen sind kein Problem. Das Modell hielt sich brav an das
+Verbot und antwortete „das kann ich nicht" auf genau die Frage, wegen der
+dieses Projekt existiert. Eine Regel, die dem Agenten etwas verbietet, was er
+beherrscht, kostet mehr als eine fehlende Regel.
+
+## Was die Zahlen nicht sagen
+
+Zwanzig Fälle sind keine Statistik. Sie sind ein Netz, das die bekannten
+Fehler festhält — mehr nicht und nicht weniger. Ein Wert von 100 % heisst
+nicht „fehlerfrei", sondern „keiner der zwanzig Fehler, die wir kennen, ist
+zurückgekommen".

@@ -1,6 +1,6 @@
 {
   "llm": "rule-based",
-  "zeitpunkt": "2026-07-29T13:40:51.655Z",
+  "zeitpunkt": "2026-07-29T14:11:56.323Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -408,10 +408,7 @@
         },
         {
           "slot": "childAges",
-          "erwartet": [
-            6,
-            9
-          ],
+          "erwartet": [6, 9],
           "tatsaechlich": null,
           "urteil": "fehlt"
         }
@@ -446,7 +443,7 @@
     {
       "id": "nach-kindern-fragen",
       "beschreibung": "Nach der Zahl der Erwachsenen kommt genau eine Frage nach Kindern",
-      "nochOffen": true,
+      "nochOffen": false,
       "nichtGemessen": false,
       "befunde": [
         {
@@ -498,7 +495,7 @@
     {
       "id": "frage-statt-antwort",
       "beschreibung": "Eine Frage wird beantwortet, nicht übergangen",
-      "nochOffen": true,
+      "nochOffen": false,
       "nichtGemessen": false,
       "befunde": [
         {
@@ -544,7 +541,7 @@
     {
       "id": "beste-daten-im-monat",
       "beschreibung": "Mehrere Zeiträume prüfen und mit Preisen gegenüberstellen",
-      "nochOffen": true,
+      "nochOffen": false,
       "nichtGemessen": false,
       "befunde": [
         {
@@ -712,7 +709,7 @@
     {
       "id": "datum-verschoben",
       "beschreibung": "Verschiebung der Reise wird übernommen",
-      "nochOffen": true,
+      "nochOffen": false,
       "nichtGemessen": false,
       "befunde": [
         {
@@ -1012,7 +1009,7 @@
     "werkzeugaufrufeJeFall": 1.15,
     "anteilMisslungenerAufrufe": 0,
     "bestandeneFaelle": 12,
-    "offeneFaelle": 4,
+    "offeneFaelle": 0,
     "nichtGemesseneFaelle": 0
   }
 }

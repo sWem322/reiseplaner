@@ -408,14 +408,8 @@
         },
         {
           "slot": "childAges",
-          "erwartet": [
-            6,
-            9
-          ],
-          "tatsaechlich": [
-            6,
-            9
-          ],
+          "erwartet": [6, 9],
+          "tatsaechlich": [6, 9],
           "urteil": "richtig"
         }
       ],
@@ -439,10 +433,7 @@
         "departureDate": "2026-08-15",
         "returnDate": "2026-08-29",
         "adults": 2,
-        "childAges": [
-          6,
-          9
-        ],
+        "childAges": [6, 9],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
@@ -997,9 +988,7 @@
         "adults": 2,
         "childAges": [],
         "budgetEuros": 1200,
-        "preferences": [
-          "strandnah"
-        ],
+        "preferences": ["strandnah"],
         "status": "collecting"
       },
       "bestanden": true

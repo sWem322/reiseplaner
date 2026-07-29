@@ -38,8 +38,15 @@ export interface EvalFall {
   /** Muss der Agent nach Flügen gesucht haben? */
   readonly erwarteteSuche?: boolean;
   /**
-   * Fälle, die das gewünschte Verhalten beschreiben, das der heutige Prompt
-   * noch nicht leistet. Sie zählen mit, werden aber gesondert ausgewiesen.
+   * Fälle, die das gewünschte Verhalten beschreiben, bevor es der Prompt
+   * leistet. Sie zählen mit und werden gesondert ausgewiesen.
+   *
+   * Vier Fälle trugen diese Marke: die Frage nach Kindern, eine Rückfrage
+   * statt einer Antwort, das Vergleichen mehrerer Zeiträume und das
+   * Verschieben einer Reise. Alle vier sind seit Prompt 1.3.0 erfüllt, die
+   * Marke ist deshalb nirgends mehr gesetzt. Sie bleibt im Typ, weil der
+   * nächste Wunsch denselben Weg gehen soll: erst als roter Fall
+   * aufschreiben, dann erfüllen.
    */
   readonly nochOffen?: boolean;
 }
@@ -164,7 +171,6 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
     beschreibung: 'Nach der Zahl der Erwachsenen kommt genau eine Frage nach Kindern',
     nachrichten: ['Von Berlin nach Rhodos vom 2026-09-05 bis 2026-09-12', '2 Erwachsene'],
     erwartet: { origin: 'BER', destination: 'RHO', adults: 2 },
-    nochOffen: true,
   },
 
   // --- Fragen der reisenden Person -------------------------------------
@@ -176,7 +182,6 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
       'Kannst du die Daten flexibel machen?',
     ],
     erwartet: { destination: 'PMI', adults: 2 },
-    nochOffen: true,
   },
   {
     id: 'beste-daten-im-monat',
@@ -187,7 +192,6 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
     ],
     erwartet: { destination: 'PMI', origin: 'DUS', adults: 2 },
     erwarteteSuche: true,
-    nochOffen: true,
   },
   {
     id: 'wetterfrage',
@@ -225,7 +229,6 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
       'Wir müssen eine Woche später fliegen.',
     ],
     erwartet: { origin: 'STR', destination: 'ATH', adults: 2 },
-    nochOffen: true,
   },
 
   // --- Grenzfälle ------------------------------------------------------
