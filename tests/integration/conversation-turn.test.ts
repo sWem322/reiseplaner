@@ -104,9 +104,66 @@ describe('Gesprächszug', () => {
     );
 
     const nachrichten = await repositories.messages.listByConversation(conversationId);
-    const antwort = nachrichten.at(-1);
 
-    expect(antwort?.blocks.map((block) => block.type)).toEqual(['text', 'tool_use']);
+    /*
+     * Gespeichert wird der Verlauf so, wie der Lauf ihn erzeugt hat: Frage,
+     * Werkzeugaufruf, Ergebnis, Antwort. Frueher entstand daraus eine einzige
+     * Nachricht ohne die Ergebnisse — ein Gespraech mit Aufrufen, auf die nie
+     * jemand geantwortet hat. Beim naechsten Zug bekam das Modell damit einen
+     * Verlauf zurueck, den es so nie erzeugt haben konnte.
+     */
+    expect(
+      nachrichten.map((nachricht) => [
+        nachricht.role,
+        nachricht.blocks.map((block) => block.type).join('+'),
+      ]),
+    ).toEqual([
+      ['user', 'text'],
+      ['assistant', 'tool_use'],
+      ['user', 'tool_result'],
+      ['assistant', 'text'],
+    ]);
+  });
+
+  it('lässt keinen Werkzeugaufruf ohne Ergebnis im Verlauf stehen', async () => {
+    const conversationId = await createConversation();
+    const llm = createScriptedLlm({
+      turns: [
+        {
+          blocks: [
+            {
+              type: 'tool_use',
+              toolCallId: 'c1',
+              toolName: 'resolve_destination',
+              input: { query: 'Mallorca' },
+            },
+          ],
+        },
+        { blocks: [{ type: 'text', text: 'Gefunden.' }] },
+      ],
+    });
+
+    await collect(
+      runConversationTurn({
+        conversationId,
+        userMessage: 'Nach Mallorca bitte',
+        llm,
+        providers: createSeedProviders(),
+        repositories,
+      }),
+    );
+
+    const bloecke = (await repositories.messages.listByConversation(conversationId)).flatMap(
+      (nachricht) => nachricht.blocks,
+    );
+
+    const aufrufe = bloecke.filter((block) => block.type === 'tool_use').map((b) => b.toolCallId);
+    const ergebnisse = bloecke
+      .filter((block) => block.type === 'tool_result')
+      .map((b) => b.toolCallId);
+
+    expect(aufrufe).not.toHaveLength(0);
+    expect(ergebnisse).toEqual(aufrufe);
   });
 
   it('protokolliert jeden Werkzeugaufruf in der Datenbank', async () => {

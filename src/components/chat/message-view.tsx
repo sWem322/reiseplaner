@@ -55,7 +55,12 @@ export function MessageView({ message, allBlocks }: MessageViewProps) {
     return null;
   }
 
-  const eigen = message.role === 'user';
+  /*
+   * Werkzeugergebnisse tragen die Rolle „user", weil das Modell sie als
+   * Eingabe bekommt — geschrieben hat sie aber niemand. Sie gehoeren deshalb
+   * auf die Seite des Assistenten, nicht in eine eigene Sprechblase rechts.
+   */
+  const eigen = message.role === 'user' && text !== '';
 
   return (
     <li

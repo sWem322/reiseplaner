@@ -35,15 +35,20 @@ export interface AgentRunInput {
   readonly toolCallLogs?: ToolCallLogRepository;
   readonly tripDrafts?: TripDraftRepository;
   /**
-   * Wird zu jedem Modellzug mit dessen unveraenderten Bloecken gerufen.
+   * Wird zu jedem Zug gerufen — Modellantwort wie Werkzeugergebnis — mit genau
+   * der Nachricht, die auch in den Verlauf des Laufs wandert.
    *
-   * Die Ereignisse allein reichen nicht: Sie beschreiben, was geschieht, und
-   * lassen begleitende Angaben eines Anbieters weg — etwa die Signatur, die
-   * Gemini beim naechsten Aufruf zurueckverlangt. Wer den Zug speichern will,
-   * braucht die Bloecke selbst. Ueber den Ereignisstrom gehen sie bewusst
-   * nicht: Im Browser waeren sie nutzloser Ballast.
+   * Aus den Ereignissen laesst sich der Verlauf nicht zurueckbauen. Sie
+   * beschreiben, was geschieht, und lassen zweierlei weg: begleitende Angaben
+   * eines Anbieters (etwa die Signatur, die Gemini zurueckverlangt) und die
+   * Werkzeugergebnisse selbst. Wer nur die Ereignisse speichert, legt ein
+   * Gespraech ab, in dem Aufrufe ohne Antwort stehen — und genau das weist das
+   * Modell beim naechsten Mal zurueck.
+   *
+   * Ueber den Ereignisstrom gehen diese Nachrichten bewusst nicht: Im Browser
+   * waeren Signaturen und Rohergebnisse nutzloser Ballast.
    */
-  readonly onAssistantTurn?: (blocks: readonly ContentBlock[]) => void;
+  readonly onTurn?: (message: LlmMessage) => void;
 }
 
 function isToolUse(block: ContentBlock): block is ToolUseBlock {
@@ -177,7 +182,7 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
     }
 
     guardrails.recordUsage(response.value.usage);
-    input.onAssistantTurn?.(response.value.blocks);
+    input.onTurn?.({ role: 'assistant', blocks: response.value.blocks });
 
     for (const block of response.value.blocks) {
       if (block.type === 'text' && block.text.length > 0) {
@@ -250,6 +255,7 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
     }
 
     history.push({ role: 'user', blocks: resultBlocks });
+    input.onTurn?.({ role: 'user', blocks: resultBlocks });
 
     // Hat ein Werkzeug den Entwurf veraendert, sieht die Oberflaeche das sofort.
     const draftTouched = executed.some(
@@ -271,6 +277,9 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
 
   if (closingText.length > 0) {
     yield { type: 'text_delta', text: closingText };
+    // Auch dieser Satz gehoert in den Verlauf — sonst steht nach einem Neuladen
+    // ein Gespraech da, das ohne Erklaerung endet.
+    input.onTurn?.({ role: 'assistant', blocks: [{ type: 'text', text: closingText }] });
   }
 
   const state = guardrails.state;

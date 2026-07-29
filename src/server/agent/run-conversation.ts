@@ -1,7 +1,6 @@
 import type { AgentEvent, AgentLimits } from '@/domain/agent';
 import { DEFAULT_AGENT_LIMITS } from '@/domain/agent';
-import type { ContentBlock } from '@/domain/conversation';
-import type { LlmPort } from '@/domain/ports/llm';
+import type { LlmMessage, LlmPort } from '@/domain/ports/llm';
 import type { Providers } from '@/domain/ports/providers';
 import type { Repositories } from '@/domain/ports/repositories';
 import { buildHistory, compactIfNeeded } from './history';
@@ -87,18 +86,16 @@ export async function* runConversationTurn(
     tripDrafts: repositories.tripDrafts,
   });
 
-  const antwortBlöcke: ContentBlock[] = [];
-  let text = '';
-
   /*
-   * Signaturen der Werkzeugaufrufe, eingesammelt aus den Modellzuegen.
+   * Der Verlauf wird gespeichert, wie der Lauf ihn erzeugt — Zug fuer Zug,
+   * einschliesslich der Werkzeugergebnisse.
    *
-   * Sie muessen mitgespeichert werden: Beim naechsten Aufruf liest der Adapter
-   * den Verlauf aus der Datenbank, und ein Werkzeugaufruf ohne Signatur laesst
-   * Gemini die gesamte Anfrage ablehnen. Ohne diesen Umweg funktionierte die
-   * erste Nachricht eines Gespraechs und jede weitere nicht mehr.
+   * Vorher entstand die gespeicherte Antwort aus den Ereignissen. Das ergab
+   * ein Gespraech, in dem Werkzeugaufrufe ohne Ergebnis dastanden und die
+   * Signaturen des Modells fehlten. Beim naechsten Aufruf bekam Gemini damit
+   * einen Verlauf, den es so nie erzeugt hatte — und lehnte ihn ab.
    */
-  const signaturen = new Map<string, string>();
+  const zuege: LlmMessage[] = [];
 
   for await (const event of runAgent({
     conversationId,
@@ -111,30 +108,10 @@ export async function* runConversationTurn(
     limits: input.limits ?? DEFAULT_AGENT_LIMITS,
     toolCallLogs: repositories.toolCallLogs,
     tripDrafts: repositories.tripDrafts,
-    onAssistantTurn: (blocks) => {
-      for (const block of blocks) {
-        if (block.type === 'tool_use' && block.providerSignature !== undefined) {
-          signaturen.set(block.toolCallId, block.providerSignature);
-        }
-      }
+    onTurn: (message) => {
+      zuege.push(message);
     },
   })) {
-    if (event.type === 'text_delta') {
-      text += event.text;
-    }
-
-    if (event.type === 'tool_started') {
-      const signatur = signaturen.get(event.toolCallId);
-
-      antwortBlöcke.push({
-        type: 'tool_use',
-        toolCallId: event.toolCallId,
-        toolName: event.toolName,
-        input: event.input,
-        ...(signatur === undefined ? {} : { providerSignature: signatur }),
-      });
-    }
-
     if (event.type === 'finished') {
       await repositories.conversations.addTokenUsage(conversationId, {
         inputTokens: event.inputTokens,
@@ -145,16 +122,18 @@ export async function* runConversationTurn(
     yield event;
   }
 
-  if (text.length > 0) {
-    antwortBlöcke.unshift({ type: 'text', text });
-  }
-
-  if (antwortBlöcke.length > 0) {
-    await repositories.messages.append({
-      conversationId,
-      role: 'assistant',
-      blocks: antwortBlöcke,
-    });
+  /*
+   * Nacheinander, nicht parallel: Die Reihenfolge der Nachrichten ist der
+   * Verlauf. Ein `Promise.all` wuerde sie dem Zufall der Datenbank ueberlassen.
+   */
+  for (const zug of zuege) {
+    if (zug.blocks.length > 0) {
+      await repositories.messages.append({
+        conversationId,
+        role: zug.role,
+        blocks: [...zug.blocks],
+      });
+    }
   }
 
   // Titel aus dem Ziel ableiten, sobald es feststeht — die Liste vergangener
