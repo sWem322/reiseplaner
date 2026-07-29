@@ -22,7 +22,9 @@ export function GuestStart() {
       const response = await fetch('/api/auth/guest', { method: 'POST' });
 
       if (!response.ok) {
-        setFehler('Der Gastzugang konnte nicht angelegt werden.');
+        // Die Meldung des Servers wird durchgereicht statt ersetzt: Sie nennt
+        // die Ursache, ein eigener Satz wuerde sie verdecken.
+        setFehler(await serverMessage(response));
         setLaeuft(false);
 
         return;
@@ -36,6 +38,25 @@ export function GuestStart() {
       setFehler('Der Server ist gerade nicht erreichbar.');
       setLaeuft(false);
     }
+  }
+
+  async function serverMessage(response: Response): Promise<string> {
+    try {
+      const koerper: unknown = await response.json();
+
+      if (
+        typeof koerper === 'object' &&
+        koerper !== null &&
+        'error' in koerper &&
+        typeof koerper.error === 'string'
+      ) {
+        return koerper.error;
+      }
+    } catch {
+      // Keine JSON-Antwort — dann muss der Statuscode reichen.
+    }
+
+    return `Der Gastzugang konnte nicht angelegt werden (Status ${String(response.status)}).`;
   }
 
   return (

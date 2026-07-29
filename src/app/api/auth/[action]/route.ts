@@ -41,6 +41,32 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ action: string }> },
 ): Promise<Response> {
+  /*
+   * Unerwartete Fehler werden hier abgefangen, damit die Antwort JSON bleibt.
+   * Ohne das liefert Next eine HTML-Fehlerseite, die Oberflaeche findet darin
+   * kein `error`-Feld und zeigt einen nichtssagenden Satz — waehrend die
+   * eigentliche Ursache (etwa eine fehlende Migration) nur im Serverprotokoll
+   * steht. Genau dieser Fall ist einmal passiert.
+   */
+  try {
+    return await handle(request, context);
+  } catch (error) {
+    console.error('Fehler im Anmelde-Handler:', error);
+
+    return Response.json(
+      {
+        error:
+          'Der Server konnte die Anfrage nicht bearbeiten. Ist die Datenbank eingerichtet (npm run db:migrate)?',
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handle(
+  request: Request,
+  context: { params: Promise<{ action: string }> },
+): Promise<Response> {
   const { action: rawAction } = await context.params;
   const action = actionSchema.safeParse(rawAction);
 

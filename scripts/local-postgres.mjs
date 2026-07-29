@@ -60,6 +60,17 @@ if (!initialised) {
 const url = `postgresql://${USER}:${PASSWORD}@localhost:${PORT}/${DATABASE}`;
 console.log(`PostgreSQL laeuft auf Port ${PORT}`);
 console.log(`DATABASE_URL="${url}"`);
+console.log('');
+/*
+ * Der Hinweis steht hier, weil dieser Schritt genau einmal vergessen wurde und
+ * der Fehler danach wie ein Programmfehler aussah: Die Oberflaeche meldete nur
+ * „Der Gastzugang konnte nicht angelegt werden", waehrend im Serverprotokoll
+ * ein 42P01 stand — eine Tabelle, die es noch gar nicht gab.
+ */
+console.log('Naechster Schritt in einem zweiten Terminal:');
+console.log('  npm run db:migrate   (einmalig und nach jeder neuen Migration)');
+console.log('  npm run dev');
+console.log('');
 console.log('Beenden mit Strg+C.');
 
 const shutdown = async () => {
