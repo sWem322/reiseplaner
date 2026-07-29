@@ -25,10 +25,7 @@ describe('Auswahl der Anbieter', () => {
   });
 
   it('wählt Gemini, sobald ein Schlüssel vorliegt', () => {
-    const selection = createProviders({
-      geminiApiKey: 'AQ.beispiel',
-      useNetworkProviders: false,
-    });
+    const selection = createProviders({ geminiApiKey: 'AQ.beispiel' });
 
     expect(selection.active.llm).toBe('gemini');
     expect(selection.llm.name).toContain('gemini');
@@ -43,11 +40,33 @@ describe('Auswahl der Anbieter', () => {
   it('waehlt Duffel, sobald ein Zugangstoken vorliegt', () => {
     const selection = createProviders({
       duffelAccessToken: 'duffel_test_abc',
-      useNetworkProviders: false,
       fetchImpl: offlineFetch,
     });
 
     expect(selection.active.flights).toBe('duffel');
+  });
+
+  it('schaltet ohne Netz auch die Dienste mit Schlüssel ab', () => {
+    /*
+     * `useNetworkProviders: false` heisst: kein einziger fremder Dienst.
+     * Vorher galt der Schalter nur fuer die schluessellosen Anbieter — der
+     * E2E-Lauf sprach deshalb mit dem echten Sprachmodell, verbrauchte dessen
+     * Tageskontingent und scheiterte an dessen Erschoepfung.
+     */
+    const selection = createProviders({
+      geminiApiKey: 'AQ.beispiel',
+      duffelAccessToken: 'duffel_test_abc',
+      useNetworkProviders: false,
+      fetchImpl: offlineFetch,
+    });
+
+    expect(selection.active).toEqual({
+      flights: 'seed',
+      hotels: 'seed',
+      geocoding: 'seed',
+      weather: 'seed',
+      llm: 'rule-based',
+    });
   });
 
   it('behandelt ein leeres Token wie ein fehlendes', () => {

@@ -1,0 +1,113 @@
+PS D:\portfolio\reiseplaner> npm run test:e2e
+
+> ai-reiseplaner@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:21400) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+[WebServer] (Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 6 tests using 6 workers
+
+  ✘  1 …ium] › tests\e2e\reiseplanung.spec.ts:33:3 › Reise planen › vom Gastzugang bis zu den Angeboten (5.7s)
+  ✘  2 …reiseplanung.spec.ts:70:3 › Reise planen › die Reise steht in der Liste und lässt sich löschen (30.7s)
+  ✓  3 …tests\e2e\smoke.spec.ts:10:3 › Einstieg › die Startseite lädt ohne gesetzte Umgebungsvariablen (316ms)
+  ✘  4 …mium] › tests\e2e\reiseplanung.spec.ts:53:3 › Reise planen › der Verlauf überlebt das Neuladen (30.7s)
+  ✓  5 …\e2e\reiseplanung.spec.ts:86:3 › Reise planen › ohne Sitzung führt der Weg zurück zum Einstieg (313ms)
+  ✓  6 [chromium] › tests\e2e\smoke.spec.ts:16:3 › Einstieg › die Seite ist auf Deutsch ausgezeichnet (321ms)
+[WebServer] Modell gemini-flash-latest pausiert für 1 min — weiter mit dem nächsten.
+[WebServer] Modell gemini-flash-latest pausiert für 1 min — weiter mit dem nächsten.
+[WebServer] Modell gemini-flash-latest pausiert für 1 min — weiter mit dem nächsten.
+
+
+  1) [chromium] › tests\e2e\reiseplanung.spec.ts:33:3 › Reise planen › vom Gastzugang bis zu den Angeboten
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('tool-activity').first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByTestId('tool-activity').first()
+
+
+      40 |
+      41 |     // Der Agent arbeitet: Werkzeuge laufen sichtbar mit.
+    > 42 |     await expect(page.getByTestId('tool-activity').first()).toBeVisible();
+         |                                                             ^
+      43 |
+      44 |     // Ergebnis: Flugkarten, nicht nur Text.
+      45 |     await expect(page.getByTestId('flight-card').first()).toBeVisible({ timeout: 30_000 });
+        at D:\portfolio\reiseplaner\tests\e2e\reiseplanung.spec.ts:42:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\reiseplanung-Reise-planen--8004b-zugang-bis-zu-den-Angeboten-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\reiseplanung-Reise-planen--8004b-zugang-bis-zu-den-Angeboten-chromium\error-context.md
+
+  2) [chromium] › tests\e2e\reiseplanung.spec.ts:53:3 › Reise planen › der Verlauf überlebt das Neuladen
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('flight-card').first()
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 30000ms
+      - waiting for getByTestId('flight-card').first()
+
+
+      55 |     await sende(page, ANFRAGE);
+      56 |
+    > 57 |     await expect(page.getByTestId('flight-card').first()).toBeVisible({ timeout: 30_000 });
+         |                                                           ^
+      58 |
+      59 |     await page.reload();
+      60 |
+        at D:\portfolio\reiseplaner\tests\e2e\reiseplanung.spec.ts:57:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\reiseplanung-Reise-planen-der-Verlauf-überlebt-das-Neuladen-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\reiseplanung-Reise-planen-der-Verlauf-überlebt-das-Neuladen-chromium\error-context.md
+
+  3) [chromium] › tests\e2e\reiseplanung.spec.ts:70:3 › Reise planen › die Reise steht in der Liste und lässt sich löschen
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('flight-card').first()
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 30000ms
+      - waiting for getByTestId('flight-card').first()
+
+
+      72 |     await sende(page, ANFRAGE);
+      73 |
+    > 74 |     await expect(page.getByTestId('flight-card').first()).toBeVisible({ timeout: 30_000 });
+         |                                                           ^
+      75 |
+      76 |     await page.getByRole('link', { name: 'Alle Reisen' }).click();
+      77 |     await expect(page.getByTestId('trip-link')).toHaveCount(1);
+        at D:\portfolio\reiseplaner\tests\e2e\reiseplanung.spec.ts:74:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\reiseplanung-Reise-planen--a5242-iste-und-lässt-sich-löschen-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\reiseplanung-Reise-planen--a5242-iste-und-lässt-sich-löschen-chromium\error-context.md
+
+  3 failed
+    [chromium] › tests\e2e\reiseplanung.spec.ts:33:3 › Reise planen › vom Gastzugang bis zu den Angeboten
+    [chromium] › tests\e2e\reiseplanung.spec.ts:53:3 › Reise planen › der Verlauf überlebt das Neuladen
+    [chromium] › tests\e2e\reiseplanung.spec.ts:70:3 › Reise planen › die Reise steht in der Liste und lässt sich löschen
+  3 passed (41.9s)

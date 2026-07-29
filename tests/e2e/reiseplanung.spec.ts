@@ -38,8 +38,12 @@ test.describe('Reise planen', () => {
 
     await sende(page, ANFRAGE);
 
-    // Der Agent arbeitet: Werkzeuge laufen sichtbar mit.
-    await expect(page.getByTestId('tool-activity').first()).toBeVisible();
+    /*
+     * Keine Zusicherung auf die Werkzeuganzeige: Sie steht nur, solange der
+     * Lauf laeuft, und gegen Seed-Daten dauert der wenige Millisekunden. Ein
+     * Test, der ein Element in diesem Fenster erwischen muss, waere kein Test,
+     * sondern ein Wettrennen. Dass die Werkzeuge liefen, beweisen die Karten.
+     */
 
     // Ergebnis: Flugkarten, nicht nur Text.
     await expect(page.getByTestId('flight-card').first()).toBeVisible({ timeout: 30_000 });

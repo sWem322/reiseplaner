@@ -29,8 +29,10 @@ export interface ProviderConfig {
   /** Wunschmodell; es steht am Anfang der Kette, ersetzt sie aber nicht. */
   readonly geminiModel?: string | undefined;
   /**
-   * Netzwerkfreie Anbieter (Open-Meteo, Overpass) brauchen keinen Schluessel,
-   * sollen in Tests und E2E-Laeufen aber trotzdem abschaltbar sein.
+   * Schalter fuer alles, was ueber das Netz geht — auch fuer Gemini und
+   * Duffel, nicht nur fuer die schluessellosen Dienste. Auf `false` laeuft
+   * das Programm vollstaendig gegen Seed-Daten und den regelbasierten
+   * Extraktor: deterministisch, ohne Kontingent, ohne fremde Ausfaelle.
    */
   readonly useNetworkProviders?: boolean;
   readonly fetchImpl?: typeof fetch;
@@ -56,7 +58,15 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
   const fetchImpl = config.fetchImpl ?? fetch;
   const useNetwork = config.useNetworkProviders ?? true;
 
-  const hasDuffel = config.duffelAccessToken !== undefined && config.duffelAccessToken.length > 0;
+  /*
+   * `useNetworkProviders: false` schaltet **jeden** fremden Dienst ab, nicht
+   * nur die schluessellosen. Sonst waere der E2E-Lauf nicht das, was er sein
+   * soll: Er lief mit dem echten Sprachmodell, verbrauchte dessen Kontingent
+   * und scheiterte, sobald es aufgebraucht war — an einer Ursache, die mit dem
+   * geprueften Code nichts zu tun hatte.
+   */
+  const hasDuffel =
+    useNetwork && config.duffelAccessToken !== undefined && config.duffelAccessToken.length > 0;
 
   const flights = hasDuffel
     ? createDuffelFlightSearch(config.duffelAccessToken ?? '', fetchImpl)
@@ -72,7 +82,8 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
    * liefert im Eval die Vergleichslinie, an der sich zeigt, was das Modell
    * tatsaechlich beitraegt.
    */
-  const hasGemini = config.geminiApiKey !== undefined && config.geminiApiKey.length > 0;
+  const hasGemini =
+    useNetwork && config.geminiApiKey !== undefined && config.geminiApiKey.length > 0;
 
   /*
    * Die Sperren der Modelle gehoeren nicht zum Adapter, sondern zum Prozess:
