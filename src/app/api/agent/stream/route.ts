@@ -67,6 +67,7 @@ export async function POST(request: Request): Promise<Response> {
     geminiApiKey: env.GEMINI_API_KEY,
     geminiModel: env.GEMINI_MODEL,
     duffelAccessToken: env.DUFFEL_ACCESS_TOKEN,
+    useNetworkProviders: env.USE_NETWORK_PROVIDERS,
   });
 
   const quota = user.isGuest

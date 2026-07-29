@@ -1,7 +1,7 @@
 import type { ContentBlock } from '@/domain/conversation';
 import type { LlmPort, LlmRequest, LlmResponse } from '@/domain/ports/llm';
 import { ok, type Result } from '@/domain/result';
-import { findExact, searchCatalog } from '@/server/adapters/seed/catalog';
+import { findByIata, findExact, searchCatalog } from '@/server/adapters/seed/catalog';
 
 /**
  * Regelbasierter Ersatz fuer ein Sprachmodell.
@@ -491,8 +491,38 @@ function hasAnything(params: ExtractedTripParameters): boolean {
   );
 }
 
+/**
+ * Ort als vollstaendige Angabe, wie das Werkzeug sie erwartet.
+ *
+ * Der Extraktor haelt nur den IATA-Code fest; `update_trip_draft` will Name,
+ * Code und Koordinaten. Fehlte diese Umrechnung, blieben Ziel und Abflugort im
+ * Entwurf leer, obwohl beide erkannt wurden — die Leiste zeigte 0 von 5, waehrend
+ * die Flugsuche laengst lief.
+ */
+function placeFor(iataCode: string | null): Record<string, unknown> | null {
+  if (iataCode === null) {
+    return null;
+  }
+
+  const eintrag = findByIata(iataCode);
+
+  return eintrag === undefined
+    ? null
+    : {
+        name: eintrag.name,
+        iataCode: eintrag.iataCode,
+        latitude: eintrag.latitude,
+        longitude: eintrag.longitude,
+      };
+}
+
 function buildDraftPatch(params: ExtractedTripParameters): Record<string, unknown> {
+  const origin = placeFor(params.originIata);
+  const destination = placeFor(params.destinationIata);
+
   return {
+    ...(origin === null ? {} : { origin }),
+    ...(destination === null ? {} : { destination }),
     ...(params.departureDate === null ? {} : { departureDate: params.departureDate }),
     ...(params.returnDate === null ? {} : { returnDate: params.returnDate }),
     ...(params.adults === null ? {} : { adults: params.adults }),

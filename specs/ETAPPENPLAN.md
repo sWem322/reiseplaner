@@ -126,15 +126,28 @@ Demo stand — obwohl `gemini-flash-lite-latest` weiterhin antwortete.
 - [x] Der Zustand gehört dem Prozess, nicht dem Adapter: Die Fabrik baut den
       Adapter je Anfrage neu
 
-## Etappe 5 — Oberfläche
+## Etappe 5 — Oberfläche ✔
 
-- [ ] Chat mit Streaming
-- [ ] Seitenleiste mit dem Reise-Entwurf, gefüllte Felder hervorgehoben
-- [ ] Karten für Flüge und Unterkünfte
-- [ ] Anzeige des gerade laufenden Werkzeugs
-- [ ] Liste vergangener Reisen
-- [ ] Schaufensterseiten `/debug/*` entfernen
-- [ ] E2E über den vollständigen Ablauf
+**Zwei Nachträge, während der Abnahme abgestimmt:** ein Löschknopf je Reise in
+der Liste, und in der Modellkette die Rückkehr zur stärksten Variante nach
+Ablauf einer Sperre. Beides steht als Punkt unten.
+
+**Was die Abnahme zutage förderte** — jeder Fund wurde behoben, bevor diese
+Etappe als abgeschlossen gilt: verlorene Signaturen des Modells, nicht
+gespeicherte Werkzeugergebnisse, ein erfundener Reisezeitraum, eine übergangene
+Rückfrage, „Italien" als Ziel statt einer Stadt, ein regelbasierter Ersatz ohne
+Gedächtnis und Angebotskarten, die erst nach dem Neuladen erschienen.
+
+- [x] Chat mit Streaming
+- [x] Seitenleiste mit dem Reise-Entwurf, gefüllte Felder hervorgehoben
+- [x] Karten für Flüge und Unterkünfte
+- [x] Anzeige des gerade laufenden Werkzeugs
+- [x] Liste vergangener Reisen, mit Löschknopf je Eintrag
+- [x] Schaufensterseiten `/debug/*` entfernt
+- [x] E2E über den vollständigen Ablauf — vier Playwright-Fälle
+- [x] `npm run flow:check`: derselbe Ablauf ohne Browser, für Umgebungen ohne
+      Chromium; er fand den Fehler, dass der regelbasierte Ersatz Orte nie in
+      den Entwurf schrieb
 
 ## Etappe 6 — Eval, Dokumentation, Deployment
 

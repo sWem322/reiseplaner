@@ -261,3 +261,52 @@ describe('Gesammelter Stand über das ganze Gespräch', () => {
     expect(text).not.toContain('Wohin soll die Reise gehen');
   });
 });
+
+describe('Entwurf aus erkannten Orten', () => {
+  it('schreibt Ziel und Abflugort als vollständige Orte in den Entwurf', async () => {
+    const llm = createRuleBasedLlm();
+
+    const antwort = unwrap(
+      await llm.complete({
+        systemPrompt: '',
+        messages: [
+          {
+            role: 'user',
+            blocks: [{ type: 'text', text: 'von Düsseldorf nach Mallorca am 2026-10-08' }],
+          },
+        ],
+        tools: [],
+      }),
+    );
+
+    const block = antwort.blocks[0];
+
+    // Der Extraktor kennt nur IATA-Codes, das Werkzeug will Name und
+    // Koordinaten. Ohne die Umrechnung blieb die Entwurfsleiste leer,
+    // obwohl beide Orte erkannt waren.
+    expect(block).toMatchObject({
+      type: 'tool_use',
+      toolName: 'update_trip_draft',
+      input: {
+        origin: { iataCode: 'DUS', name: expect.any(String), latitude: expect.any(Number) },
+        destination: { iataCode: 'PMI', longitude: expect.any(Number) },
+      },
+    });
+  });
+
+  it('lässt einen unbekannten Ort einfach weg', async () => {
+    const llm = createRuleBasedLlm();
+
+    const antwort = unwrap(
+      await llm.complete({
+        systemPrompt: '',
+        messages: [{ role: 'user', blocks: [{ type: 'text', text: 'Budget 900 Euro' }] }],
+        tools: [],
+      }),
+    );
+
+    const block = antwort.blocks[0];
+
+    expect(block?.type === 'tool_use' ? block.input : {}).not.toHaveProperty('destination');
+  });
+});

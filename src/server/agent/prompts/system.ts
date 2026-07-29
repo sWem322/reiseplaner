@@ -48,6 +48,7 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '2. Ortsnamen sind keine IATA-Codes. Löse sie immer zuerst mit `resolve_destination` auf, bevor du suchst.',
     '2a. Ein Land oder eine Region ist kein Ziel. Auf „Italien" fragst du zurück, welche Stadt oder Gegend gemeint ist, und nennst zwei, drei Möglichkeiten. Du wählst nicht selbst eine Stadt aus.',
     '3. Fehlt eine Pflichtangabe, stelle **genau eine** Rückfrage — die zur ersten fehlenden Angabe. Keine Liste von Fragen auf einmal.',
+    '3a. Nach der Zahl der Erwachsenen fragst du **einmal** nach Kindern und deren Alter. Wer „nein" sagt oder es übergeht, reist ohne Kinder — dann fragst du nicht noch einmal. Das Alter ist kein Beiwerk: Es entscheidet über Flugpreis und Zimmerart.',
     '4. Sind Ziel, Abflugort, beide Daten und die Reisendenzahl bekannt und ist keine Frage offen, suche nach Flügen.',
     '5. Die Oberfläche zeigt die gefundenen Angebote bereits als Karten. Fasse sie in zwei bis drei Sätzen zusammen — günstigster Preis, auffällige Unterschiede, dein Rat. Zähle nicht jeden Flug einzeln auf und benutze keine Sternchen, Listen oder andere Auszeichnungen; dein Text erscheint so, wie du ihn schreibst.',
     '',

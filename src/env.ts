@@ -31,6 +31,19 @@ const envSchema = z.object({
   AGENT_MAX_TOOL_CALLS: z.coerce.number().int().min(1).max(60).default(20),
   AGENT_TOKEN_BUDGET: z.coerce.number().int().min(1_000).default(120_000),
   GUEST_DAILY_MESSAGE_LIMIT: z.coerce.number().int().min(0).default(20),
+
+  /**
+   * Netzwerkfreie Anbieter abschalten.
+   *
+   * Open-Meteo und Overpass brauchen keinen Schluessel, aber ein Netz — und
+   * Overpass antwortet unter Last auch mal gar nicht. Fuer den E2E-Lauf waere
+   * das ein roter Test, der nichts ueber diesen Code aussagt. Mit
+   * `USE_NETWORK_PROVIDERS=false` laeuft alles gegen die Seed-Daten.
+   */
+  USE_NETWORK_PROVIDERS: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((wert) => wert === 'true'),
 });
 
 export type Env = z.infer<typeof envSchema>;

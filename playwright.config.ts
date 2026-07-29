@@ -37,6 +37,9 @@ export default defineConfig({
   // wodurch der Ablauf deterministisch bleibt.
   webServer: {
     command: `npm run build && npm run start -- --port ${String(PORT)}`,
+    // Ohne Netz-Anbieter: Der Ablauf haengt sonst an der Erreichbarkeit von
+    // Overpass, und ein ausgefallener Fremddienst faerbt den Lauf rot.
+    env: { USE_NETWORK_PROVIDERS: 'false' },
     url: BASE_URL,
     reuseExistingServer: !IS_CI,
     timeout: 180_000,
