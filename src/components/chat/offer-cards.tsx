@@ -35,14 +35,22 @@ function euros(value: number): string {
   return `${new Intl.NumberFormat('de-DE').format(value)} €`;
 }
 
-function DemoHint({ shown }: { shown: boolean }) {
-  if (!shown) {
-    return null;
-  }
-
+/**
+ * Woher die Zahl stammt — an jeder Karte.
+ *
+ * Ohne diese Angabe sieht ein erfundener Preis genauso aus wie ein echter.
+ * Das Projekt kommt ohne kostenpflichtige Zugaenge aus und zeigt deshalb
+ * teils Beispielwerte; wer das verschweigt, taeuscht.
+ */
+function SourceHint({ isDemoData, quelle }: { isDemoData: boolean; quelle: string }) {
   return (
-    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.7rem] text-slate-500">
-      Demo-Daten
+    <span
+      data-testid="source-hint"
+      className={`rounded px-1.5 py-0.5 text-[0.7rem] ${
+        isDemoData ? 'bg-amber-50 text-amber-800' : 'bg-slate-100 text-slate-500'
+      }`}
+    >
+      {isDemoData ? 'Beispieldaten' : `Quelle: ${quelle}`}
     </span>
   );
 }
@@ -91,7 +99,7 @@ function FlightCard({ offer }: { offer: FlightResultOffer }) {
 
       <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
         <span>{offer.stops === 0 ? 'Direktflug' : `${String(offer.stops)} Zwischenstopp`}</span>
-        <DemoHint shown={offer.isDemoData} />
+        <SourceHint isDemoData={offer.isDemoData} quelle="Duffel" />
       </div>
     </li>
   );
@@ -121,7 +129,7 @@ function HotelCard({ offer, nights }: { offer: HotelResultOffer; nights: number 
         {offer.distanceToCenterMeters !== null && (
           <span>{formatDistance(offer.distanceToCenterMeters)} zum Zentrum</span>
         )}
-        <DemoHint shown={offer.isDemoData} />
+        <SourceHint isDemoData={offer.isDemoData} quelle="OpenStreetMap" />
       </div>
     </li>
   );
@@ -154,6 +162,10 @@ function WeatherCard({ outlook }: { outlook: WeatherResult }) {
           <> · Wasser {Math.round(outlook.seaTemperatureCelsius)} °C</>
         )}
       </p>
+
+      <div className="mt-2 flex items-center gap-2 text-xs">
+        <SourceHint isDemoData={outlook.isDemoData === true} quelle="Open-Meteo" />
+      </div>
     </li>
   );
 }

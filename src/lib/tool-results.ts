@@ -55,6 +55,8 @@ export const weatherResultSchema = z.object({
   averageLowCelsius: z.number(),
   rainyDays: z.number(),
   seaTemperatureCelsius: z.number().nullable(),
+  // Nachsichtig: Aeltere gespeicherte Ergebnisse kennen das Feld noch nicht.
+  isDemoData: z.boolean().optional(),
 });
 
 export type WeatherResult = z.infer<typeof weatherResultSchema>;

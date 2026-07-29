@@ -257,6 +257,9 @@ function weatherTool(deps: ToolDependencies): Tool<z.infer<typeof weatherInput>>
         averageLowCelsius: result.value.averageLowCelsius,
         rainyDays: result.value.rainyDays,
         seaTemperatureCelsius: result.value.seaTemperatureCelsius,
+        // Damit die Oberflaeche die Quelle nennen kann — und das Modell weiss,
+        // ob es von Messwerten oder von Beispielwerten spricht.
+        isDemoData: result.value.isDemoData,
       });
     },
   };
