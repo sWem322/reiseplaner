@@ -20,12 +20,25 @@
  * waere der einzige Grund, das spaeter in die Datenbank zu legen.
  */
 
-/** Staerkste zuerst. */
+/**
+ * Ausdauerndste zuerst — nicht staerkste.
+ *
+ * Das war urspruenglich andersherum und lief sich fest. Die Konsole von AI
+ * Studio nennt die Zahlen: Die volle Flash-Variante erlaubt **20** Anfragen am
+ * Tag, die Lite-Variante **500**. Fuenfundzwanzigfach — und ein einziges
+ * Gespraech verbraucht schon fuenf bis zehn.
+ *
+ * Fuer diese Aufgabe wiegt Ausdauer schwerer als Sprachgewalt: Der Agent fuellt
+ * Felder und ruft Werkzeuge auf, er schreibt keine Essays. Eine Demo, die nach
+ * zwei Gespraechen taeglich verstummt, ist keine Demo.
+ *
+ * Wer das anders sieht, setzt GEMINI_MODEL — der Wunsch steht dann vorn.
+ */
 export const DEFAULT_MODEL_CHAIN = [
-  'gemini-flash-latest',
   'gemini-flash-lite-latest',
-  'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
+  'gemini-flash-latest',
+  'gemini-2.0-flash',
 ] as const;
 
 /**

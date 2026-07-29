@@ -116,7 +116,10 @@ Das kostenlose Kontingent gilt je Modell, nicht je Zugang. In der Abnahme von
 Etappe 5 lief `gemini-flash-latest` mitten im Gespräch in ein 429, und die
 Demo stand — obwohl `gemini-flash-lite-latest` weiterhin antwortete.
 
-- [x] Kette statt eines festen Modells, stärkstes zuerst
+- [x] Kette statt eines festen Modells — **ausdauerndstes** zuerst: Die
+      Konsole nennt 20 Anfragen pro Tag für die volle Flash-Variante und 500
+      für die Lite-Variante. Ursprünglich stand das stärkste vorn; nach zwei
+      Gesprächen stand die Demo still.
 - [x] Bei 429 oder entzogenem Modellnamen rückt dieselbe Anfrage zum nächsten
       Modell weiter; der Loop merkt nichts davon
 - [x] Sperre endet mit der vom Dienst genannten Wartezeit, sonst zum
