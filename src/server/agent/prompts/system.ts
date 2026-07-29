@@ -27,7 +27,15 @@
  *    sie inzwischen als Karten zeigt. Die alte Regel stammte aus einer Zeit
  *    ohne Oberflaeche.
  */
-export const SYSTEM_PROMPT_VERSION = '1.1.0';
+/**
+ * 1.2.0 — nach dem ersten vollstaendigen Eval-Lauf.
+ *
+ * Von zwanzig Faellen fielen vier durch; drei davon waren falsche Erwartungen
+ * im Datensatz, einer ein echter Fund: Auf „Ich moechte nach Ulan-Bator
+ * fliegen" trug das Modell den Code ULN samt ausgedachter Koordinaten in den
+ * Entwurf ein, obwohl kein Werkzeug den Ort je bestaetigt hatte.
+ */
+export const SYSTEM_PROMPT_VERSION = '1.2.0';
 
 interface SystemPromptOptions {
   /** Heutiges Datum als JJJJ-MM-TT — das Modell kennt es sonst nicht. */
@@ -55,6 +63,7 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '## Regeln',
     '',
     '- Erfinde niemals Flüge, Unterkünfte, Preise oder Verfügbarkeiten. Nenne nur, was ein Werkzeug zurückgegeben hat.',
+    '- **Ein Ort kommt erst in den Entwurf, wenn `resolve_destination` ihn bestätigt hat.** Findet das Werkzeug ihn nicht, sag das offen — „Ulan-Bator habe ich nicht im Angebot" — und erfinde weder Code noch Koordinaten. Ein ausgedachter Flughafen sieht im Entwurf genauso aus wie ein echter.',
     '- **Trage nur ein, was gesagt wurde.** Rate nichts und setze nichts voraus. „Im Oktober" ist kein Reisezeitraum, sondern ein Monat — frage nach Hin- und Rückreisedatum. Ohne genannte Reisendenzahl trägst du keine ein.',
     '- Was du dir doch erschließt, machst du kenntlich und fragst nach: „Ich rechne mit einer Woche vom 10. bis 17. Oktober — passt das?"',
     '- Du kannst keine flexiblen Zeiträume vergleichen, keine Preisalarme setzen und nichts buchen. Wird danach gefragt, sag es offen und biete an, was stattdessen geht — etwa eine zweite Suche für andere Daten.',

@@ -109,7 +109,13 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
       departureDate: null,
       returnDate: null,
     },
-    erwarteteRueckfrage: 'departureDate',
+    /*
+     * Nach dem Abflugort, nicht nach dem Datum: `MISSING_SLOT_ORDER` stellt
+     * `origin` voran, und der ist hier ebenfalls unbekannt. Die erste Fassung
+     * dieses Falls erwartete das Datum — der Agent hielt sich an die
+     * abgesprochene Reihenfolge, die Erwartung war falsch.
+     */
+    erwarteteRueckfrage: 'origin',
   },
   {
     id: 'land-statt-stadt',
@@ -135,7 +141,8 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
     beschreibung: 'Sehr vage Zeitangabe',
     nachrichten: ['Wir wollen irgendwann nächstes Jahr nach Kreta'],
     erwartet: { destination: 'HER', departureDate: null, returnDate: null },
-    erwarteteRueckfrage: 'departureDate',
+    // Auch hier fehlt der Abflugort und wird zuerst erfragt.
+    erwarteteRueckfrage: 'origin',
   },
 
   // --- Kinder ---------------------------------------------------------
@@ -184,9 +191,14 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
   },
   {
     id: 'wetterfrage',
-    beschreibung: 'Klimafrage vor der Buchung',
+    beschreibung: 'Klimafrage ist noch keine Reiseabsicht',
     nachrichten: ['Wie warm ist es im Oktober auf Teneriffa?'],
-    erwartet: { destination: 'TFS' },
+    /*
+     * Wer nach dem Wetter fragt, hat noch nichts gebucht. Der Ort gehoert
+     * deshalb nicht in den Entwurf — dieselbe Regel wie ueberall: nur
+     * eintragen, was gesagt wurde.
+     */
+    erwartet: { destination: null },
   },
   {
     id: 'buchung-nicht-moeglich',
@@ -231,8 +243,13 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
   },
   {
     id: 'unbekanntes-ziel',
-    beschreibung: 'Ein Ort ausserhalb des Katalogs',
+    beschreibung: 'Ein Ort ausserhalb des Katalogs wird nicht erfunden',
     nachrichten: ['Ich möchte nach Ulan-Bator fliegen'],
+    /*
+     * Im ersten Lauf trug das Modell hier „ULN" samt ausgedachter Koordinaten
+     * ein, obwohl kein Werkzeug den Ort bestaetigt hatte. Genau dafuer gibt es
+     * diesen Fall.
+     */
     erwartet: { destination: null },
   },
   {
