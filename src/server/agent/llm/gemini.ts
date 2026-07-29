@@ -215,6 +215,19 @@ function isModelUnavailable(message: string): boolean {
   );
 }
 
+/** „45 s" statt „0 min" — eine gerundete Null verwirrt mehr, als sie sagt. */
+function dauerText(ms: number): string {
+  const sekunden = Math.round(ms / 1000);
+
+  if (sekunden < 90) {
+    return `${String(sekunden)} s`;
+  }
+
+  const stunden = Math.round(sekunden / 3600);
+
+  return sekunden < 5_400 ? `${String(Math.round(sekunden / 60))} min` : `${String(stunden)} h`;
+}
+
 export function createGeminiLlm(options: GeminiOptions): LlmPort {
   const client: GeminiClient = options.client ?? new GoogleGenAI({ apiKey: options.apiKey });
 
@@ -274,7 +287,7 @@ export function createGeminiLlm(options: GeminiOptions): LlmPort {
           rotation.suspend(model, dauer);
 
           console.warn(
-            `Modell ${model} pausiert für ${String(Math.round(dauer / 60_000))} min — weiter mit dem nächsten.`,
+            `Modell ${model} pausiert für ${dauerText(dauer)} — weiter mit dem nächsten.`,
           );
         }
       }
