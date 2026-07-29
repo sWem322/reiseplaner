@@ -193,6 +193,60 @@ describe('Open-Meteo Klimawerte', () => {
     },
   };
 
+  /**
+   * Das Archiv liefert einen durchgehenden Zeitraum. Wer ueber alles mittelt,
+   * mittelt die Winter mit — in der Abnahme meldete der Assistent fuer Rom im
+   * August 22 Grad und neun Regentage. Dieser Datensatz enthaelt deshalb
+   * bewusst Tage aus anderen Monaten.
+   */
+  const mehrjahresPayload = {
+    daily: {
+      time: [
+        '2023-08-01',
+        '2023-08-02',
+        '2024-01-15', // Winter — darf das Ergebnis nicht beruehren
+        '2024-02-20',
+        '2024-08-01',
+        '2024-08-02',
+        '2025-08-01',
+        '2025-08-02',
+      ],
+      temperature_2m_max: [32, 30, 8, 10, 31, 33, 30, 34],
+      temperature_2m_min: [20, 19, 1, 2, 21, 20, 19, 21],
+      precipitation_sum: [0, 2.5, 12, 8, 0, 0, 3.1, 0],
+    },
+  };
+
+  it('mittelt nur die Tage des gefragten Monats', async () => {
+    const weather = createOpenMeteoWeather(jsonResponse(mehrjahresPayload));
+
+    const outlook = unwrap(await weather.outlook(palma, 8));
+
+    // Nur die sechs August-Tage: (32+30+31+33+30+34)/6 = 31,7
+    expect(outlook.averageHighCelsius).toBeCloseTo(31.7, 1);
+    expect(outlook.averageLowCelsius).toBeCloseTo(20, 1);
+  });
+
+  it('rechnet Regentage auf ein Jahr herunter', async () => {
+    const weather = createOpenMeteoWeather(jsonResponse(mehrjahresPayload));
+
+    const outlook = unwrap(await weather.outlook(palma, 8));
+
+    // Zwei Regentage im August, verteilt auf drei Jahrgaenge: aufgerundet 1.
+    expect(outlook.rainyDays).toBe(1);
+  });
+
+  it('meldet not_found, wenn der Monat gar nicht enthalten ist', async () => {
+    const weather = createOpenMeteoWeather(jsonResponse(mehrjahresPayload));
+
+    const result = await weather.outlook(palma, 11);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('not_found');
+    }
+  });
+
   it('mittelt Hoechst- und Tiefstwerte', async () => {
     const weather = createOpenMeteoWeather(jsonResponse(archivePayload));
 

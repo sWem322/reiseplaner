@@ -153,24 +153,43 @@ export function createOpenMeteoWeather(fetchImpl: typeof fetch = fetch): Weather
 
       const { daily } = response.value;
 
-      if (daily.time.length === 0) {
+      /*
+       * Nur die Tage des gefragten Monats.
+       *
+       * Das Archiv liefert einen durchgehenden Zeitraum — die Anfrage von
+       * August bis August umfasst also auch alle Winter dazwischen. Wer
+       * darueber mittelt, erhaelt das Jahresmittel: Rom im August kam so auf
+       * 22 Grad und neun Regentage statt auf gut 30 Grad und zwei. Die
+       * Schnittstelle kennt keinen Monatsfilter, also wird hier gefiltert.
+       */
+      const indizes = daily.time
+        .map((tag, index) => ({ tag, index }))
+        .filter(({ tag }) => tag.slice(5, 7) === monthPadded)
+        .map(({ index }) => index);
+
+      if (indizes.length === 0) {
         return fail('not_found', 'Für diesen Ort liegen keine Klimadaten vor', {
           latitude: place.latitude,
           longitude: place.longitude,
+          month,
         });
       }
 
-      const rainyDayCount = daily.precipitation_sum.filter(
-        (value) => value !== null && value >= 1,
-      ).length;
-      const years = Math.max(1, Math.round(daily.time.length / lastDay));
+      const auswahl = (werte: readonly (number | null)[]): (number | null)[] =>
+        indizes.map((index) => werte[index] ?? null);
+
+      const niederschlag = auswahl(daily.precipitation_sum);
+      const rainyDayCount = niederschlag.filter((value) => value !== null && value >= 1).length;
+
+      // Wie viele Jahrgaenge desselben Monats stecken in der Antwort?
+      const jahre = new Set(indizes.map((index) => daily.time[index]?.slice(0, 4))).size;
 
       return ok({
         place,
         month,
-        averageHighCelsius: Math.round(average(daily.temperature_2m_max) * 10) / 10,
-        averageLowCelsius: Math.round(average(daily.temperature_2m_min) * 10) / 10,
-        rainyDays: Math.min(31, Math.round(rainyDayCount / years)),
+        averageHighCelsius: Math.round(average(auswahl(daily.temperature_2m_max)) * 10) / 10,
+        averageLowCelsius: Math.round(average(auswahl(daily.temperature_2m_min)) * 10) / 10,
+        rainyDays: Math.min(31, Math.round(rainyDayCount / Math.max(1, jahre))),
         // Open-Meteo liefert im Archiv keine Wassertemperatur; ohne belastbare
         // Quelle wird sie weggelassen statt geschaetzt.
         seaTemperatureCelsius: null,
