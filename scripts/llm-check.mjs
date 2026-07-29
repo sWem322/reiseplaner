@@ -257,9 +257,7 @@ async function zweiterZug({ client, modell, werkzeug, modellTeile, aufruf }) {
         { role: 'model', parts: modellTeile },
         {
           role: 'user',
-          parts: [
-            { functionResponse: { name: aufruf.functionCall.name, response: ergebnis } },
-          ],
+          parts: [{ functionResponse: { name: aufruf.functionCall.name, response: ergebnis } }],
         },
       ],
       config: {
