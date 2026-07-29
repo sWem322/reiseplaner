@@ -10,3 +10,9 @@ package-lock.json
 # Wird von Next.js beim Build automatisch umgeschrieben (jsx-Modus, Typpfade).
 # Eine Formatpruefung darauf wuerde nach jedem Build fehlschlagen.
 tsconfig.json
+
+# Messberichte, vom Eval-Runner geschrieben. `JSON.stringify(..., null, 2)`
+# bricht kurze Arrays um, Prettier setzt sie in eine Zeile — ein Streit ohne
+# Gegenstand, der die CI nach jedem Lauf rot faerbt. Formatiert werden Dateien,
+# die ein Mensch schreibt.
+eval/ergebnisse

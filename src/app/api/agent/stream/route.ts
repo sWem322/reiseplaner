@@ -23,8 +23,24 @@ import { readCookie } from '@/server/trpc/context';
  */
 
 export const runtime = 'nodejs';
-/** Der Agentenlauf kann mehrere Modellaufrufe umfassen. */
-export const maxDuration = 60;
+/**
+ * Ein Zug ist kein Datenabruf, sondern Arbeit: Auf „welche Daten im Oktober
+ * sind am günstigsten?" folgen drei Flugsuchen und ebenso viele Modellzüge.
+ * Mit 60 Sekunden brach Vercel genau diesen Fall mit einem 504 ab — dem
+ * interessantesten Fall der ganzen Anwendung. 300 Sekunden sind das Maximum
+ * des kostenlosen Tarifs mit Fluid Compute.
+ */
+export const maxDuration = 300;
+
+/**
+ * Abstand der Herzschläge.
+ *
+ * Zwischen zwei Ereignissen kann eine Minute liegen — ein Modellzug samt
+ * Werkzeugen. Eine Verbindung, über die nichts fliesst, halten Proxys für
+ * verwaist und schliessen sie. Kommentarzeilen (`: …`) sind gültige
+ * SSE-Nutzlast ohne Ereignis; der Leser im Browser überspringt sie.
+ */
+const HERZSCHLAG_MS = 15_000;
 
 const requestSchema = z.object({
   conversationId: z.uuid(),
@@ -87,9 +103,30 @@ export async function POST(request: Request): Promise<Response> {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const send = (data: unknown): void => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      /*
+       * Nach `close()` wirft jedes weitere `enqueue`. Der Herzschlag laeuft
+       * nebenher und weiss davon nichts — also merkt sich der Strom selbst,
+       * ob er noch offen ist.
+       */
+      let offen = true;
+
+      const schreibe = (zeile: string): void => {
+        if (offen) {
+          controller.enqueue(encoder.encode(zeile));
+        }
       };
+
+      const send = (data: unknown): void => {
+        schreibe(`data: ${JSON.stringify(data)}\n\n`);
+      };
+
+      // Das erste Byte sofort, noch vor dem ersten Modellaufruf: Damit steht
+      // die Antwort, und kein Proxy wartet auf einen Kopf, der noch kommt.
+      schreibe(': lauf gestartet\n\n');
+
+      const herzschlag = setInterval(() => {
+        schreibe(': warten\n\n');
+      }, HERZSCHLAG_MS);
 
       if (!quota.allowed) {
         send({
@@ -118,6 +155,8 @@ export async function POST(request: Request): Promise<Response> {
           message: error instanceof Error ? error.message : 'Unerwarteter Fehler',
         });
       } finally {
+        clearInterval(herzschlag);
+        offen = false;
         controller.close();
       }
     },

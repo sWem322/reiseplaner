@@ -73,6 +73,28 @@ damit die Modellkette greifen kann.
 Das ist kein Versehen, sondern der Grund, warum Zugangsdaten in die Oberfläche
 des Hosters gehören und nicht in das Repository.
 
+### Laufzeit einer Funktion
+
+Ein Zug des Assistenten ist kein Datenabruf. Auf „welche Daten im Oktober sind
+am günstigsten?" folgen drei Flugsuchen und ebenso viele Modellzüge — mit
+Netzwegen zu Neon, zu Gemini und zum Flugdienst dazwischen. In der Abnahme
+brach Vercel genau diesen Fall nach 60 Sekunden mit **504** ab: dem
+interessantesten Fall der ganzen Anwendung.
+
+Zwei Dinge halten die Verbindung offen:
+
+- `maxDuration = 300` im Route-Handler. Das ist die Obergrenze des kostenlosen
+  Tarifs, und sie gilt nur mit **Fluid Compute** — nachzusehen unter
+  _Settings → Functions_. Ist der Schalter aus, weist Vercel den Wert schon
+  beim Build zurück; dann entweder einschalten oder auf 60 zurücksetzen.
+- Ein Herzschlag alle 15 Sekunden. Zwischen zwei Ereignissen kann eine Minute
+  liegen, und eine stille Verbindung halten Proxys für verwaist.
+  SSE-Kommentarzeilen (`: warten`) sind gültige Nutzlast ohne Ereignis; der
+  Leser im Browser überspringt sie — geprüft in `stream-events.test.ts`.
+
+Das erste Byte geht raus, bevor der erste Modellaufruf beginnt. Eine Antwort,
+die erst nach dem Denken anfängt, sieht von aussen wie ein hängender Server aus.
+
 ## Bekannte Stolperstelle
 
 `package.json` verlangt `"engines": { "node": ">=24.0.0" }`. Bietet der Hoster
