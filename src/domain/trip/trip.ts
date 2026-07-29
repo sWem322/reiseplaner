@@ -135,6 +135,16 @@ export const tripDraftSchema = tripDraftShape
 
 export type TripDraft = z.infer<typeof tripDraftShape>;
 
+/**
+ * Nur die Struktur, ohne die zeitabhaengigen Regeln.
+ *
+ * `tripDraftSchema` prueft zusaetzlich, dass das Abflugdatum nicht in der
+ * Vergangenheit liegt. Diese Regel gilt fuer eine Eingabe — nicht fuer einen
+ * Entwurf, den es bereits gibt. Wer sie beim Lesen anwendet, verwirft
+ * ausgerechnet die Entwuerfe, deren Abflug gerade naeher rueckt.
+ */
+export const tripDraftShapeSchema = tripDraftShape;
+
 export function emptyTripDraft(): TripDraft {
   return {
     origin: null,
