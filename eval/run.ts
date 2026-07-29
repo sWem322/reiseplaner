@@ -1,3 +1,5 @@
+// Muss als Erstes stehen: füllt process.env, bevor `@/env` es liest.
+import './load-env';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { env } from '@/env';
