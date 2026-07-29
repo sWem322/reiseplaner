@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_AGENT_LIMITS, summarize } from '@/domain/agent';
 import { emptyTripDraft, tripDraftSchema, type TripDraft } from '@/domain/trip/trip';
-import { ok, type Result } from '@/domain/result';
+import { ok, unwrap, type Result } from '@/domain/result';
+import type { LlmRequest } from '@/domain/ports/llm';
 import { createSeedProviders } from '@/server/adapters/factory';
 import { collectEvents, runAgent } from '../loop';
 import { createToolRegistry } from '../tools';
@@ -183,5 +184,80 @@ describe('Regelbasiertes Modell im Loop', () => {
     const finished = (await events).find((event) => event.type === 'finished');
 
     expect(finished).toMatchObject({ inputTokens: 0, outputTokens: 0 });
+  });
+});
+
+/**
+ * Der Ersatz muss dem Gespraech folgen, nicht nur der letzten Zeile.
+ *
+ * In der Abnahme uebernahm er, nachdem das Gaestekontingent aufgebraucht war —
+ * und fragte „Wohin soll die Reise gehen?", obwohl das Ziel seit fuenf
+ * Nachrichten feststand. Er las nur die letzte Aeusserung.
+ */
+describe('Gesammelter Stand über das ganze Gespräch', () => {
+  function verlauf(...texte: readonly string[]): LlmRequest {
+    return {
+      systemPrompt: '',
+      messages: texte.map((text) => ({
+        role: 'user' as const,
+        blocks: [{ type: 'text' as const, text }],
+      })),
+      tools: [],
+    };
+  }
+
+  async function antwortText(request: LlmRequest): Promise<string> {
+    const antwort = unwrap(await createRuleBasedLlm().complete(request));
+    const block = antwort.blocks[0];
+
+    return block?.type === 'text' ? block.text : '';
+  }
+
+  it('fragt nicht erneut nach dem Ziel, das früher genannt wurde', async () => {
+    const text = await antwortText(verlauf('Ich will nach Mallorca', 'ja, 2 Kinder'));
+
+    expect(text).not.toContain('Wohin soll die Reise gehen');
+  });
+
+  it('fragt nach der ersten Lücke, nicht nach der letzten Nachricht', async () => {
+    const text = await antwortText(verlauf('nach Mallorca', 'Budget 1500 Euro'));
+
+    expect(text).toContain('Flughafen');
+  });
+
+  it('übernimmt, was ein früherer Lauf in den Entwurf geschrieben hat', async () => {
+    const request: LlmRequest = {
+      systemPrompt: '',
+      messages: [
+        {
+          role: 'assistant',
+          blocks: [
+            {
+              type: 'tool_use',
+              toolCallId: 'c1',
+              toolName: 'update_trip_draft',
+              // So schreibt das Sprachmodell den Entwurf — der Ersatz muss
+              // damit weiterarbeiten koennen, wenn er mitten im Gespraech
+              // uebernimmt.
+              input: { destination: { iataCode: 'PMI' }, origin: { iataCode: 'DUS' } },
+            },
+          ],
+        },
+        { role: 'user', blocks: [{ type: 'text', text: 'ja, 2 Kinder' }] },
+      ],
+      tools: [],
+    };
+
+    const text = await antwortText(request);
+
+    expect(text).not.toContain('Wohin soll die Reise gehen');
+    expect(text).toContain('Datum');
+  });
+
+  it('lässt eine spätere Angabe die frühere ersetzen', async () => {
+    const text = await antwortText(verlauf('nach Mallorca', 'doch lieber nach Wien'));
+
+    // Nur die Rueckfrage verraet den Stand — das Ziel ist jedenfalls gesetzt.
+    expect(text).not.toContain('Wohin soll die Reise gehen');
   });
 });

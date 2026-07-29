@@ -300,6 +300,113 @@ function lastUserText(request: LlmRequest): string {
   return '';
 }
 
+/**
+ * Alles, was im Gespraech bisher gesagt wurde.
+ *
+ * Nur die letzte Nachricht zu lesen, reicht nicht: Wer zuerst „Italien" nennt
+ * und drei Nachrichten spaeter „ja, 2 Kinder", bekaeme sonst wieder die Frage
+ * „Wohin soll die Reise gehen?" — der Entwurf ist laengst gefuellt, aber
+ * dieser Extraktor sah ihn nie. Genau so ist es in der Abnahme passiert,
+ * nachdem das Gaestekontingent aufgebraucht war und dieser Ersatz uebernahm.
+ */
+function accumulate(request: LlmRequest, today: Date): ExtractedTripParameters {
+  let gesammelt = leereParameter();
+
+  // Spaeteres schlaegt Frueheres: Wer sein Ziel aendert, meint die Aenderung.
+  const uebernehmen = (teil: ExtractedTripParameters): void => {
+    gesammelt = {
+      originIata: teil.originIata ?? gesammelt.originIata,
+      destinationIata: teil.destinationIata ?? gesammelt.destinationIata,
+      departureDate: teil.departureDate ?? gesammelt.departureDate,
+      returnDate: teil.returnDate ?? gesammelt.returnDate,
+      adults: teil.adults ?? gesammelt.adults,
+      budgetEuros: teil.budgetEuros ?? gesammelt.budgetEuros,
+      nights: teil.nights ?? gesammelt.nights,
+    };
+  };
+
+  for (const message of request.messages) {
+    if (message.role !== 'user') {
+      continue;
+    }
+
+    const text = message.blocks
+      .filter((block) => block.type === 'text')
+      .map((block) => block.text)
+      .join(' ');
+
+    if (text.trim().length > 0) {
+      uebernehmen(extractTripParameters(text, today));
+    }
+  }
+
+  /*
+   * Was ein frueherer Lauf — womoeglich noch mit Sprachmodell — bereits in den
+   * Entwurf geschrieben hat, zaehlt ebenfalls. Es steht als Eingabe der
+   * Werkzeugaufrufe im Verlauf.
+   */
+  for (const message of request.messages) {
+    for (const block of message.blocks) {
+      if (block.type === 'tool_use' && block.toolName === 'update_trip_draft') {
+        uebernehmen(fromDraftPatch(block.input));
+      }
+    }
+  }
+
+  return gesammelt;
+}
+
+function leereParameter(): ExtractedTripParameters {
+  return {
+    originIata: null,
+    destinationIata: null,
+    departureDate: null,
+    returnDate: null,
+    adults: null,
+    budgetEuros: null,
+    nights: null,
+  };
+}
+
+/** Liest die Felder aus der Eingabe eines frueheren `update_trip_draft`. */
+function fromDraftPatch(input: unknown): ExtractedTripParameters {
+  const leer = leereParameter();
+
+  if (typeof input !== 'object' || input === null) {
+    return leer;
+  }
+
+  const patch = input as Record<string, unknown>;
+
+  const iata = (wert: unknown): string | null => {
+    if (typeof wert === 'string' && /^[A-Z]{3}$/.test(wert)) {
+      return wert;
+    }
+
+    if (typeof wert === 'object' && wert !== null) {
+      const code = (wert as { iataCode?: unknown }).iataCode;
+
+      return typeof code === 'string' ? code : null;
+    }
+
+    return null;
+  };
+
+  const zahl = (wert: unknown): number | null => (typeof wert === 'number' ? wert : null);
+  const datum = (wert: unknown): string | null =>
+    typeof wert === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(wert) ? wert : null;
+
+  return {
+    ...leer,
+    originIata: iata(patch.origin ?? patch.originIata),
+    destinationIata: iata(patch.destination ?? patch.destinationIata),
+    departureDate: datum(patch.departureDate),
+    returnDate: datum(patch.returnDate),
+    adults: zahl(patch.adults),
+    budgetEuros: zahl(patch.budgetEuros),
+  };
+}
+
 /** Wurde in diesem Verlauf bereits ein bestimmtes Werkzeug aufgerufen? */
 function alreadyCalled(request: LlmRequest, toolName: string): boolean {
   return request.messages.some((message) =>
@@ -315,19 +422,26 @@ export function createRuleBasedLlm(): LlmPort {
 
     complete(request: LlmRequest): Promise<Result<LlmResponse>> {
       callCounter += 1;
-      const text = lastUserText(request);
-      const params = extractTripParameters(text);
+      const heute = new Date();
+
+      /*
+       * Zweierlei Sicht auf dasselbe Gespraech: `neu` ist die letzte Aussage
+       * — nur sie darf in den Entwurf geschrieben werden. `params` ist der
+       * gesammelte Stand und entscheidet, was noch fehlt.
+       */
+      const neu = extractTripParameters(lastUserText(request), heute);
+      const params = accumulate(request, heute);
 
       const usage = { inputTokens: 0, outputTokens: 0 };
 
       // Schritt 1: Erkannte Angaben in den Entwurf schreiben.
-      if (!alreadyCalled(request, 'update_trip_draft') && hasAnything(params)) {
+      if (!alreadyCalled(request, 'update_trip_draft') && hasAnything(neu)) {
         const blocks: ContentBlock[] = [
           {
             type: 'tool_use',
             toolCallId: `rb_${String(callCounter)}`,
             toolName: 'update_trip_draft',
-            input: buildDraftPatch(params),
+            input: buildDraftPatch(neu),
           },
         ];
 

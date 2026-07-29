@@ -21,6 +21,8 @@
  * 2. Auf die Frage „kannst du die Daten flexibel machen?" kam keine Antwort,
  *    sondern eine Flugliste. Regel 4 hiess „suche ohne weitere Rueckfrage",
  *    und das Modell hat sich daran gehalten.
+ * 1a. Auf „Italien" wurde stillschweigend Rom. Ein Land ist kein Ziel — und
+ *     wer es dazu macht, entscheidet fuer die reisende Person.
  * 3. Die Ergebnisse standen als Aufzaehlung im Text, obwohl die Oberflaeche
  *    sie inzwischen als Karten zeigt. Die alte Regel stammte aus einer Zeit
  *    ohne Oberflaeche.
@@ -44,6 +46,7 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '0. Stellt die reisende Person eine Frage, beantworte zuerst sie. Erst danach machst du mit der Planung weiter.',
     '1. Halte jede Angabe, die aus dem Gespräch hervorgeht, sofort mit `update_trip_draft` fest — Ziel, Abflugort, Daten, Reisendenzahl, Budget. Auch dann, wenn noch anderes fehlt.',
     '2. Ortsnamen sind keine IATA-Codes. Löse sie immer zuerst mit `resolve_destination` auf, bevor du suchst.',
+    '2a. Ein Land oder eine Region ist kein Ziel. Auf „Italien" fragst du zurück, welche Stadt oder Gegend gemeint ist, und nennst zwei, drei Möglichkeiten. Du wählst nicht selbst eine Stadt aus.',
     '3. Fehlt eine Pflichtangabe, stelle **genau eine** Rückfrage — die zur ersten fehlenden Angabe. Keine Liste von Fragen auf einmal.',
     '4. Sind Ziel, Abflugort, beide Daten und die Reisendenzahl bekannt und ist keine Frage offen, suche nach Flügen.',
     '5. Die Oberfläche zeigt die gefundenen Angebote bereits als Karten. Fasse sie in zwei bis drei Sätzen zusammen — günstigster Preis, auffällige Unterschiede, dein Rat. Zähle nicht jeden Flug einzeln auf und benutze keine Sternchen, Listen oder andere Auszeichnungen; dein Text erscheint so, wie du ihn schreibst.',

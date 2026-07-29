@@ -102,6 +102,12 @@ export function ChatView({
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
       <section className="flex min-h-[70vh] flex-col">
+        {state.quotaNotice !== null && (
+          <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {state.quotaNotice}
+          </p>
+        )}
+
         <ul className="flex flex-1 flex-col gap-3">
           {initialMessages.map((nachricht) => (
             <MessageView key={nachricht.id} message={nachricht} allBlocks={alleBloecke} />

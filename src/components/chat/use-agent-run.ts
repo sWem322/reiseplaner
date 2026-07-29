@@ -33,6 +33,8 @@ export interface AgentRunState {
   /** Hinweis zum Abbruchgrund, sobald der Lauf endet — leer bei `completed`. */
   readonly notice: string | null;
   readonly error: string | null;
+  /** Bleibt stehen, sobald das Kontingent aufgebraucht ist. */
+  readonly quotaNotice: string | null;
 }
 
 const IDLE: AgentRunState = {
@@ -41,6 +43,7 @@ const IDLE: AgentRunState = {
   running: false,
   notice: null,
   error: null,
+  quotaNotice: null,
 };
 
 export interface AgentRunResult {
@@ -81,7 +84,8 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
 
   const send = useCallback(
     async (message: string): Promise<AgentRunResult> => {
-      setState({ ...IDLE, running: true });
+      // Der Kontingent-Hinweis ueberlebt den Neustart des Zustands.
+      setState((vorher) => ({ ...IDLE, running: true, quotaNotice: vorher.quotaNotice }));
 
       let text = '';
       let tools: RunningTool[] = [];
@@ -97,7 +101,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
         if (!response.ok || response.body === null) {
           const grund = await readErrorMessage(response);
 
-          setState({ ...IDLE, error: grund });
+          setState((vorher) => ({ ...IDLE, error: grund, quotaNotice: vorher.quotaNotice }));
 
           return { text: '', tools: [], stopReason: null };
         }
@@ -147,6 +151,15 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
               break;
 
             case 'quota_exceeded':
+              /*
+               * Nicht als Fehler des Laufs, sondern als Zustand: Ab hier
+               * antwortet der regelbasierte Ersatz, und das bleibt so. Eine
+               * Meldung, die mit der naechsten Nachricht verschwindet, laesst
+               * die Person raten, warum der Assistent ploetzlich stumpf wird.
+               */
+              setState((vorher) => ({ ...vorher, quotaNotice: event.message }));
+              break;
+
             case 'stream_error':
               setState((vorher) => ({ ...vorher, error: event.message }));
               break;
@@ -157,10 +170,11 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
           setState((vorher) => ({ ...vorher, text, tools }));
         }
       } catch (error) {
-        setState({
+        setState((vorher) => ({
           ...IDLE,
           error: error instanceof Error ? error.message : 'Die Verbindung wurde unterbrochen',
-        });
+          quotaNotice: vorher.quotaNotice,
+        }));
 
         return { text, tools, stopReason: null };
       }
