@@ -137,13 +137,29 @@ export interface RunOptions {
   readonly llm: LlmPort;
   readonly providers: Providers;
   readonly faelle: readonly EvalFall[];
+  /**
+   * Wird nach jedem Fall gerufen.
+   *
+   * Ein Lauf gegen das Sprachmodell dauert Minuten — zwischen den Aufrufen
+   * liegen Wartezeiten, damit das Kontingent reicht. Ohne Zwischenmeldung
+   * sieht das aus, als haenge das Programm.
+   */
+  readonly onFall?: (ergebnis: FallErgebnis, nummer: number, gesamt: number) => void;
 }
 
-export async function runEval({ llm, providers, faelle }: RunOptions): Promise<EvalBericht> {
+export async function runEval({
+  llm,
+  providers,
+  faelle,
+  onFall,
+}: RunOptions): Promise<EvalBericht> {
   const ergebnisse: FallErgebnis[] = [];
 
   for (const fall of faelle) {
-    ergebnisse.push(await runFall(fall, llm, providers));
+    const ergebnis = await runFall(fall, llm, providers);
+
+    ergebnisse.push(ergebnis);
+    onFall?.(ergebnis, ergebnisse.length, faelle.length);
   }
 
   return neuBerechnet({ llm: llm.name, zeitpunkt: '', faelle: [], kennzahlen: LEER }, ergebnisse);

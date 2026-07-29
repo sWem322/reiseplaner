@@ -9,7 +9,7 @@ import { createRuleBasedLlm } from '@/server/agent/llm/rule-based';
 import { createSeedProviders } from '@/server/adapters/factory';
 import { EVAL_FAELLE } from './faelle';
 import { withPatience } from './patient-llm';
-import { neuBerechnet, runEval, type EvalBericht } from './runner';
+import { neuBerechnet, runEval, type EvalBericht, type FallErgebnis } from './runner';
 
 /**
  * Einstiegspunkt des Eval-Laufs.
@@ -76,6 +76,9 @@ async function main(): Promise<void> {
     llm,
     providers: createSeedProviders(),
     faelle: offen,
+    onFall: (ergebnis, nummer, gesamt) => {
+      zeigeFall(ergebnis, `[${String(nummer)}/${String(gesamt)}] `);
+    },
   });
 
   const bericht = vereinige(frueher, neu);
@@ -143,25 +146,32 @@ function vereinige(frueher: EvalBericht | null, neu: EvalBericht): EvalBericht {
   return neuBerechnet(neu, [...frueher.faelle, ...neu.faelle]);
 }
 
-function zeigeBericht(bericht: EvalBericht): void {
-  for (const fall of bericht.faelle) {
-    const zeichen = fall.bestanden ? '✓' : fall.nochOffen ? '○' : '✗';
+/** Ein Fall in einer Zeile, darunter nur, was nicht stimmte. */
+function zeigeFall(fall: FallErgebnis, praefix = ''): void {
+  const zeichen = fall.nichtGemessen ? '?' : fall.bestanden ? '✓' : fall.nochOffen ? '○' : '✗';
 
-    console.log(`${zeichen} ${fall.id} — ${fall.beschreibung}`);
+  console.log(`${praefix}${zeichen} ${fall.id} — ${fall.beschreibung}`);
 
-    for (const befund of fall.befunde) {
-      if (befund.urteil === 'richtig') {
-        continue;
-      }
+  if (fall.nichtGemessen) {
+    console.log('    nicht gemessen — das Modell war nicht erreichbar');
 
-      console.log(
-        `    ${befund.slot}: ${befund.urteil} ` +
-          `(erwartet ${JSON.stringify(befund.erwartet)}, ` +
-          `bekommen ${JSON.stringify(befund.tatsaechlich)})`,
-      );
-    }
+    return;
   }
 
+  for (const befund of fall.befunde) {
+    if (befund.urteil === 'richtig') {
+      continue;
+    }
+
+    console.log(
+      `    ${befund.slot}: ${befund.urteil} ` +
+        `(erwartet ${JSON.stringify(befund.erwartet)}, ` +
+        `bekommen ${JSON.stringify(befund.tatsaechlich)})`,
+    );
+  }
+}
+
+function zeigeBericht(bericht: EvalBericht): void {
   const k = bericht.kennzahlen;
 
   console.log('');
