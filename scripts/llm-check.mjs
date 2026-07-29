@@ -187,6 +187,31 @@ async function main(key, wunschModell) {
       console.log(`  Eingabe: ${String(antwort.usageMetadata?.promptTokenCount ?? '?')}`);
       console.log(`  Ausgabe: ${String(antwort.usageMetadata?.candidatesTokenCount ?? '?')}`);
       console.log('');
+
+      /*
+       * --- Schritt 4: der zweite Zug ------------------------------------
+       *
+       * Ein einzelner Aufruf sagt zu wenig. Genau hier lag ein Fehler, den
+       * dieses Skript nicht sah: Der erste Werkzeugaufruf ging durch, die
+       * Antwort auf sein Ergebnis wurde mit 400 abgelehnt, weil die Signatur
+       * des Denkschritts nicht zurueckkam. Sichtbar wird das erst, wenn der
+       * Verlauf einmal zurueckgeschickt wird — also wird er das hier.
+       */
+      if (aufrufe.length > 0) {
+        const erfolgreich = await zweiterZug({
+          client,
+          modell,
+          werkzeug,
+          modellTeile: teile,
+          aufruf: aufrufe[0],
+        });
+
+        if (!erfolgreich) {
+          process.exitCode = 1;
+          return;
+        }
+      }
+
       console.log('Der Gemini-Zugang funktioniert.');
       console.log('');
       console.log('Diesen Namen in .env eintragen, damit er fest steht:');
@@ -209,6 +234,73 @@ async function main(key, wunschModell) {
   console.log('');
   berichteFehler(letzterFehler, kandidaten.at(-1));
   process.exitCode = 1;
+}
+
+/**
+ * Schickt das Werkzeugergebnis zurueck und laesst das Modell darauf antworten.
+ *
+ * Die Teile des Modellzugs gehen unveraendert zurueck — samt allem, was Gemini
+ * daran gehaengt hat. Genau das ist der Punkt der Pruefung.
+ */
+async function zweiterZug({ client, modell, werkzeug, modellTeile, aufruf }) {
+  const ergebnis = {
+    result: {
+      places: [{ name: 'Palma de Mallorca', iataCode: 'PMI', country: 'ES' }],
+    },
+  };
+
+  try {
+    const antwort = await client.models.generateContent({
+      model: modell,
+      contents: [
+        { role: 'user', parts: [{ text: 'Ich möchte im September nach Mallorca fliegen.' }] },
+        { role: 'model', parts: modellTeile },
+        {
+          role: 'user',
+          parts: [
+            { functionResponse: { name: aufruf.functionCall.name, response: ergebnis } },
+          ],
+        },
+      ],
+      config: {
+        systemInstruction:
+          'Du bist ein Reiseassistent. Löse Ortsnamen immer zuerst mit dem Werkzeug auf.',
+        tools: [{ functionDeclarations: [werkzeug] }],
+        temperature: 0.2,
+      },
+    });
+
+    const teile = antwort.candidates?.[0]?.content?.parts ?? [];
+    const text = teile
+      .filter((teil) => typeof teil.text === 'string')
+      .map((teil) => teil.text)
+      .join('')
+      .trim();
+
+    const signatur = modellTeile.some((teil) => typeof teil.thoughtSignature === 'string');
+
+    console.log(
+      `✓ Zweiter Zug angenommen${signatur ? ' — Signatur des Denkschritts zurückgegeben' : ''}`,
+    );
+
+    if (text !== '') {
+      console.log(`  „${text.slice(0, 160)}"`);
+    }
+
+    console.log('');
+
+    return true;
+  } catch (error) {
+    const nachricht = error instanceof Error ? error.message : String(error);
+
+    console.error('✗ Der zweite Zug wurde abgelehnt:');
+    console.error(`  ${nachricht.slice(0, 400)}`);
+    console.error('');
+    console.error('  Der Verlauf wird also nicht so zurückgegeben, wie Gemini ihn erwartet.');
+    console.error('  Ein Gespräch bricht damit nach dem ersten Werkzeugaufruf ab.');
+
+    return false;
+  }
 }
 
 function berichteFehler(error, modell) {

@@ -471,3 +471,126 @@ describe('Fehlerzuordnung', () => {
     await expect(llm.complete(request())).resolves.toMatchObject({ ok: false });
   });
 });
+
+/**
+ * Die Signatur des Denkschritts.
+ *
+ * Gemini legt sie in die `functionCall`-Teile seiner Antwort und lehnt jede
+ * Folgeanfrage mit 400 ab, in der sie zu einem Werkzeugaufruf fehlt. Der
+ * Adapter darf sie deshalb weder verlieren noch veraendern. Diese Tests
+ * beschreiben genau den Weg hin und zurueck — er ist von aussen unsichtbar
+ * und faellt sonst erst im laufenden Gespraech auf.
+ */
+describe('Signatur des Modells', () => {
+  const signatur = 'EpoGCpcGAXLI2nx-Beispielsignatur';
+
+  const callResponse = {
+    candidates: [
+      {
+        content: {
+          parts: [
+            {
+              functionCall: { name: 'resolve_destination', args: { query: 'Mallorca' } },
+              thoughtSignature: signatur,
+            },
+          ],
+        },
+      },
+    ],
+    usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 20 },
+  };
+
+  it('bewahrt die Signatur eines Werkzeugaufrufs auf', async () => {
+    const llm = createGeminiLlm({ apiKey: 'test', client: createClient(callResponse) });
+
+    const antwort = unwrap(await llm.complete(request()));
+
+    expect(antwort.blocks[0]).toMatchObject({
+      type: 'tool_use',
+      toolName: 'resolve_destination',
+      providerSignature: signatur,
+    });
+  });
+
+  it('gibt sie beim nächsten Aufruf unverändert zurück', async () => {
+    const recorded: Recorded = {};
+    const llm = createGeminiLlm({ apiKey: 'test', client: createClient(textResponse, recorded) });
+
+    await llm.complete(
+      request({
+        messages: [
+          { role: 'user', blocks: [{ type: 'text', text: 'Mallorca' }] },
+          {
+            role: 'assistant',
+            blocks: [
+              {
+                type: 'tool_use',
+                toolCallId: 'call_1',
+                toolName: 'resolve_destination',
+                input: { query: 'Mallorca' },
+                providerSignature: signatur,
+              },
+            ],
+          },
+          {
+            role: 'user',
+            blocks: [
+              { type: 'tool_result', toolCallId: 'call_1', isError: false, content: { ok: true } },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const contents = recorded.contents as { parts: { thoughtSignature?: string }[] }[];
+
+    expect(contents[1]?.parts[0]?.thoughtSignature).toBe(signatur);
+  });
+
+  it('kommt ohne Signatur aus, wenn das Modell keine geschickt hat', async () => {
+    const recorded: Recorded = {};
+    const llm = createGeminiLlm({ apiKey: 'test', client: createClient(textResponse, recorded) });
+
+    await llm.complete(
+      request({
+        messages: [
+          {
+            role: 'assistant',
+            blocks: [
+              {
+                type: 'tool_use',
+                toolCallId: 'call_1',
+                toolName: 'resolve_destination',
+                input: {},
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const contents = recorded.contents as { parts: Record<string, unknown>[] }[];
+
+    // Kein leeres Feld: Gemini soll den Schluessel gar nicht erst sehen.
+    expect(contents[0]?.parts[0]).not.toHaveProperty('thoughtSignature');
+  });
+
+  it('übergeht eine leere Signatur', async () => {
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      client: createClient({
+        candidates: [
+          {
+            content: {
+              parts: [{ functionCall: { name: 'search_flights', args: {} }, thoughtSignature: '' }],
+            },
+          },
+        ],
+      }),
+    });
+
+    const antwort = unwrap(await llm.complete(request()));
+
+    expect(antwort.blocks[0]).not.toHaveProperty('providerSignature');
+  });
+});

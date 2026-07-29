@@ -29,6 +29,21 @@ const toolUseBlockSchema = z.object({
   toolCallId: z.string().min(1),
   toolName: z.string().min(1),
   input: z.unknown(),
+  /**
+   * Undurchsichtiger Zustand des Anbieters, der unveraendert zurueckgegeben
+   * werden muss.
+   *
+   * Gemini legt in diesem Feld die verschluesselte „thought signature" seines
+   * Denkschritts ab und lehnt jede Folgeanfrage ab, in der sie zu einem
+   * Werkzeugaufruf fehlt. Das Feld gehoert damit zum Aufruf selbst und muss
+   * mitgespeichert werden — sonst scheitert schon die zweite Nachricht eines
+   * Gespraechs.
+   *
+   * Der Name ist bewusst neutral: Andere Anbieter fuehren aehnliche Marken,
+   * und die Domaene soll keinen Herstellerbegriff tragen. Der Inhalt wird
+   * niemals gelesen oder ausgewertet, nur durchgereicht.
+   */
+  providerSignature: z.string().min(1).optional(),
 });
 
 const toolResultBlockSchema = z.object({

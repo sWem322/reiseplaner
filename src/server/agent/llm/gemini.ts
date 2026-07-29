@@ -70,6 +70,17 @@ function toGeminiParts(blocks: readonly ContentBlock[], callNames: Map<string, s
             name: block.toolName,
             args: (block.input ?? {}) as Record<string, unknown>,
           },
+          /*
+           * Die Signatur muss unveraendert zurueck. Fehlt sie, antwortet
+           * Gemini mit 400: „Function call is missing a thought_signature in
+           * functionCall parts. This is required for tools to work correctly."
+           * Betroffen ist schon die zweite Iteration eines Laufs — der erste
+           * Werkzeugaufruf geht durch, die Auswertung seines Ergebnisses
+           * nicht mehr.
+           */
+          ...(block.providerSignature === undefined
+            ? {}
+            : { thoughtSignature: block.providerSignature }),
         });
         break;
 
@@ -135,6 +146,10 @@ function fromGeminiResponse(response: GenerateContentResponse): LlmResponse {
         toolCallId: part.functionCall.id ?? `gemini_${String(callIndex)}_${String(Date.now())}`,
         toolName: part.functionCall.name ?? 'unbekannt',
         input: part.functionCall.args ?? {},
+        // Wird nicht ausgewertet, nur aufbewahrt — der Rueckweg braucht sie.
+        ...(typeof part.thoughtSignature === 'string' && part.thoughtSignature.length > 0
+          ? { providerSignature: part.thoughtSignature }
+          : {}),
       });
     }
   }

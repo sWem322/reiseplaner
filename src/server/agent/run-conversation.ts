@@ -90,6 +90,16 @@ export async function* runConversationTurn(
   const antwortBlöcke: ContentBlock[] = [];
   let text = '';
 
+  /*
+   * Signaturen der Werkzeugaufrufe, eingesammelt aus den Modellzuegen.
+   *
+   * Sie muessen mitgespeichert werden: Beim naechsten Aufruf liest der Adapter
+   * den Verlauf aus der Datenbank, und ein Werkzeugaufruf ohne Signatur laesst
+   * Gemini die gesamte Anfrage ablehnen. Ohne diesen Umweg funktionierte die
+   * erste Nachricht eines Gespraechs und jede weitere nicht mehr.
+   */
+  const signaturen = new Map<string, string>();
+
   for await (const event of runAgent({
     conversationId,
     systemPrompt: buildSystemPrompt({
@@ -101,17 +111,27 @@ export async function* runConversationTurn(
     limits: input.limits ?? DEFAULT_AGENT_LIMITS,
     toolCallLogs: repositories.toolCallLogs,
     tripDrafts: repositories.tripDrafts,
+    onAssistantTurn: (blocks) => {
+      for (const block of blocks) {
+        if (block.type === 'tool_use' && block.providerSignature !== undefined) {
+          signaturen.set(block.toolCallId, block.providerSignature);
+        }
+      }
+    },
   })) {
     if (event.type === 'text_delta') {
       text += event.text;
     }
 
     if (event.type === 'tool_started') {
+      const signatur = signaturen.get(event.toolCallId);
+
       antwortBlöcke.push({
         type: 'tool_use',
         toolCallId: event.toolCallId,
         toolName: event.toolName,
         input: event.input,
+        ...(signatur === undefined ? {} : { providerSignature: signatur }),
       });
     }
 

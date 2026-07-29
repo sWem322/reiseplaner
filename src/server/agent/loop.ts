@@ -34,6 +34,16 @@ export interface AgentRunInput {
   readonly limits: AgentLimits;
   readonly toolCallLogs?: ToolCallLogRepository;
   readonly tripDrafts?: TripDraftRepository;
+  /**
+   * Wird zu jedem Modellzug mit dessen unveraenderten Bloecken gerufen.
+   *
+   * Die Ereignisse allein reichen nicht: Sie beschreiben, was geschieht, und
+   * lassen begleitende Angaben eines Anbieters weg — etwa die Signatur, die
+   * Gemini beim naechsten Aufruf zurueckverlangt. Wer den Zug speichern will,
+   * braucht die Bloecke selbst. Ueber den Ereignisstrom gehen sie bewusst
+   * nicht: Im Browser waeren sie nutzloser Ballast.
+   */
+  readonly onAssistantTurn?: (blocks: readonly ContentBlock[]) => void;
 }
 
 function isToolUse(block: ContentBlock): block is ToolUseBlock {
@@ -167,6 +177,7 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
     }
 
     guardrails.recordUsage(response.value.usage);
+    input.onAssistantTurn?.(response.value.blocks);
 
     for (const block of response.value.blocks) {
       if (block.type === 'text' && block.text.length > 0) {
