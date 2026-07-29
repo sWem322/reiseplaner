@@ -149,6 +149,19 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
     });
 
     if (!response.ok) {
+      /*
+       * Der Fehler wird protokolliert, bevor er zum Abbruchgrund wird. Sonst
+       * bleibt von einem gescheiterten Modellaufruf nur der Satz „Ich kann
+       * gerade nicht auf den Sprachdienst zugreifen" — und der sagt weder,
+       * ob der Schluessel fehlt, das Kontingent erschoepft ist oder das Modell
+       * einen anderen Namen bekommen hat.
+       */
+      console.error('LLM-Aufruf fehlgeschlagen:', {
+        kind: response.error.kind,
+        message: response.error.message,
+        details: response.error.details,
+      });
+
       stopReason = 'llm_error';
       break;
     }

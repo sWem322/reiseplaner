@@ -153,12 +153,18 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
         return { text, tools, stopReason: null };
       }
 
-      const notice = stopReason === null ? null : stopReasonMessage(stopReason);
+      /*
+       * Der Loop haengt den Satz zum Abbruchgrund bereits an die Antwort an.
+       * Ein zweites Mal darunter waere derselbe Satz doppelt auf dem
+       * Bildschirm — deshalb nur, wenn er nicht ohnehin schon dasteht.
+       */
+      const satz = stopReason === null ? '' : stopReasonMessage(stopReason);
+      const doppelt = satz !== '' && text.includes(satz);
 
       setState((vorher) => ({
         ...vorher,
         running: false,
-        notice: notice === null || notice === '' ? null : notice,
+        notice: satz === '' || doppelt ? null : satz,
       }));
 
       return { text, tools, stopReason };
