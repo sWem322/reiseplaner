@@ -102,12 +102,6 @@ export function ChatView({
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
       <section className="flex min-h-[70vh] flex-col">
-        {state.quotaNotice !== null && (
-          <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            {state.quotaNotice}
-          </p>
-        )}
-
         <ul className="flex flex-1 flex-col gap-3">
           {initialMessages.map((nachricht) => (
             <MessageView key={nachricht.id} message={nachricht} allBlocks={alleBloecke} />
@@ -196,6 +190,19 @@ export function ChatView({
               </li>
             ))}
           </ul>
+        )}
+
+        {/*
+          Direkt über dem Eingabefeld, nicht am Kopf der Seite.
+          Der Hinweis erklärt, warum die nächste Antwort knapper ausfällt —
+          gelesen wird er nur dort, wo die nächste Nachricht entsteht. Ganz
+          oben stand er ausserhalb des Blickfelds, sobald das Gespräch ein
+          paar Nachrichten lang war.
+        */}
+        {state.quotaNotice !== null && (
+          <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {state.quotaNotice}
+          </p>
         )}
 
         <form onSubmit={(event) => void absenden(event)} className="mt-4 flex gap-2">
