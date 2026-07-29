@@ -1,0 +1,984 @@
+{
+  "llm": "rule-based",
+  "zeitpunkt": "2026-07-29T12:41:27.122Z",
+  "faelle": [
+    {
+      "id": "vollstaendig-in-einem-satz",
+      "beschreibung": "Alle Pflichtangaben in einer einzigen Nachricht",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "DUS",
+          "tatsaechlich": "DUS",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "PMI",
+          "tatsaechlich": "PMI",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": "2026-10-08",
+          "tatsaechlich": "2026-10-08",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "returnDate",
+          "erwartet": "2026-10-15",
+          "tatsaechlich": "2026-10-15",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 2,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
+      "entwurf": {
+        "origin": {
+          "name": "Düsseldorf",
+          "iataCode": "DUS",
+          "latitude": 51.2895,
+          "longitude": 6.7668
+        },
+        "destination": {
+          "name": "Palma de Mallorca",
+          "iataCode": "PMI",
+          "latitude": 39.5517,
+          "longitude": 2.7388
+        },
+        "departureDate": "2026-10-08",
+        "returnDate": "2026-10-15",
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "schrittweise",
+      "beschreibung": "Angaben über mehrere Nachrichten verteilt",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "DUS",
+          "tatsaechlich": "DUS",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "BCN",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": "2026-09-12",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "returnDate",
+          "erwartet": "2026-09-19",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Düsseldorf",
+          "iataCode": "DUS",
+          "latitude": 51.2895,
+          "longitude": 6.7668
+        },
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "deutsches-datumsformat",
+      "beschreibung": "TT.MM.JJJJ statt ISO",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "FRA",
+          "tatsaechlich": "FRA",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "LIS",
+          "tatsaechlich": "LIS",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": "2026-11-05",
+          "tatsaechlich": "2026-11-05",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "returnDate",
+          "erwartet": "2026-11-12",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Frankfurt am Main",
+          "iataCode": "FRA",
+          "latitude": 50.0379,
+          "longitude": 8.5622
+        },
+        "destination": {
+          "name": "Lissabon",
+          "iataCode": "LIS",
+          "latitude": 38.7742,
+          "longitude": -9.1342
+        },
+        "departureDate": "2026-11-05",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "monat-ohne-datum",
+      "beschreibung": "Ein Monat ist kein Zeitraum — es muss nachgefragt werden",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "PMI",
+          "tatsaechlich": "PMI",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": null,
+          "tatsaechlich": "2026-10-15",
+          "urteil": "erfunden"
+        },
+        {
+          "slot": "returnDate",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "entwurf": {
+        "origin": null,
+        "destination": {
+          "name": "Palma de Mallorca",
+          "iataCode": "PMI",
+          "latitude": 39.5517,
+          "longitude": 2.7388
+        },
+        "departureDate": "2026-10-15",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "land-statt-stadt",
+      "beschreibung": "Ein Land ist kein Ziel",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 0,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wohin soll die Reise gehen?",
+      "entwurf": {
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "reisende-nicht-genannt",
+      "beschreibung": "Ohne Angabe keine Zahl im Entwurf",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "HAM",
+          "tatsaechlich": "HAM",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "VIE",
+          "tatsaechlich": "VIE",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": "2026-09-03",
+          "tatsaechlich": "2026-09-03",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Hamburg",
+          "iataCode": "HAM",
+          "latitude": 53.6304,
+          "longitude": 9.9882
+        },
+        "destination": {
+          "name": "Wien",
+          "iataCode": "VIE",
+          "latitude": 48.1103,
+          "longitude": 16.5697
+        },
+        "departureDate": "2026-09-03",
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "irgendwann-naechstes-jahr",
+      "beschreibung": "Sehr vage Zeitangabe",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "HER",
+          "tatsaechlich": "HER",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        },
+        {
+          "slot": "returnDate",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "entwurf": {
+        "origin": null,
+        "destination": {
+          "name": "Kreta Heraklion",
+          "iataCode": "HER",
+          "latitude": 35.3397,
+          "longitude": 25.1803
+        },
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "kinder-mit-alter",
+      "beschreibung": "Kinder samt Alter werden übernommen",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "MUC",
+          "tatsaechlich": "MUC",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "AYT",
+          "tatsaechlich": "AYT",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        },
+        {
+          "slot": "childAges",
+          "erwartet": [6, 9],
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "München",
+          "iataCode": "MUC",
+          "latitude": 48.3538,
+          "longitude": 11.7861
+        },
+        "destination": {
+          "name": "Antalya",
+          "iataCode": "AYT",
+          "latitude": 36.8987,
+          "longitude": 30.8005
+        },
+        "departureDate": "2026-08-15",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "nach-kindern-fragen",
+      "beschreibung": "Nach der Zahl der Erwachsenen kommt genau eine Frage nach Kindern",
+      "nochOffen": true,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "BER",
+          "tatsaechlich": "BER",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "RHO",
+          "tatsaechlich": "RHO",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Berlin Brandenburg",
+          "iataCode": "BER",
+          "latitude": 52.3667,
+          "longitude": 13.5033
+        },
+        "destination": {
+          "name": "Rhodos",
+          "iataCode": "RHO",
+          "latitude": 36.4054,
+          "longitude": 28.0862
+        },
+        "departureDate": "2026-09-05",
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "frage-statt-antwort",
+      "beschreibung": "Eine Frage wird beantwortet, nicht übergangen",
+      "nochOffen": true,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "PMI",
+          "tatsaechlich": "PMI",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Düsseldorf",
+          "iataCode": "DUS",
+          "latitude": 51.2895,
+          "longitude": 6.7668
+        },
+        "destination": {
+          "name": "Palma de Mallorca",
+          "iataCode": "PMI",
+          "latitude": 39.5517,
+          "longitude": 2.7388
+        },
+        "departureDate": "2026-10-08",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "beste-daten-im-monat",
+      "beschreibung": "Mehrere Zeiträume prüfen und mit Preisen gegenüberstellen",
+      "nochOffen": true,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "PMI",
+          "tatsaechlich": "PMI",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "origin",
+          "erwartet": "DUS",
+          "tatsaechlich": "DUS",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Düsseldorf",
+          "iataCode": "DUS",
+          "latitude": 51.2895,
+          "longitude": 6.7668
+        },
+        "destination": {
+          "name": "Palma de Mallorca",
+          "iataCode": "PMI",
+          "latitude": 39.5517,
+          "longitude": 2.7388
+        },
+        "departureDate": "2026-10-15",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "wetterfrage",
+      "beschreibung": "Klimafrage vor der Buchung",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "TFS",
+          "tatsaechlich": "TFS",
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "entwurf": {
+        "origin": null,
+        "destination": {
+          "name": "Teneriffa Süd",
+          "iataCode": "TFS",
+          "latitude": 28.0445,
+          "longitude": -16.5725
+        },
+        "departureDate": "2026-10-15",
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "buchung-nicht-moeglich",
+      "beschreibung": "Der Assistent bucht nicht und sagt das offen",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "CGN",
+          "tatsaechlich": "CGN",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "FAO",
+          "tatsaechlich": "FAO",
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Köln/Bonn",
+          "iataCode": "CGN",
+          "latitude": 50.8659,
+          "longitude": 7.1427
+        },
+        "destination": {
+          "name": "Faro",
+          "iataCode": "FAO",
+          "latitude": 37.0144,
+          "longitude": -7.9659
+        },
+        "departureDate": "2026-09-10",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "ziel-geaendert",
+      "beschreibung": "Ein späterer Wunsch ersetzt den früheren",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "NAP",
+          "tatsaechlich": "IBZ",
+          "urteil": "falsch"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "entwurf": {
+        "origin": null,
+        "destination": {
+          "name": "Ibiza",
+          "iataCode": "IBZ",
+          "latitude": 38.8729,
+          "longitude": 1.3731
+        },
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "datum-verschoben",
+      "beschreibung": "Verschiebung der Reise wird übernommen",
+      "nochOffen": true,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "STR",
+          "tatsaechlich": "STR",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "ATH",
+          "tatsaechlich": "ATH",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Stuttgart",
+          "iataCode": "STR",
+          "latitude": 48.6899,
+          "longitude": 9.2219
+        },
+        "destination": {
+          "name": "Athen",
+          "iataCode": "ATH",
+          "latitude": 37.9364,
+          "longitude": 23.9445
+        },
+        "departureDate": "2026-09-04",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "rueckflug-vor-hinflug",
+      "beschreibung": "Unmögliche Reihenfolge wird nicht stillschweigend gespeichert",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "HAJ",
+          "tatsaechlich": "HAJ",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "VCE",
+          "tatsaechlich": "VCE",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "returnDate",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Hannover",
+          "iataCode": "HAJ",
+          "latitude": 52.4611,
+          "longitude": 9.6851
+        },
+        "destination": {
+          "name": "Venedig",
+          "iataCode": "VCE",
+          "latitude": 45.5053,
+          "longitude": 12.3519
+        },
+        "departureDate": "2026-10-20",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "datum-in-der-vergangenheit",
+      "beschreibung": "Ein vergangenes Datum wird zurückgewiesen",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "BRE",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "AGP",
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 1,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "unbekanntes-ziel",
+      "beschreibung": "Ein Ort ausserhalb des Katalogs",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 0,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wohin soll die Reise gehen?",
+      "entwurf": {
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
+      "id": "ausser-thema",
+      "beschreibung": "Kein Reisethema — der Entwurf bleibt leer",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": null,
+          "tatsaechlich": "IST",
+          "urteil": "erfunden"
+        },
+        {
+          "slot": "origin",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Von welchem Flughafen möchtest du starten?",
+      "entwurf": {
+        "origin": null,
+        "destination": {
+          "name": "Istanbul",
+          "iataCode": "IST",
+          "latitude": 41.2753,
+          "longitude": 28.7519
+        },
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "budget-und-praeferenz",
+      "beschreibung": "Budget und Wunsch werden festgehalten",
+      "nochOffen": false,
+      "befunde": [
+        {
+          "slot": "origin",
+          "erwartet": "NUE",
+          "tatsaechlich": "NUE",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "destination",
+          "erwartet": "PMI",
+          "tatsaechlich": "PMI",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "adults",
+          "erwartet": 2,
+          "tatsaechlich": 2,
+          "urteil": "richtig"
+        },
+        {
+          "slot": "budgetEuros",
+          "erwartet": 1200,
+          "tatsaechlich": null,
+          "urteil": "fehlt"
+        }
+      ],
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Nürnberg",
+          "iataCode": "NUE",
+          "latitude": 49.4987,
+          "longitude": 11.0781
+        },
+        "destination": {
+          "name": "Palma de Mallorca",
+          "iataCode": "PMI",
+          "latitude": 39.5517,
+          "longitude": 2.7388
+        },
+        "departureDate": "2026-09-19",
+        "returnDate": null,
+        "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    }
+  ],
+  "kennzahlen": {
+    "slotsGesamt": 61,
+    "richtig": 48,
+    "falsch": 1,
+    "erfunden": 2,
+    "fehlt": 10,
+    "genauigkeit": 0.7868852459016393,
+    "werkzeugaufrufeJeFall": 0.95,
+    "anteilMisslungenerAufrufe": 0.05263157894736842,
+    "bestandeneFaelle": 8,
+    "offeneFaelle": 4
+  }
+}
