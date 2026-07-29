@@ -7,9 +7,6 @@ const IS_CI = process.env.CI !== undefined;
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: '**/*.spec.ts',
-  // Startet eine eingebettete Datenbank und setzt DATABASE_URL, bevor der
-  // Webserver hochfaehrt. Kein Docker, keine Registry, keine Vorbedingungen.
-  globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 0,
@@ -36,14 +33,15 @@ export default defineConfig({
   // deployt wird. Ohne gesetzte Anbieter-Schluessel greifen die Seed-Adapter,
   // wodurch der Ablauf deterministisch bleibt.
   webServer: {
-    command: `npm run build && npm run start -- --port ${String(PORT)}`,
     /*
-     * Kein eigenes `env` an dieser Stelle: Playwright ersetzt damit die
-     * gesamte Umgebung des Webservers statt sie zu ergaenzen — die im
-     * globalSetup gesetzte DATABASE_URL waere weg, und die Anwendung liefe
-     * gegen eine Datenbank, die es nicht gibt. Was der Server sonst noch
-     * braucht, setzt deshalb ebenfalls das globalSetup.
+     * Das Startskript bringt seine eigene Datenbank mit — kein `globalSetup`.
+     *
+     * Playwright startet den Webserver naemlich **vor** dem globalSetup. Eine
+     * dort gesetzte DATABASE_URL erreicht den laufenden Prozess nicht mehr,
+     * und jeder Test scheiterte an einer Datenbank, die es nicht gab. Wer
+     * beides in einem Prozess startet, hat das Problem nicht.
      */
+    command: `npm run build && node scripts/e2e-server.mjs --port ${String(PORT)}`,
     url: BASE_URL,
     reuseExistingServer: !IS_CI,
     timeout: 180_000,
