@@ -50,3 +50,76 @@ export function NewTripButton() {
     </div>
   );
 }
+
+/**
+ * Reise loeschen.
+ *
+ * Zwei Stufen statt eines Bestaetigungsfensters: Der erste Klick verwandelt
+ * das Kreuz in ein deutliches „Loeschen?", erst der zweite loescht. Ein
+ * `confirm()` waere schneller geschrieben, blockiert aber die Seite und laesst
+ * sich im Test nicht bedienen.
+ *
+ * Weg ist weg: Nachrichten, Entwurf und Werkzeugprotokoll haengen per
+ * Fremdschluessel daran und verschwinden mit.
+ */
+export function DeleteTripButton({ conversationId, title }: DeleteTripButtonProps) {
+  const router = useRouter();
+  const [gefragt, setGefragt] = useState(false);
+  const [laeuft, setLaeuft] = useState(false);
+  const [fehler, setFehler] = useState<string | null>(null);
+
+  async function loeschen(): Promise<void> {
+    if (!gefragt) {
+      setGefragt(true);
+
+      return;
+    }
+
+    setLaeuft(true);
+    setFehler(null);
+
+    try {
+      await api.conversation.remove.mutate({ conversationId });
+
+      router.refresh();
+    } catch {
+      setFehler('Nicht gelöscht.');
+      setLaeuft(false);
+      setGefragt(false);
+    }
+  }
+
+  if (fehler !== null) {
+    return (
+      <span role="alert" className="px-2 text-xs text-amber-800">
+        {fehler}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void loeschen()}
+      onBlur={() => {
+        setGefragt(false);
+      }}
+      disabled={laeuft}
+      data-testid="delete-trip"
+      aria-label={gefragt ? `„${title}" wirklich löschen` : `„${title}" löschen`}
+      className={`shrink-0 rounded-md px-2 py-1 text-xs transition-colors ${
+        gefragt
+          ? 'bg-amber-100 text-amber-900'
+          : 'text-slate-300 hover:bg-slate-100 hover:text-slate-600'
+      }`}
+    >
+      {gefragt ? 'Löschen?' : '✕'}
+    </button>
+  );
+}
+
+interface DeleteTripButtonProps {
+  readonly conversationId: string;
+  /** Nur fuer die Vorlesehilfe — ein nacktes „Löschen" sagt nicht, was. */
+  readonly title: string;
+}

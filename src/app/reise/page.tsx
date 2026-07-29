@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { currentUser, serverApi } from '@/server/trpc/server-caller';
-import { NewTripButton } from '@/components/trip-list-actions';
+import { DeleteTripButton, NewTripButton } from '@/components/trip-list-actions';
 import { formatDateLong } from '@/lib/format';
 
 /**
@@ -43,23 +43,35 @@ export default async function TripListPage() {
         </p>
       ) : (
         <ul className="grid gap-2">
-          {reisen.map((reise) => (
-            <li key={reise.id}>
-              <Link
-                href={`/reise/${reise.id}`}
-                data-testid="trip-link"
-                className="hover:border-brand-500 flex items-baseline justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3"
-              >
-                <span className="font-medium">
-                  {reise.title ?? `Gespräch vom ${formatDateLong(isoDay(reise.createdAt))}`}
-                </span>
+          {reisen.map((reise) => {
+            const titel = reise.title ?? `Gespräch vom ${formatDateLong(isoDay(reise.createdAt))}`;
 
-                <span className="text-xs text-slate-400 tabular-nums">
-                  {formatDateLong(isoDay(reise.updatedAt))}
-                </span>
-              </Link>
-            </li>
-          ))}
+            return (
+              <li
+                key={reise.id}
+                className="hover:border-brand-500 flex items-center gap-2 rounded-lg border border-slate-200 bg-white pr-2"
+              >
+                {/*
+                  Der Loeschknopf steht neben dem Link, nicht darin: Ein Knopf
+                  in einem Link ist ungueltiges Markup, und ein Klick darauf
+                  wuerde ausserdem navigieren.
+                */}
+                <Link
+                  href={`/reise/${reise.id}`}
+                  data-testid="trip-link"
+                  className="flex flex-1 items-baseline justify-between gap-4 px-4 py-3"
+                >
+                  <span className="font-medium">{titel}</span>
+
+                  <span className="text-xs text-slate-400 tabular-nums">
+                    {formatDateLong(isoDay(reise.updatedAt))}
+                  </span>
+                </Link>
+
+                <DeleteTripButton conversationId={reise.id} title={titel} />
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>
