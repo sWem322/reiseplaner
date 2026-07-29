@@ -56,7 +56,17 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   await server.createDatabase('reiseplaner_e2e');
 
   const connectionString = `postgresql://e2e:e2e@localhost:${String(port)}/reiseplaner_e2e`;
+
+  /*
+   * Beides gehoert hierher und nicht in `webServer.env` der Playwright-Datei:
+   * Ein dort gesetztes `env` ersetzt die Umgebung, statt sie zu ergaenzen —
+   * die Datenbank-Adresse waere damit wieder weg.
+   */
   process.env.DATABASE_URL = connectionString;
+
+  // Ohne Netz-Anbieter: Der Ablauf haengt sonst an der Erreichbarkeit von
+  // Overpass, und ein ausgefallener Fremddienst faerbt den Lauf rot.
+  process.env.USE_NETWORK_PROVIDERS = 'false';
 
   if (await hasMigrations()) {
     const pool = new Pool({ connectionString, max: 1 });

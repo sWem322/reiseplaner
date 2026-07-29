@@ -37,9 +37,13 @@ export default defineConfig({
   // wodurch der Ablauf deterministisch bleibt.
   webServer: {
     command: `npm run build && npm run start -- --port ${String(PORT)}`,
-    // Ohne Netz-Anbieter: Der Ablauf haengt sonst an der Erreichbarkeit von
-    // Overpass, und ein ausgefallener Fremddienst faerbt den Lauf rot.
-    env: { USE_NETWORK_PROVIDERS: 'false' },
+    /*
+     * Kein eigenes `env` an dieser Stelle: Playwright ersetzt damit die
+     * gesamte Umgebung des Webservers statt sie zu ergaenzen — die im
+     * globalSetup gesetzte DATABASE_URL waere weg, und die Anwendung liefe
+     * gegen eine Datenbank, die es nicht gibt. Was der Server sonst noch
+     * braucht, setzt deshalb ebenfalls das globalSetup.
+     */
     url: BASE_URL,
     reuseExistingServer: !IS_CI,
     timeout: 180_000,
