@@ -85,6 +85,15 @@ export interface ToolFinishedEvent {
   readonly toolName: string;
   readonly outcome: ToolCallOutcome;
   readonly durationMs: number;
+  /**
+   * Das Ergebnis selbst.
+   *
+   * Ohne dieses Feld erfaehrt die Oberflaeche zwar, dass eine Suche gelaufen
+   * ist, aber nicht, was sie gefunden hat — die Angebotskarten erschienen
+   * deshalb erst nach dem Neuladen der Seite. Ein Suchergebnis waehrend des
+   * Laufs zu zeigen, ist der Sinn des Stroms.
+   */
+  readonly content: unknown;
 }
 
 export interface DraftUpdatedEvent {

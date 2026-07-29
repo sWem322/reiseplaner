@@ -89,6 +89,23 @@ describe('Ereignisstrom lesen', () => {
     expect(events).toEqual([]);
   });
 
+  it('liest das Suchergebnis mit, damit Karten sofort erscheinen', async () => {
+    const events = await collect(
+      streamOf(
+        sse({
+          type: 'tool_finished',
+          toolCallId: 'call_1',
+          toolName: 'search_flights',
+          outcome: 'ok',
+          durationMs: 812,
+          content: { offers: [{ id: 'f1', priceEuros: 278 }] },
+        }),
+      ),
+    );
+
+    expect(events[0]).toMatchObject({ content: { offers: [{ id: 'f1', priceEuros: 278 }] } });
+  });
+
   it('liest den Werkzeuglauf mit Ergebnis und Dauer', async () => {
     const events = await collect(
       streamOf(

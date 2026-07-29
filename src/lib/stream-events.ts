@@ -32,6 +32,9 @@ const toolFinished = z.object({
   toolName: z.string(),
   outcome: toolCallOutcomeSchema,
   durationMs: z.number(),
+  // Nachsichtig: Ein Ereignis ohne Ergebnis bleibt lesbar. Ohne das faellt
+  // eine Seite, die noch von einer aelteren Fassung stammt, stumm aus.
+  content: z.unknown().optional(),
 });
 
 const draftUpdated = z.object({

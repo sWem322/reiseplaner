@@ -5,6 +5,7 @@ import { stopReasonMessage, type StopReason } from '@/domain/agent';
 import type { ToolCallOutcome } from '@/domain/conversation';
 import type { TripDraft } from '@/domain/trip/trip';
 import { readEventStream } from '@/lib/stream-events';
+import { readToolPayload, type ToolPayload } from '@/lib/tool-results';
 
 /**
  * Ein Agentenlauf als Zustand.
@@ -21,6 +22,8 @@ export interface RunningTool {
   readonly input: unknown;
   readonly outcome: ToolCallOutcome | null;
   readonly durationMs: number | null;
+  /** Als Karte darstellbares Ergebnis, sofern es eines ist. */
+  readonly payload: ToolPayload | null;
 }
 
 export interface AgentRunState {
@@ -114,6 +117,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
                   input: event.input,
                   outcome: null,
                   durationMs: null,
+                  payload: null,
                 },
               ];
               break;
@@ -121,7 +125,15 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
             case 'tool_finished':
               tools = tools.map((tool) =>
                 tool.toolCallId === event.toolCallId
-                  ? { ...tool, outcome: event.outcome, durationMs: event.durationMs }
+                  ? {
+                      ...tool,
+                      outcome: event.outcome,
+                      durationMs: event.durationMs,
+                      payload:
+                        event.outcome === 'ok'
+                          ? readToolPayload(event.toolName, event.content)
+                          : null,
+                    }
                   : tool,
               );
               break;

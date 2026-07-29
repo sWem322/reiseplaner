@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ContentBlock, Message } from '@/domain/conversation';
 import type { TripDraft } from '@/domain/trip/trip';
+import type { ToolPayload } from '@/lib/tool-results';
 import { MessageView } from './message-view';
+import { OfferCards } from './offer-cards';
 import { ToolActivity } from './tool-activity';
 import { TripDraftPanel } from './trip-draft-panel';
 import { useAgentRun } from './use-agent-run';
@@ -29,6 +31,8 @@ interface LocalMessage {
   readonly key: string;
   readonly role: 'user' | 'assistant';
   readonly text: string;
+  /** Angebote dieses Zuges — sie bleiben stehen, wenn der Lauf endet. */
+  readonly payloads: readonly ToolPayload[];
 }
 
 const BEISPIELE = [
@@ -73,15 +77,24 @@ export function ChatView({
     setEingabe('');
     setLokal((vorher) => [
       ...vorher,
-      { key: `user-${String(vorher.length)}`, role: 'user', text: nachricht },
+      { key: `user-${String(vorher.length)}`, role: 'user', text: nachricht, payloads: [] },
     ]);
 
     const ergebnis = await send(nachricht);
 
-    if (ergebnis.text !== '') {
+    const gefunden = ergebnis.tools
+      .map((werkzeug) => werkzeug.payload)
+      .filter((payload) => payload !== null);
+
+    if (ergebnis.text !== '' || gefunden.length > 0) {
       setLokal((vorher) => [
         ...vorher,
-        { key: `assistant-${String(vorher.length)}`, role: 'assistant', text: ergebnis.text },
+        {
+          key: `assistant-${String(vorher.length)}`,
+          role: 'assistant',
+          text: ergebnis.text,
+          payloads: gefunden,
+        },
       ]);
     }
   }
@@ -101,14 +114,22 @@ export function ChatView({
               data-role={nachricht.role}
               className={nachricht.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
             >
-              <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                  nachricht.role === 'user'
-                    ? 'bg-brand-600 rounded-br-sm text-white'
-                    : 'rounded-bl-sm border border-slate-200 bg-white'
-                }`}
-              >
-                {nachricht.text}
+              <div className="w-full max-w-[85%]">
+                {nachricht.text !== '' && (
+                  <div
+                    className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                      nachricht.role === 'user'
+                        ? 'bg-brand-600 rounded-br-sm text-white'
+                        : 'rounded-bl-sm border border-slate-200 bg-white'
+                    }`}
+                  >
+                    {nachricht.text}
+                  </div>
+                )}
+
+                {nachricht.payloads.map((payload, index) => (
+                  <OfferCards key={`${payload.kind}-${String(index)}`} payload={payload} />
+                ))}
               </div>
             </li>
           ))}
@@ -116,6 +137,14 @@ export function ChatView({
           {laeuft && (
             <li className="flex flex-col gap-2">
               <ToolActivity tools={state.tools} />
+
+              {/* Angebote erscheinen, sobald das Werkzeug fertig ist — nicht
+                  erst mit dem Schlusstext des Modells. */}
+              {state.tools.map((werkzeug) =>
+                werkzeug.payload === null ? null : (
+                  <OfferCards key={`live-${werkzeug.toolCallId}`} payload={werkzeug.payload} />
+                ),
+              )}
 
               {state.text !== '' && (
                 <div

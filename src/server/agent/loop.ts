@@ -233,6 +233,7 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
         toolName: call.toolName,
         outcome: call.outcome,
         durationMs: call.durationMs,
+        content: call.content,
       };
 
       if (input.toolCallLogs !== undefined) {
