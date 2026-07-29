@@ -14,29 +14,10 @@
  * ("model is no longer available to new users") sagt nicht, welcher Name
  * stattdessen gilt.
  */
-import { readFileSync } from 'node:fs';
 import { GoogleGenAI } from '@google/genai';
+import { readEnv } from './read-env.mjs';
 
-function readEnvFile() {
-  try {
-    const raw = readFileSync(new URL('../.env', import.meta.url), 'utf8');
-    const values = {};
-
-    for (const line of raw.split('\n')) {
-      const match = /^\s*([A-Z_]+)\s*=\s*"?([^"\n]*)"?\s*$/.exec(line);
-
-      if (match) {
-        values[match[1]] = match[2];
-      }
-    }
-
-    return values;
-  } catch {
-    return {};
-  }
-}
-
-const env = { ...readEnvFile(), ...process.env };
+const env = readEnv(new URL('../', import.meta.url));
 const apiKey = env.GEMINI_API_KEY;
 
 if (!apiKey) {

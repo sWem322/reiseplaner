@@ -26,6 +26,7 @@
     "db:local": "node scripts/local-postgres.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate:deploy": "node scripts/migrate.mjs --deploy",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "flow:check": "node scripts/flow-check.mjs",

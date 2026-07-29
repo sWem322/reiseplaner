@@ -13,12 +13,50 @@ import pg from 'pg';
 import { access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { readEnv } from './read-env.mjs';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const migrationsFolder = join(projectRoot, 'drizzle');
 
-const connectionString =
-  process.env.DATABASE_URL ?? 'postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner';
+const env = readEnv(new URL('../', import.meta.url));
+
+/**
+ * `--deploy` wendet die Migrationen auf die Datenbank der veroeffentlichten
+ * Fassung an — die Adresse steht dann in `DATABASE_URL_DEPLOY`.
+ *
+ * Zwei getrennte Variablen statt einer: Wer die Adresse der Produktivdatenbank
+ * in `DATABASE_URL` eintraegt, entwickelt ab dann versehentlich auf ihr. Der
+ * Umweg ueber einen ausdruecklichen Schalter macht diesen Fehler unmoeglich.
+ */
+const deploy = process.argv.includes('--deploy');
+
+const connectionString = deploy
+  ? env.DATABASE_URL_DEPLOY
+  : (env.DATABASE_URL ?? 'postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner');
+
+if (deploy && (connectionString === undefined || connectionString === '')) {
+  console.error('DATABASE_URL_DEPLOY fehlt.');
+  console.error('Die Verbindungszeichenfolge aus Neon in .env.local eintragen:');
+  console.error('  DATABASE_URL_DEPLOY="postgresql://…?sslmode=require"');
+  process.exit(1);
+}
+
+console.log(
+  deploy
+    ? `Ziel: veröffentlichte Datenbank (${maskiere(connectionString)})`
+    : 'Ziel: lokale Datenbank',
+);
+
+/** Zeigt Host und Datenbank, aber nie das Passwort. */
+function maskiere(url) {
+  try {
+    const parsed = new URL(url);
+
+    return `${parsed.host}${parsed.pathname}`;
+  } catch {
+    return 'unlesbare Adresse';
+  }
+}
 
 try {
   await access(join(migrationsFolder, 'meta', '_journal.json'));
