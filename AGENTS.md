@@ -131,6 +131,27 @@ ein Neustart der Anwendung setzt ihn zurück. Wer also in eine volle Sandbox
 läuft, empfiehlt den Neustart der Anwendung — nicht eine neue Sitzung, die
 nichts löst und den bisherigen Gesprächsverlauf kostet.
 
+**Eine Sandbox mit vorhandenen `node_modules` lügt.** Sie enthält alles, was
+je installiert wurde — auch Pakete, die nie in `package.json` gelandet sind.
+Ein Lauf, der dort grün ist, sagt deshalb nichts darüber, ob das Repository
+vollständig ist. Genau das ist passiert: Die Pakete der Etappe 4
+(`@trpc/server`, `superjson`, `@node-rs/argon2`) waren in der Sandbox
+installiert, aber in keiner der beiden Dateien eingetragen. Auf dem Rechner der
+auftraggebenden Person ließ sich damit kein einziger Typ auflösen — 311
+Fehlermeldungen aus einer einzigen Ursache.
+
+Deshalb gilt am Ende jeder Etappe:
+
+- **Der Abschlusslauf beginnt mit `npm ci`**, nicht mit vorhandenen
+  `node_modules`. `npm ci` installiert ausschließlich, was im Lock steht, und
+  bricht ab, wenn `package.json` und Lock auseinanderlaufen.
+- **Jedes neue Paket wird im selben Commit eingetragen**, in dem sein erster
+  Import entsteht — `npm install --save-exact`, nie `npm install` in einer
+  Kopie ohne Rückweg.
+- **Gegenprobe vor dem Haken:** Jeder Paketname, der im Code importiert wird,
+  muss in `package.json` stehen. Ein Vergleich der Importe gegen die
+  Abhängigkeitsliste kostet einen Befehl und findet genau diesen Fehler.
+
 ### 5.2 Etappenplan einhalten
 
 `specs/ETAPPENPLAN.md` legt fest, was zu welcher Etappe gehört. Verbindlich:
