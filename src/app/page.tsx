@@ -32,6 +32,19 @@ export default async function HomePage() {
         wächst mit jeder Nachricht.
       </p>
 
+      {/*
+        Die Grenze steht vor dem ersten Klick, nicht erst in einer Absage.
+        Wer nach Miami fragt und „kenne ich nicht" hoert, haelt das fuer einen
+        Fehler — zu Recht, denn Miami gibt es ja.
+      */}
+      <p className="text-sm text-slate-500">
+        <span className="font-medium text-slate-700">
+          Europäische Ziele ab deutschen Flughäfen.
+        </span>{' '}
+        Mittelmeerraum, Kanaren, europäische Städte — von Düsseldorf, München, Berlin und zwölf
+        weiteren.
+      </p>
+
       <GuestStart />
 
       <p className="text-sm text-slate-500">

@@ -213,7 +213,7 @@ export function ChatView({
             disabled={laeuft}
             autoComplete="off"
             maxLength={2000}
-            placeholder="Wohin soll es gehen?"
+            placeholder="Wohin in Europa soll es gehen?"
             className="focus:border-brand-500 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none disabled:bg-slate-50"
           />
 

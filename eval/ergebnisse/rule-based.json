@@ -1,6 +1,6 @@
 {
   "llm": "rule-based",
-  "zeitpunkt": "2026-07-29T14:11:56.323Z",
+  "zeitpunkt": "2026-07-29T14:22:55.407Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -408,7 +408,10 @@
         },
         {
           "slot": "childAges",
-          "erwartet": [6, 9],
+          "erwartet": [
+            6,
+            9
+          ],
           "tatsaechlich": null,
           "urteil": "fehlt"
         }
@@ -863,6 +866,36 @@
       "bestanden": true
     },
     {
+      "id": "ziel-ausserhalb-europas",
+      "beschreibung": "Eine echte Stadt ausserhalb des Angebots — die Grenze wird benannt",
+      "nochOffen": false,
+      "nichtGemessen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 0,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wohin soll die Reise gehen?",
+      "entwurf": {
+        "origin": null,
+        "destination": null,
+        "departureDate": null,
+        "returnDate": null,
+        "adults": null,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": true
+    },
+    {
       "id": "unbekanntes-ziel",
       "beschreibung": "Ein Ort ausserhalb des Katalogs wird nicht erfunden",
       "nochOffen": false,
@@ -1000,15 +1033,15 @@
     }
   ],
   "kennzahlen": {
-    "slotsGesamt": 61,
-    "richtig": 55,
+    "slotsGesamt": 62,
+    "richtig": 56,
     "falsch": 0,
     "erfunden": 2,
     "fehlt": 4,
-    "genauigkeit": 0.9016393442622951,
-    "werkzeugaufrufeJeFall": 1.15,
+    "genauigkeit": 0.9032258064516129,
+    "werkzeugaufrufeJeFall": 1.0952380952380953,
     "anteilMisslungenerAufrufe": 0,
-    "bestandeneFaelle": 12,
+    "bestandeneFaelle": 13,
     "offeneFaelle": 0,
     "nichtGemesseneFaelle": 0
   }

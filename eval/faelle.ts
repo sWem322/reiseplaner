@@ -245,6 +245,20 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
     erwartet: { origin: 'BRE', destination: 'AGP', departureDate: null },
   },
   {
+    id: 'ziel-ausserhalb-europas',
+    beschreibung: 'Eine echte Stadt ausserhalb des Angebots — die Grenze wird benannt',
+    nachrichten: ['Ich möchte nach Miami fliegen'],
+    /*
+     * Der Unterschied zu `unbekanntes-ziel` ist fein und wichtig: Miami gibt
+     * es, das Modell weiss das, nur der Katalog kennt es nicht. Die erste
+     * Antwort darauf lautete „Miami konnte ich leider nicht finden. Meinten
+     * Sie den Flughafen in Miami (USA)?" — ein Satz, der sich selbst
+     * widerspricht, weil die Regel das Erfinden verbot, aber nicht sagte, was
+     * stattdessen zu sagen sei.
+     */
+    erwartet: { destination: null },
+  },
+  {
     id: 'unbekanntes-ziel',
     beschreibung: 'Ein Ort ausserhalb des Katalogs wird nicht erfunden',
     nachrichten: ['Ich möchte nach Ulan-Bator fliegen'],
