@@ -1,6 +1,6 @@
 {
   "llm": "gemini:gemini-flash-lite-latest",
-  "zeitpunkt": "2026-07-29T13:35:08.777Z",
+  "zeitpunkt": "2026-07-29T13:51:02.210Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -39,10 +39,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 5,
+      "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Flüge von Düsseldorf nach Mallorca vom 8. bis 15. Oktober 2026 gibt es Direktverbindungen ab 426 Euro für zwei Personen (Beispielpreise zur Veranschaulichung). Alle Angebote sind Nonstop-Flüge, wobei sich die Abflugzeiten leicht voneinander unterscheiden. Ich empfehle den günstigsten Flug am frühen Morgen um 6:20 Uhr, um den Anreisetag voll zu nutzen.",
+      "antwort": "Für den Flug von Düsseldorf nach Mallorca vom 8. bis 15. Oktober 2026 für zwei Personen (Beispielpreise zur Veranschaulichung) gibt es Direktflüge ab 426 Euro mit Demo Air, wobei die übrigen Angebote bis 449 Euro ebenfalls Direktflüge zu ähnlichen Zeiten sind. Ich empfehle, den günstigsten Flug direkt zu wählen, da sich die Flüge zeitlich nur wenig unterscheiden. Möchtest du dazu passende Unterkünfte suchen?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -106,7 +106,7 @@
       "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für Ihre Reise von Düsseldorf nach Barcelona vom 12.09. bis 19.09.2026 für zwei Erwachsene gibt es Direktoffen ab 553 Euro (Beispielpreise zur Veranschaulichung). Die günstigste Verbindung bietet Demo Air am frühen Morgen um 06:00 Uhr an, gefolgt von weiteren Nonstop-Flügen mit ähnlichen Flugzeiten ab 558 Euro. Suchen wir direkt passende Unterkünfte dazu?",
+      "antwort": "Für die Flüge von Düsseldorf nach Barcelona vom 12.09. bis 19.09.2026 gibt es gute Direktverbindungen. Bitte beachten Sie, dass es sich hierbei um Beispielpreise zur Veranschaulichung handelt. \n\nDer günstigste Hin- und Rückflug für zwei Personen kostet 553 Euro mit Demo Air und startet morgens um 06:00 Uhr. Die anderen Angebote liegen preislich nah beieinander, bis zu 575 Euro, und bieten teils flexiblere Flugzeiten am Vormittag oder Nachmittag. \n\nSoll ich dazu passende Unterkünfte in Barcelona heraussuchen?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -170,7 +170,7 @@
       "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Strecke von Frankfurt nach Lissabon vom 05.11. bis 12.11.2026 für zwei Personen habe ich ein paar Beispielpreise gefunden, da es sich um Demodaten handelt. Die Direktflüge liegen preislich nah beieinander, das günstigste Angebot startet bei 607 Euro insgesamt. Möchtest du, dass ich direkt nach einer passenden Unterkunft in Lissabon suche?",
+      "antwort": "Für die Strecke von Frankfurt nach Lissabon vom 5. bis 12. November 2026 für zwei Personen gibt es Direktflüge ab rund 607 Euro Gesamtreisepreis (Beispielpreise zur Veranschaulichung). Die Angebote liegen preislich sehr nah beieinander, sodass du vor allem nach den Flugzeiten entscheiden kannst – der günstigste Flug von Musterflug startet vormittags gegen 9:05 Uhr. Sollen wir direkt passende Unterkünfte in Lissabon heraussuchen?",
       "entwurf": {
         "origin": {
           "name": "Frankfurt am Main",
@@ -228,7 +228,7 @@
       "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchtet ihr denn abfliegen?",
+      "antwort": "Von wo aus möchtest du denn fliegen?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -245,7 +245,7 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "land-statt-stadt",
@@ -263,7 +263,7 @@
       "werkzeugaufrufe": 1,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Italien ist wunderbar. Welche Stadt oder Region zieht Sie denn besonders an, soll es zum Beispiel nach Rom, Mailand, Venedig oder ans Meer gehen?",
+      "antwort": "Italien ist wunderbar. Welche Region oder welche Stadt zieht Sie denn hin? Rom, Mailand, Florenz oder vielleicht an einen See oder ans Meer?",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -308,10 +308,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Mit wie vielen Erwachsenen reisen Sie, und gibt es Kinder mit Alter?",
+      "antwort": "Mit wie vielen Erwachsenen reisen Sie?",
       "entwurf": {
         "origin": {
           "name": "Hamburg",
@@ -363,7 +363,7 @@
       "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Kreta ist im nächsten Jahr eine Reise wert! Von welchem Flughafen aus möchtet ihr denn starten?",
+      "antwort": "Kreta ist im nächsten Jahr eine Reise wert. Von welchem Flughafen möchtet ihr denn abfliegen?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -380,7 +380,7 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "kinder-mit-alter",
@@ -408,15 +408,21 @@
         },
         {
           "slot": "childAges",
-          "erwartet": [6, 9],
-          "tatsaechlich": [6, 9],
+          "erwartet": [
+            6,
+            9
+          ],
+          "tatsaechlich": [
+            6,
+            9
+          ],
           "urteil": "richtig"
         }
       ],
       "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Strecke von München nach Antalya vom 15.08. bis 29.08.2026 für zwei Erwachsene und zwei Kinder liegen als Beispielpreise zur Veranschaulichung Angebote von Direktflügen ab etwa 1.707 Euro Gesamtkosten vor. Alle fünf angezeigten Flüge sind Nonstop-Verbindungen. Am günstigsten fliegen Sie mit Beispiel Airways am Vormittag.",
+      "antwort": "Für die Strecke von München nach Antalya vom 15.08. bis 29.08.2026 für zwei Erwachsene und zwei Kinder habe ich fünf Direktflüge gefunden (Beispielpreise zur Veranschaulichung). \n\nDie Preise liegen nah beieinander und starten bei rund 1.707 Euro mit Beispiel Airways, während Testjet und Demo Air mit etwa 1.726 bis 1.745 Euro sehr ähnlich liegen. Alle Angebote sind Direktflüge, sodass ihr bequem reist. \n\nSoll ich dazu passende Unterkünfte in Antalya heraussuchen?",
       "entwurf": {
         "origin": {
           "name": "München",
@@ -433,7 +439,10 @@
         "departureDate": "2026-08-15",
         "returnDate": "2026-08-29",
         "adults": 2,
-        "childAges": [6, 9],
+        "childAges": [
+          6,
+          9
+        ],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
@@ -465,10 +474,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 7,
+      "werkzeugaufrufe": 5,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für zwei Personen kosten die Direktflüge von Berlin nach Rhodos im genannten Zeitraum insgesamt ab 891 Euro (Beispielpreise zur Veranschaulichung). Bei den Unterkünften für sieben Nächte startet das günstigste Angebot mit der Residenz am Hafen Rhodos bei rund 951 Euro Gesamtpreis. Haben Sie bestimmte Wünsche an die Unterkunft, zum Beispiel Strandnähe oder eine bestimmte Sternekategorie?",
+      "antwort": "Für die Strecke von Berlin nach Rhodos vom 5. bis 12. September 2026 für zwei Erwachsene liegen die Preise der gefundenen Demo-Angebote recht nah beieinander und starten bei 891 Euro für den günstigsten Direktflug mit Musterflug. Die übrigen Direktverbindungen kosten zwischen 900 und 936 Euro und unterscheiden sich im Wesentlichen nur durch die Abflugzeiten. Soll ich dazu passende Unterkünfte heraussuchen?",
       "entwurf": {
         "origin": {
           "name": "Berlin Brandenburg",
@@ -511,10 +520,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 5,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Ich kann hier leider keine flexiblen Zeiträume vergleichen oder mehrere Daten gleichzeitig suchen. Wenn Sie möchten, können wir aber gerne eine zweite Suche für andere Reisedaten starten – welche Tage oder welchen Zeitraum würden Sie stattdessen bevorzugen?",
+      "antwort": "Ich kann leider keine flexiblen Zeiträume vergleichen oder mehrere Daten gleichzeitig suchen. Wenn Sie möchten, können wir aber gerne eine zweite Suche für andere Reisedaten starten – welche Tage würden Sie stattdessen vorschlagen?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -563,50 +572,50 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 2,
+      "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
-      "hatGesucht": true,
-      "antwort": "Für den von mir vorgeschlagenen Zeitraum vom 1. bis 8. Oktober 2026 gibt es Direktflüge (Beispielpreise zur Veranschaulichung) ab 279 Euro mit Demo Air. Die Tarife liegen alle recht nah beieinander, nur ein Angebot schlägt mit 440 Euro etwas nach oben aus. Wenn Ihnen die Termine passen, können wir gerne nach passenden Unterkünften suchen.",
+      "hatGesucht": false,
+      "antwort": "Ich kann keine flexiblen Zeiträume vergleichen oder nach den günstigsten Daten suchen, ohne dass ihr mir konkrete Reisedaten nennt. \n\nWollt ihr mir vielleicht eine Woche im Oktober nennen – zum Beispiel vom 10. bis 17. Oktober –, damit ich nachschauen kann, was Flüge kosten?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
           "iataCode": "DUS",
           "latitude": 51.2895,
-          "longitude": 6.76678
+          "longitude": 6.7668
         },
         "destination": {
-          "name": "Mallorca",
+          "name": "Palma de Mallorca",
           "iataCode": "PMI",
           "latitude": 39.5517,
           "longitude": 2.7388
         },
-        "departureDate": "2026-10-01",
-        "returnDate": "2026-10-08",
+        "departureDate": null,
+        "returnDate": null,
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": true
+      "bestanden": false
     },
     {
       "id": "wetterfrage",
-      "beschreibung": "Klimafrage vor der Buchung",
+      "beschreibung": "Klimafrage ist noch keine Reiseabsicht",
       "nochOffen": false,
       "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
-          "erwartet": "TFS",
+          "erwartet": null,
           "tatsaechlich": null,
-          "urteil": "fehlt"
+          "urteil": "richtig"
         }
       ],
       "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Auf Teneriffa ist es im Oktober nach den Klimawerten angenehm warm mit einer durchschnittlichen Höchsttemperatur von 35 Grad und Tiefstwerten von etwa 26 Grad. Die Wassertemperatur liegt bei rund 29 Grad, und es gibt im Schnitt 9 Regentage. (Dies sind Beispielwerte zur Veranschaulichung.)\n\nMöchten Sie im Oktober eine Reise nach Teneriffa planen?",
+      "antwort": "Im Oktober erwarten Sie auf Teneriffa Süd durchschnittliche Höchstwerte von rund 35 Grad und Tiefstwerte um 26 Grad, bei etwa 9 Regentagen im Monat. Die Wassertemperatur liegt bei angenehmen 29 Grad. \n\n*(Hinweis: Dies sind Beispielwerte zur Veranschaulichung.)*\n\nMöchten Sie im Oktober dorthin reisen? Wenn Sie mir noch Ihren Abflugort und die genauen Reisedaten nennen, schaue ich gerne nach passenden Flügen.",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -618,7 +627,7 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "buchung-nicht-moeglich",
@@ -639,10 +648,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 5,
+      "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Ich kann leider keine Buchungen vornehmen, da ich ein reiner Planungsassistent bin. Ich helfe dir aber gerne dabei, die passenden Unterkünfte oder weitere Details für deine Reise zusammenzustellen.",
+      "antwort": "Ich kann selbst keine Buchungen durchführen, da ich kein Buchungssystem bediene. Du kannst die Flüge jedoch direkt auf den Websites der jeweiligen Fluggesellschaften (wie Testjet oder Demo Air) oder über ein Buchungsportal reservieren. \n\nSoll ich stattdessen nach Unterkünften in Faro für denselben Zeitraum suchen?",
       "entwurf": {
         "origin": {
           "name": "Köln/Bonn",
@@ -682,7 +691,7 @@
       "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Neapel ist ebenfalls fantastisch. Von welchem Flughafen aus soll die Reise starten?",
+      "antwort": "Neapel ist ebenfalls wunderbar. Von welchem Flughafen möchtet ihr denn abfliegen?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -726,10 +735,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 6,
+      "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für den neuen Zeitraum vom 11. bis 18. September 2026 kosten die Beispielflüge für zwei Personen ab 635 Euro. Auch hier handelt es sich um Direktflüge, diesmal mit Demo Air als günstigster Option. Beachte bitte erneut, dass dies Beispielpreise zur Veranschaulichung sind. Sollen wir nun nach einer passenden Unterkunft für diesen Zeitraum in Athen schauen?",
+      "antwort": "Für die neue Woche vom 11. bis 18. September 2026 gibt es ebenfalls Direktflüge für zwei Personen, diesmal als Beispielpreise ab rund 635 Euro Gesamtkosten. Die Verbindungen sind ähnlich unkompliziert wie zuvor. Sollen wir direkt nach Unterkünften in Athen für diesen Zeitraum schauen?",
       "entwurf": {
         "origin": {
           "name": "Stuttgart",
@@ -781,7 +790,7 @@
       "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Der Rückflug am 12. September 2026 liegt vor dem Hinflug am 20. Oktober 2026. Welches Datum für den Rückflug ist stattdessen geplant?",
+      "antwort": "Der Rückflug am 12. September 2026 liegt vor dem Hinflug am 20. Oktober 2026. Welches Datum soll ich stattdessen für den Rückflug nehmen?",
       "entwurf": {
         "origin": {
           "name": "Hannover",
@@ -833,7 +842,7 @@
       "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Das Abflugdatum 2020 liegt in der Vergangenheit. Für welches Datum im kommenden Jahr planen Sie die Reise nach Málaga?",
+      "antwort": "Das Abflugdatum 2020-05-01 liegt in der Vergangenheit. Welches Reisedatum schwebt Ihnen denn für die Zukunft vor?",
       "entwurf": {
         "origin": {
           "name": "Bremen",
@@ -859,29 +868,24 @@
     },
     {
       "id": "unbekanntes-ziel",
-      "beschreibung": "Ein Ort ausserhalb des Katalogs",
+      "beschreibung": "Ein Ort ausserhalb des Katalogs wird nicht erfunden",
       "nochOffen": false,
       "nichtGemessen": false,
       "befunde": [
         {
           "slot": "destination",
           "erwartet": null,
-          "tatsaechlich": "ULN",
-          "urteil": "erfunden"
+          "tatsaechlich": null,
+          "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 3,
-      "misslungeneAufrufe": 2,
+      "werkzeugaufrufe": 1,
+      "misslungeneAufrufe": 1,
       "hatGesucht": false,
-      "antwort": "Nach Ulaanbaatar reisen wir also — das ist notiert. \n\nVon welchem Flughafen möchtest du starten?",
+      "antwort": "Ulan-Bator habe ich leider nicht im Angebot.",
       "entwurf": {
         "origin": null,
-        "destination": {
-          "name": "Ulaanbaatar",
-          "iataCode": "ULN",
-          "latitude": 47.8431,
-          "longitude": 106.97
-        },
+        "destination": null,
         "departureDate": null,
         "returnDate": null,
         "adults": null,
@@ -890,7 +894,7 @@
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "ausser-thema",
@@ -926,7 +930,7 @@
       "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Ich helfe dir gerne bei allem rund um deine Reiseplanung – von Flügen über Unterkünfte bis hin zum Wetter. Für Kochrezepte bist du hier allerdings beim falschen Ansprechpartner. \n\nPlanst du gerade eine Reise, bei der du vielleicht das Original-Tiramisu kosten möchtest, zum Beispiel in Italien?",
+      "antwort": "Da helfe ich dir leider nicht weiter — ich bin dein Assistent für die Reiseplanung. Möchtest du vielleicht eine Reise planen, zum Beispiel an den Geburtsort des Tiramisu nach Italien?",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -971,10 +975,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 5,
+      "werkzeugaufrufe": 6,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Flüge von Nürnberg nach Palma de Mallorca vom 19. bis 26. September 2026 liegen die Beispielpreise zwischen 502 und 538 Euro für zwei Personen (Direktflüge). \n\nBei den Unterkünften für denselben Zeitraum startet das günstigste Beispielangebot (das Strandhotel Aurora) bei rund 1249 Euro für sieben Nächte, womit das Gesamtbudget von 1200 Euro knapp überschritten wird. \n\nMöchten Sie das Budget anpassen oder schauen wir nach einer etwas günstigeren Unterkunft oder anderen Reisedaten?",
+      "antwort": "Für die Flüge von Nürnberg nach Palma de Mallorca vom 19. bis 26. September 2026 gibt es gute Direktverbindungen. Die Preise (Beispieldaten zur Veranschaulichung) beginnen bei 502 Euro für zwei Personen bei Beispiel Airways.\n\nBei den Unterkünften für sieben Nächte liegt das günstigste angezeigte Strandhotel (Beispielpreis) bei insgesamt 1.249 Euro, womit wir knapp über Ihrem Gesamtbudget von 1.200 Euro liegen würden. Möchten Sie das Budget anpassen oder sollen wir nach günstigeren Alternativen wie Unterkünften weiter außerhalb suchen?",
       "entwurf": {
         "origin": {
           "name": "Nürnberg",
@@ -993,7 +997,9 @@
         "adults": 2,
         "childAges": [],
         "budgetEuros": 1200,
-        "preferences": ["strandnah"],
+        "preferences": [
+          "strandnah"
+        ],
         "status": "collecting"
       },
       "bestanden": true
@@ -1001,14 +1007,14 @@
   ],
   "kennzahlen": {
     "slotsGesamt": 61,
-    "richtig": 59,
+    "richtig": 61,
     "falsch": 0,
-    "erfunden": 1,
-    "fehlt": 1,
-    "genauigkeit": 0.9672131147540983,
-    "werkzeugaufrufeJeFall": 3.65,
-    "anteilMisslungenerAufrufe": 0.0273972602739726,
-    "bestandeneFaelle": 16,
+    "erfunden": 0,
+    "fehlt": 0,
+    "genauigkeit": 1,
+    "werkzeugaufrufeJeFall": 3.5,
+    "anteilMisslungenerAufrufe": 0.014285714285714285,
+    "bestandeneFaelle": 19,
     "offeneFaelle": 4,
     "nichtGemesseneFaelle": 0
   }

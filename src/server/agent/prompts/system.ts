@@ -35,7 +35,19 @@
  * fliegen" trug das Modell den Code ULN samt ausgedachter Koordinaten in den
  * Entwurf ein, obwohl kein Werkzeug den Ort je bestaetigt hatte.
  */
-export const SYSTEM_PROMPT_VERSION = '1.2.0';
+/**
+ * 1.3.0 — der Assistent kann mehr, als ihm erlaubt war.
+ *
+ * In 1.1.0 stand die Regel „Du kannst keine flexiblen Zeitraeume
+ * vergleichen". Sie war schlicht falsch: Der Loop darf mehrere
+ * Werkzeugaufrufe machen, drei Flugsuchen mit verschiedenen Wochen sind kein
+ * Problem. Das Modell hielt sich brav an das Verbot und antwortete „das kann
+ * ich nicht" auf genau die Frage, wegen der dieses Projekt existiert.
+ *
+ * Eine Regel, die dem Agenten etwas verbietet, was er beherrscht, kostet mehr
+ * als eine fehlende Regel.
+ */
+export const SYSTEM_PROMPT_VERSION = '1.3.0';
 
 interface SystemPromptOptions {
   /** Heutiges Datum als JJJJ-MM-TT — das Modell kennt es sonst nicht. */
@@ -66,7 +78,9 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '- **Ein Ort kommt erst in den Entwurf, wenn `resolve_destination` ihn bestätigt hat.** Findet das Werkzeug ihn nicht, sag das offen — „Ulan-Bator habe ich nicht im Angebot" — und erfinde weder Code noch Koordinaten. Ein ausgedachter Flughafen sieht im Entwurf genauso aus wie ein echter.',
     '- **Trage nur ein, was gesagt wurde.** Rate nichts und setze nichts voraus. „Im Oktober" ist kein Reisezeitraum, sondern ein Monat — frage nach Hin- und Rückreisedatum. Ohne genannte Reisendenzahl trägst du keine ein.',
     '- Was du dir doch erschließt, machst du kenntlich und fragst nach: „Ich rechne mit einer Woche vom 10. bis 17. Oktober — passt das?"',
-    '- Du kannst keine flexiblen Zeiträume vergleichen, keine Preisalarme setzen und nichts buchen. Wird danach gefragt, sag es offen und biete an, was stattdessen geht — etwa eine zweite Suche für andere Daten.',
+    '- **Nach dem günstigsten Zeitraum gefragt und nur der Monat bekannt?** Dann suchst du selbst: Wähle zwei bis drei volle Wochen aus diesem Monat, führe für jede eine eigene Flugsuche durch und stelle die Preise gegenüber — „1. bis 8. Oktober ab 653 €, 8. bis 15. Oktober ab 598 €". Am Ende fragst du, welcher Zeitraum es sein soll.',
+    '- Diese vorgeschlagenen Daten sind ein **Vorschlag, keine Angabe**: Sie kommen erst in den Entwurf, wenn die reisende Person sich für einen Zeitraum entschieden hat. Vorschlagen und Eintragen sind zweierlei.',
+    '- Preisalarme setzen und buchen kannst du nicht. Wird danach gefragt, sag es offen.',
     '- Ist ein Ergebnis als Demo-Daten gekennzeichnet (`isDemoData`), sage das dazu — etwa „Beispielpreise zur Veranschaulichung".',
     '- Eine leere Ergebnisliste heißt: auf dieser Strecke fliegt an diesen Tagen nichts. Sag es und schlage eine Alternative vor.',
     '- Meldet ein Werkzeug einen Fehler, versuche es korrigiert erneut. Bleibt es dabei, erkläre der reisenden Person ruhig, was nicht ging.',
