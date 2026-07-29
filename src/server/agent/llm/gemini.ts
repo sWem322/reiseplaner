@@ -4,6 +4,7 @@ import type { ContentBlock } from '@/domain/conversation';
 import type { LlmMessage, LlmPort, LlmRequest, LlmResponse } from '@/domain/ports/llm';
 import { fail, ok, type Result } from '@/domain/result';
 import { toGeminiSchema } from './gemini-schema';
+import { buildModelChain, ModelRotation, suspensionFor } from './model-rotation';
 
 /**
  * Gemini hinter dem LlmPort.
@@ -45,9 +46,14 @@ export interface GeminiClient {
 
 export interface GeminiOptions {
   readonly apiKey: string;
+  /** Wunschmodell aus der Umgebung — kommt an den Anfang der Kette. */
   readonly model?: string;
+  /** Vollständige Kette, stärkstes zuerst. Ersetzt die Voreinstellung. */
+  readonly models?: readonly string[];
   /** Untergeschobener Client für Tests — ohne Schlüssel und ohne Netz. */
   readonly client?: GeminiClient;
+  /** Geteilter Zustand der Sperren; für Tests mit gestellter Uhr. */
+  readonly rotation?: ModelRotation;
 }
 
 // --- Hinweg: Domäne → Gemini -------------------------------------------
@@ -194,12 +200,29 @@ function mapError(error: unknown): Result<never> {
 
 // --- Port ---------------------------------------------------------------
 
+/**
+ * Ein gesperrtes Modell ist kein Fehler, solange ein anderes antwortet.
+ *
+ * Sperrgruende sind zweierlei: ein aufgebrauchtes Kontingent (429) und ein
+ * Name, den dieser Zugang nicht mehr benutzen darf (404, „no longer available
+ * to new users"). Beides betrifft das Modell, nicht die Anfrage — sie darf
+ * also unveraendert an das naechste gehen.
+ */
+function isModelUnavailable(message: string): boolean {
+  return (
+    /\b429\b|RESOURCE_EXHAUSTED|quota/i.test(message) ||
+    /\b404\b|NOT_FOUND|no longer available/i.test(message)
+  );
+}
+
 export function createGeminiLlm(options: GeminiOptions): LlmPort {
-  const model = options.model ?? DEFAULT_GEMINI_MODEL;
   const client: GeminiClient = options.client ?? new GoogleGenAI({ apiKey: options.apiKey });
 
+  const kette = options.models ?? buildModelChain(options.model);
+  const rotation = options.rotation ?? new ModelRotation({ models: kette });
+
   return {
-    name: `gemini:${model}`,
+    name: `gemini:${kette[0] ?? DEFAULT_GEMINI_MODEL}`,
 
     async complete(request: LlmRequest): Promise<Result<LlmResponse>> {
       const contents = toGeminiContents(request.messages);
@@ -214,26 +237,57 @@ export function createGeminiLlm(options: GeminiOptions): LlmPort {
         parameters: toGeminiSchema(tool.inputSchema),
       }));
 
-      try {
-        const response = await client.models.generateContent({
-          model,
-          contents,
-          config: {
-            systemInstruction: request.systemPrompt,
-            ...(request.maxOutputTokens === undefined
-              ? {}
-              : { maxOutputTokens: request.maxOutputTokens }),
-            ...(functionDeclarations.length === 0 ? {} : { tools: [{ functionDeclarations }] }),
-            // Reproduzierbarkeit vor Kreativität: Der Agent soll auf dieselbe
-            // Anfrage möglichst dieselben Werkzeuge aufrufen.
-            temperature: 0.2,
-          },
-        });
+      // Hoechstens ein Versuch je Modell — danach ist die Kette durch.
+      for (const _ of kette) {
+        const model = rotation.current();
 
-        return ok(fromGeminiResponse(response));
-      } catch (error) {
-        return mapError(error);
+        if (model === null) {
+          break;
+        }
+
+        try {
+          const response = await client.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction: request.systemPrompt,
+              ...(request.maxOutputTokens === undefined
+                ? {}
+                : { maxOutputTokens: request.maxOutputTokens }),
+              ...(functionDeclarations.length === 0 ? {} : { tools: [{ functionDeclarations }] }),
+              // Reproduzierbarkeit vor Kreativität: Der Agent soll auf dieselbe
+              // Anfrage möglichst dieselben Werkzeuge aufrufen.
+              temperature: 0.2,
+            },
+          });
+
+          return ok(fromGeminiResponse(response));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+
+          if (!isModelUnavailable(message)) {
+            return mapError(error);
+          }
+
+          const dauer = suspensionFor(message, Date.now());
+
+          rotation.suspend(model, dauer);
+
+          console.warn(
+            `Modell ${model} pausiert für ${String(Math.round(dauer / 60_000))} min — weiter mit dem nächsten.`,
+          );
+        }
       }
+
+      const frei = rotation.nextFreeAt();
+
+      return fail(
+        'rate_limited',
+        frei === null
+          ? 'Kein Modell hat geantwortet'
+          : `Alle Modelle sind bis ${new Date(frei).toISOString().slice(11, 16)} UTC ausgelastet`,
+        { models: kette, nextFreeAt: frei },
+      );
     },
   };
 }

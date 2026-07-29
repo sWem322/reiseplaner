@@ -1,6 +1,7 @@
 import type { LlmPort } from '@/domain/ports/llm';
 import type { Providers } from '@/domain/ports/providers';
 import { createGeminiLlm } from '../agent/llm/gemini';
+import { buildModelChain, sharedRotation } from '../agent/llm/model-rotation';
 import { createRuleBasedLlm } from '../agent/llm/rule-based';
 import { createDuffelFlightSearch } from './http/duffel';
 import { createOpenMeteoGeocoding, createOpenMeteoWeather } from './http/open-meteo';
@@ -25,6 +26,8 @@ export interface ProviderConfig {
   readonly duffelAccessToken?: string | undefined;
   readonly travelpayoutsToken?: string | undefined;
   readonly geminiApiKey?: string | undefined;
+  /** Wunschmodell; es steht am Anfang der Kette, ersetzt sie aber nicht. */
+  readonly geminiModel?: string | undefined;
   /**
    * Netzwerkfreie Anbieter (Open-Meteo, Overpass) brauchen keinen Schluessel,
    * sollen in Tests und E2E-Laeufen aber trotzdem abschaltbar sein.
@@ -71,8 +74,19 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
    */
   const hasGemini = config.geminiApiKey !== undefined && config.geminiApiKey.length > 0;
 
+  /*
+   * Die Sperren der Modelle gehoeren nicht zum Adapter, sondern zum Prozess:
+   * Die Fabrik baut den Adapter je Anfrage neu, und ein aufgebrauchtes
+   * Kontingent bleibt es auch fuer die naechste.
+   */
+  const kette = buildModelChain(config.geminiModel);
+
   const llm = hasGemini
-    ? createGeminiLlm({ apiKey: config.geminiApiKey ?? '' })
+    ? createGeminiLlm({
+        apiKey: config.geminiApiKey ?? '',
+        models: kette,
+        rotation: sharedRotation(kette),
+      })
     : createRuleBasedLlm();
 
   return {

@@ -4,6 +4,7 @@ import type { GenerateContentResponse } from '@google/genai';
 import type { LlmRequest } from '@/domain/ports/llm';
 import { unwrap } from '@/domain/result';
 import { createGeminiLlm, type GeminiClient } from './gemini';
+import { ModelRotation } from './model-rotation';
 import { toGeminiSchema } from './gemini-schema';
 
 /**
@@ -592,5 +593,162 @@ describe('Signatur des Modells', () => {
     const antwort = unwrap(await llm.complete(request()));
 
     expect(antwort.blocks[0]).not.toHaveProperty('providerSignature');
+  });
+});
+
+/**
+ * Heisser Wechsel zwischen Modellen.
+ *
+ * Das kostenlose Kontingent gilt je Modell. Faellt das staerkste aus, soll
+ * dieselbe Anfrage beim naechsten landen — ohne dass der Loop davon etwas
+ * merkt. Von Hand ist das kaum zu pruefen: Ein Tageslimit erschoepft sich
+ * einmal am Tag.
+ */
+describe('Wechsel des Modells bei erschöpftem Kontingent', () => {
+  const KETTE = ['stark', 'mittel', 'schwach'];
+
+  /** Antwortet erst, wenn eines der genannten Modelle gefragt wird. */
+  function clientMitLimit(
+    erschoepft: readonly string[],
+    gefragt: string[],
+    fehler = '{"error":{"code":429,"message":"You exceeded your current quota"}}',
+  ): GeminiClient {
+    return {
+      models: {
+        generateContent(request) {
+          gefragt.push(request.model);
+
+          if (erschoepft.includes(request.model)) {
+            return Promise.reject(new Error(fehler));
+          }
+
+          return Promise.resolve(textResponse as GenerateContentResponse);
+        },
+      },
+    };
+  }
+
+  function rotation(models: readonly string[] = KETTE): ModelRotation {
+    return new ModelRotation({ models });
+  }
+
+  it('weicht auf das nächste Modell aus und liefert eine Antwort', async () => {
+    const gefragt: string[] = [];
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      models: KETTE,
+      rotation: rotation(),
+      client: clientMitLimit(['stark'], gefragt),
+    });
+
+    const antwort = await llm.complete(request());
+
+    expect(antwort.ok).toBe(true);
+    expect(gefragt).toEqual(['stark', 'mittel']);
+  });
+
+  it('überspringt das gesperrte Modell beim nächsten Aufruf sofort', async () => {
+    const gefragt: string[] = [];
+    const geteilt = rotation();
+    const client = clientMitLimit(['stark'], gefragt);
+
+    const llm = createGeminiLlm({ apiKey: 'test', models: KETTE, rotation: geteilt, client });
+
+    await llm.complete(request());
+    gefragt.length = 0;
+
+    await llm.complete(request());
+
+    // Kein zweiter Anlauf gegen ein Modell, dessen Kontingent bekannt leer ist.
+    expect(gefragt).toEqual(['mittel']);
+  });
+
+  it('geht auch bei einem entzogenen Modellnamen weiter', async () => {
+    const gefragt: string[] = [];
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      models: KETTE,
+      rotation: rotation(),
+      client: clientMitLimit(
+        ['stark'],
+        gefragt,
+        '{"error":{"code":404,"message":"no longer available to new users"}}',
+      ),
+    });
+
+    await expect(llm.complete(request())).resolves.toMatchObject({ ok: true });
+    expect(gefragt).toEqual(['stark', 'mittel']);
+  });
+
+  it('meldet rate_limited, erst wenn die ganze Kette erschöpft ist', async () => {
+    const gefragt: string[] = [];
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      models: KETTE,
+      rotation: rotation(),
+      client: clientMitLimit(KETTE, gefragt),
+    });
+
+    const antwort = await llm.complete(request());
+
+    expect(antwort.ok).toBe(false);
+    if (!antwort.ok) {
+      expect(antwort.error.kind).toBe('rate_limited');
+    }
+
+    expect(gefragt).toEqual(KETTE);
+  });
+
+  it('wechselt nicht bei einem Fehler, der nicht am Modell liegt', async () => {
+    const gefragt: string[] = [];
+
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      models: KETTE,
+      rotation: rotation(),
+      client: {
+        models: {
+          generateContent(anfrage) {
+            gefragt.push(anfrage.model);
+
+            return Promise.reject(new Error('{"error":{"code":400,"message":"bad request"}}'));
+          },
+        },
+      },
+    });
+
+    const antwort = await llm.complete(request());
+
+    expect(antwort.ok).toBe(false);
+    // Eine abgelehnte Anfrage wird bei jedem anderen Modell genauso abgelehnt.
+    expect(gefragt).toEqual(['stark']);
+  });
+
+  it('behält den Verlauf beim Wechsel unverändert', async () => {
+    const gesehen: unknown[] = [];
+
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      models: KETTE,
+      rotation: rotation(),
+      client: {
+        models: {
+          generateContent(anfrage) {
+            gesehen.push(anfrage.contents);
+
+            if (anfrage.model === 'stark') {
+              return Promise.reject(new Error('429 quota'));
+            }
+
+            return Promise.resolve(textResponse as GenerateContentResponse);
+          },
+        },
+      },
+    });
+
+    await llm.complete(request());
+
+    expect(gesehen).toHaveLength(2);
+    expect(gesehen[1]).toEqual(gesehen[0]);
   });
 });

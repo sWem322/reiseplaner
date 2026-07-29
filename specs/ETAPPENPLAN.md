@@ -110,6 +110,22 @@ selbsttragenden Token, damit sie sich widerrufen lassen.
 - [x] Verdichtung der Historie über `LlmPort`
 - [x] Integrationstests der Prozeduren
 
+### Nachtrag zu Etappe 3 — Modellkette (abgestimmt am 29.07.2026)
+
+Das kostenlose Kontingent gilt je Modell, nicht je Zugang. In der Abnahme von
+Etappe 5 lief `gemini-flash-latest` mitten im Gespräch in ein 429, und die
+Demo stand — obwohl `gemini-flash-lite-latest` weiterhin antwortete.
+
+- [x] Kette statt eines festen Modells, stärkstes zuerst
+- [x] Bei 429 oder entzogenem Modellnamen rückt dieselbe Anfrage zum nächsten
+      Modell weiter; der Loop merkt nichts davon
+- [x] Sperre endet mit der vom Dienst genannten Wartezeit, sonst zum
+      Zurücksetzen des Tageskontingents (Mitternacht in Kalifornien)
+- [x] Danach beginnt jede Anfrage wieder beim stärksten Modell — ohne dass
+      etwas zurückgesetzt werden müsste
+- [x] Der Zustand gehört dem Prozess, nicht dem Adapter: Die Fabrik baut den
+      Adapter je Anfrage neu
+
 ## Etappe 5 — Oberfläche
 
 - [ ] Chat mit Streaming

@@ -65,6 +65,7 @@ export async function POST(request: Request): Promise<Response> {
    */
   const selection = createProviders({
     geminiApiKey: env.GEMINI_API_KEY,
+    geminiModel: env.GEMINI_MODEL,
     duffelAccessToken: env.DUFFEL_ACCESS_TOKEN,
   });
 
