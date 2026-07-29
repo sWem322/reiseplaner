@@ -3,6 +3,7 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 import { access, mkdtemp, rm } from 'node:fs/promises';
+import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as schema from '@/server/db/schema';
@@ -20,6 +21,44 @@ const MIGRATIONS_FOLDER = './drizzle';
  * Spracheinstellung unterschiedlich.
  */
 const INITDB_FLAGS = ['--encoding=UTF8', '--no-locale'];
+
+/** `admin_shutdown` — PostgreSQL beendet die Sitzung beim Herunterfahren. */
+const SHUTDOWN_ERROR_CODE = '57P01';
+
+/**
+ * Einen tatsaechlich freien Port besorgen.
+ *
+ * Vorher wurde einer aus einem Bereich gewuerfelt. Bei fuenf gleichzeitig
+ * laufenden Testdateien trafen zwei irgendwann denselben — die zweite
+ * verband sich dann mit dem fremden Cluster, und sobald der erste sich
+ * beendete, brachen deren Verbindungen ab: „terminating connection due to
+ * administrator command". Die Tests liefen trotzdem durch, aber der Lauf
+ * scheiterte an zwei unbehandelten Fehlern. Nur in CI, nur manchmal.
+ *
+ * Das Betriebssystem weiss besser, welcher Port frei ist: Port 0 anfragen,
+ * die Zuteilung ablesen, wieder schliessen.
+ */
+async function freePort(): Promise<number> {
+  return new Promise<number>((resolve, reject) => {
+    const probe = createServer();
+
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const address = probe.address();
+
+      if (address === null || typeof address === 'string') {
+        probe.close();
+        reject(new Error('Der Testlauf konnte keinen freien Port ermitteln'));
+
+        return;
+      }
+
+      probe.close(() => {
+        resolve(address.port);
+      });
+    });
+  });
+}
 
 async function hasMigrations(): Promise<boolean> {
   try {
@@ -46,7 +85,7 @@ export interface TestDatabase {
  */
 export async function startTestDatabase(): Promise<TestDatabase> {
   const dataDir = await mkdtemp(join(tmpdir(), 'reiseplaner-pg-'));
-  const port = 55_000 + Math.floor(Math.random() * 5_000);
+  const port = await freePort();
 
   const server = new EmbeddedPostgres({
     databaseDir: dataDir,
@@ -66,6 +105,18 @@ export async function startTestDatabase(): Promise<TestDatabase> {
 
   const connectionString = `postgresql://test:test@localhost:${String(port)}/reiseplaner_test`;
   const pool = new Pool({ connectionString });
+
+  /*
+   * Ein Fehler auf einer ruhenden Verbindung wuerde sonst als unbehandeltes
+   * Ereignis den ganzen Lauf beenden. Beim Herunterfahren des Clusters ist
+   * genau das zu erwarten und harmlos — alles andere wird gemeldet.
+   */
+  pool.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code !== SHUTDOWN_ERROR_CODE) {
+      console.error('Unerwarteter Fehler im Verbindungspool:', error);
+    }
+  });
+
   const db = drizzle(pool, { schema });
 
   // In Etappe 0 existieren noch keine Tabellen und damit keine Migrationen.

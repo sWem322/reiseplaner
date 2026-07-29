@@ -20,6 +20,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -28,11 +29,27 @@ const portIndex = process.argv.indexOf('--port');
 const WEB_PORT = portIndex === -1 ? '3100' : (process.argv[portIndex + 1] ?? '3100');
 
 /*
- * Zufaelliger Datenbank-Port: Ein fester wuerde mit einer laufenden
- * Entwicklungs-Instanz kollidieren, und dann liefen die Tests unbemerkt gegen
- * die echten Daten.
+ * Freien Port vom Betriebssystem erfragen statt einen zu wuerfeln: Ein fester
+ * Port kollidiert mit einer laufenden Entwicklungs-Instanz, ein gewuerfelter
+ * gelegentlich mit einem anderen Testlauf. Beides endet damit, dass zwei
+ * Prozesse dieselbe Datenbank benutzen, ohne es zu merken.
  */
-const DB_PORT = 54_500 + Math.floor(Math.random() * 400);
+const DB_PORT = await freePort();
+
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+
+      probe.close(() => {
+        resolve(port);
+      });
+    });
+  });
+}
 
 const dataDir = await mkdtemp(join(tmpdir(), 'reiseplaner-e2e-'));
 
