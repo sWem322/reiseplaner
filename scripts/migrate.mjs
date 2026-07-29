@@ -33,7 +33,26 @@ try {
   await migrate(drizzle(pool), { migrationsFolder });
   console.log('Migrationen angewendet.');
 } catch (error) {
+  /*
+   * Drizzle meldet nur die abgebrochene Abfrage — der Grund steht eine Ebene
+   * tiefer in `cause`. Ohne diese Kette liest sich ein nicht laufender Server
+   * wie ein Fehler in der Migration selbst.
+   */
   console.error('Migration fehlgeschlagen:', error instanceof Error ? error.message : error);
+
+  for (let ursache = error?.cause; ursache !== undefined; ursache = ursache?.cause) {
+    console.error('  Ursache:', ursache instanceof Error ? ursache.message : ursache);
+
+    if (ursache?.code === 'ECONNREFUSED') {
+      console.error(`  Unter ${connectionString} nimmt niemand Verbindungen an.`);
+      console.error('  Laeuft "npm run db:local" noch in einem eigenen Terminal?');
+    }
+
+    if (ursache?.code === '28P01' || ursache?.code === '3D000') {
+      console.error('  Zugangsdaten oder Datenbankname passen nicht zu DATABASE_URL.');
+    }
+  }
+
   process.exitCode = 1;
 } finally {
   await pool.end();
