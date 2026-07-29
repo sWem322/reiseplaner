@@ -30,6 +30,17 @@ function createDrafts(initial: TripDraft = emptyTripDraft()): TripDraftRepositor
   };
 }
 
+/**
+ * Ein Entwurf, in dem die Reisendenzahl schon steht.
+ *
+ * Die Suchwerkzeuge verlangen sie dort — nicht im Aufruf. Ohne diesen
+ * Vorlauf lehnen sie jede Suche ab, und die Tests wuerden statt der Suche
+ * die Grenze pruefen.
+ */
+function mitReisenden(adults: number): TripDraftRepository {
+  return createDrafts({ ...emptyTripDraft(), adults });
+}
+
 function registry(drafts: TripDraftRepository = createDrafts()) {
   return createToolRegistry({ providers: createSeedProviders(), tripDrafts: drafts });
 }
@@ -119,7 +130,7 @@ describe('search_flights', () => {
   };
 
   it('liefert Angebote in verkuerzter Form', async () => {
-    const result = await call('search_flights', gueltig);
+    const result = await call('search_flights', gueltig, mitReisenden(2));
     const value = unwrap(result) as { offers: { priceEuros: number; stops: number }[] };
 
     expect(value.offers.length).toBeGreaterThan(0);
@@ -129,9 +140,25 @@ describe('search_flights', () => {
 
   it('setzt childAges auf eine leere Liste, wenn nichts angegeben wurde', async () => {
     const { childAges: _unused, ...ohneKinder } = gueltig;
-    const result = await call('search_flights', ohneKinder);
+    const result = await call('search_flights', ohneKinder, mitReisenden(2));
 
     expect(result.ok).toBe(true);
+  });
+
+  /*
+   * Der Kern der Grenze: Der Aufruf ist formal einwandfrei — `adults: 2` steht
+   * drin — und wird trotzdem abgewiesen, weil im Entwurf keine Zahl steht.
+   * Eine Zahl im Aufruf beweist nur, dass das Schema sie verlangt, nicht dass
+   * jemand sie genannt hat.
+   */
+  it('verweigert die Suche, solange die Reisendenzahl nicht im Entwurf steht', async () => {
+    const result = await call('search_flights', gueltig);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('validation_error');
+      expect(result.error.message).toContain('update_trip_draft');
+    }
   });
 
   it.each([
@@ -147,9 +174,12 @@ describe('search_flights', () => {
   });
 
   it('meldet einen unbekannten Flughafen', async () => {
-    const result = await call('search_flights', { ...gueltig, originIata: 'XXX' });
+    const result = await call('search_flights', { ...gueltig, originIata: 'XXX' }, mitReisenden(2));
 
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('not_found');
+    }
   });
 });
 
@@ -162,7 +192,7 @@ describe('search_hotels', () => {
   };
 
   it('liefert Angebote samt Gesamtpreis fuer den Aufenthalt', async () => {
-    const result = await call('search_hotels', gueltig);
+    const result = await call('search_hotels', gueltig, mitReisenden(2));
     const value = unwrap(result) as {
       nights: number;
       offers: { pricePerNightEuros: number; totalEuros: number }[];
@@ -174,7 +204,11 @@ describe('search_hotels', () => {
   });
 
   it('lehnt einen Aufenthalt ohne Uebernachtung ab', async () => {
-    const result = await call('search_hotels', { ...gueltig, checkOut: gueltig.checkIn });
+    const result = await call(
+      'search_hotels',
+      { ...gueltig, checkOut: gueltig.checkIn },
+      mitReisenden(2),
+    );
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -183,9 +217,27 @@ describe('search_hotels', () => {
   });
 
   it('meldet einen unbekannten Zielort', async () => {
-    const result = await call('search_hotels', { ...gueltig, destinationIata: 'XXX' });
+    const result = await call(
+      'search_hotels',
+      { ...gueltig, destinationIata: 'XXX' },
+      mitReisenden(2),
+    );
 
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('not_found');
+    }
+  });
+
+  // Dieselbe Grenze wie bei den Flügen: Wie viele Gäste ein Zimmer braucht,
+  // ist dieselbe Tatsache wie die Reisendenzahl — und die wird gefragt.
+  it('verweigert die Suche, solange die Reisendenzahl nicht im Entwurf steht', async () => {
+    const result = await call('search_hotels', gueltig);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('Reisenden');
+    }
   });
 });
 

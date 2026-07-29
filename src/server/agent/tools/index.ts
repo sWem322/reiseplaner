@@ -67,6 +67,43 @@ function resolveDestinationTool(
   };
 }
 
+// --- Gemeinsame Vorbedingung der Suchwerkzeuge -------------------------
+
+/**
+ * Ohne Reisendenzahl im Entwurf keine Suche.
+ *
+ * `adults` ist ein Pflichtfeld der Suchschemata — und ein Pflichtfeld ist
+ * selbst eine Anweisung: Wer suchen will, muss eine Zahl liefern. Fehlt sie,
+ * denkt sich das Modell eine aus, weil der Aufruf sonst gar nicht zustande
+ * kommt. Genau das ist in der Abnahme passiert: Auf eine Doppelfrage („wann
+ * und für wie viele Personen?") kam eine halbe Antwort, und aus der Lücke
+ * wurde stillschweigend ein Erwachsener.
+ *
+ * Eine Regel im Prompt hilft dagegen wenig. Sie tritt gegen die Signatur an,
+ * und die steht näher an der Tat. Also wird aus der Bitte eine Grenze: Der
+ * Fehler geht als `tool_result` zurück, das Modell fragt nach, hält die
+ * Antwort fest und sucht danach erneut. Dieselbe Mechanik wie bei jedem
+ * anderen Werkzeugfehler — nur dass hier der Anrufer im Unrecht ist, nicht
+ * der Anbieter.
+ */
+async function reisendenzahlPruefen(
+  deps: ToolDependencies,
+  conversationId: string,
+): Promise<Result<never> | null> {
+  const entwurf = await deps.tripDrafts.findByConversation(conversationId);
+
+  if (entwurf !== null && entwurf.adults !== null) {
+    return null;
+  }
+
+  return fail(
+    'validation_error',
+    'Die Zahl der Reisenden steht nicht im Reise-Entwurf. Frage zuerst, wie viele Erwachsene ' +
+      'mitreisen, halte die Antwort mit update_trip_draft fest und suche danach erneut.',
+    { fehlendesFeld: 'adults' },
+  );
+}
+
 // --- Flugsuche ---------------------------------------------------------
 
 const searchFlightsInput = z.object({
@@ -90,9 +127,16 @@ function searchFlightsTool(deps: ToolDependencies): Tool<z.infer<typeof searchFl
       'Setzt IATA-Codes voraus — vorher resolve_destination aufrufen.',
       'Eine leere Ergebnisliste bedeutet, dass auf dieser Strecke an diesen Tagen nichts fliegt;',
       'das ist kein Fehler, sondern eine Auskunft, die weitergegeben werden soll.',
+      'Setzt voraus, dass die Reisendenzahl im Entwurf steht — sie darf nicht geraten werden.',
     ].join(' '),
     inputSchema: searchFlightsInput,
-    async execute(input) {
+    async execute(input, context) {
+      const ohneReisende = await reisendenzahlPruefen(deps, context.conversationId);
+
+      if (ohneReisende !== null) {
+        return ohneReisende;
+      }
+
       const originResult = await deps.providers.geocoding.resolve(input.originIata);
       const destinationResult = await deps.providers.geocoding.resolve(input.destinationIata);
 
@@ -164,9 +208,16 @@ function searchHotelsTool(deps: ToolDependencies): Tool<z.infer<typeof searchHot
     description: [
       'Sucht Unterkünfte am Zielort für einen Zeitraum und liefert die fünf günstigsten.',
       'Preise sind Demo-Werte und müssen als solche benannt werden, wenn sie genannt werden.',
+      'Setzt voraus, dass die Reisendenzahl im Entwurf steht — die Gästezahl darf nicht geraten werden.',
     ].join(' '),
     inputSchema: searchHotelsInput,
-    async execute(input) {
+    async execute(input, context) {
+      const ohneReisende = await reisendenzahlPruefen(deps, context.conversationId);
+
+      if (ohneReisende !== null) {
+        return ohneReisende;
+      }
+
       const nights = nightsBetween(input.checkIn, input.checkOut);
 
       if (nights < 1) {

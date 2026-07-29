@@ -79,6 +79,11 @@ auch die, die heute noch scheitern:
 - eine Frage statt einer Antwort („kannst du die Daten flexibel machen?")
 - Kinder, nach denen nie gefragt wurde
 - die Bitte, mehrere Zeiträume zu vergleichen
+- eine echte Stadt ausserhalb des Angebots („Miami")
+- eine halbe Antwort auf eine Doppelfrage
+
+Der Datensatz wächst dadurch mit jeder Abnahme. Das ist beabsichtigt: Ein
+Fehler, der einmal aufgetreten ist, hat ab dann einen Wächter.
 
 ## Was dabei herauskam
 
@@ -87,6 +92,11 @@ auch die, die heute noch scheitern:
 | regelbasiert         | 91,8 %           | 2        | 12/20     | 1,1            |
 | Gemini, Prompt 1.1.0 | 96,7 %           | 1        | 16/20     | 3,6            |
 | Gemini, Prompt 1.3.0 | **100 %**        | **0**    | **20/20** | 4,1            |
+
+Gemessen an den zwanzig Fällen, die es damals gab. Seither sind zwei
+dazugekommen — „Miami" und die halbe Antwort —, beide aus einer Abnahme, beide
+mit einer Prompt-Änderung im Rücken. Die Zeile für 1.5.0 folgt, wenn das
+Tageskontingent den Lauf wieder zulässt.
 
 Der Weg dorthin ist die eigentliche Geschichte:
 
@@ -114,9 +124,31 @@ Verbot und antwortete „das kann ich nicht" auf genau die Frage, wegen der
 dieses Projekt existiert. Eine Regel, die dem Agenten etwas verbietet, was er
 beherrscht, kostet mehr als eine fehlende Regel.
 
+## Eine Regel, die keine Regel bleiben durfte
+
+Der jüngste Fall ist der lehrreichste. Der Assistent fragte „Wann möchten Sie
+reisen und für wie viele Personen?", bekam „21. Oktober" — und suchte danach
+Flüge für einen Erwachsenen, den nie jemand genannt hatte.
+
+Im Prompt stand seit 1.1.0: „Ohne genannte Reisendenzahl trägst du keine ein."
+Die Regel war da, sie war eindeutig, und sie verlor trotzdem. Denn
+`search_flights` verlangt `adults` als Pflichtfeld — und ein Pflichtfeld ist
+selbst eine Anweisung, nur eine, die näher an der Tat steht. Wer suchen will,
+braucht eine Zahl; also entsteht eine.
+
+Die Lehre daraus gilt über diesen Fall hinaus: **Wo Prompt und Signatur
+einander widersprechen, gewinnt die Signatur.** Also prüft das Werkzeug jetzt
+selbst den Entwurf und weist die Suche ab, solange dort keine Zahl steht. Der
+Fehler geht als `tool_result` zurück, das Modell fragt nach und sucht danach
+erneut — dieselbe Selbstkorrektur wie bei jedem Anbieterfehler.
+
+Derselbe `?? 1` stand übrigens auch im regelbasierten Extraktor, also in
+meinem eigenen Code. Was man dem Modell vorwirft, sollte man zuerst bei sich
+suchen.
+
 ## Was die Zahlen nicht sagen
 
-Zwanzig Fälle sind keine Statistik. Sie sind ein Netz, das die bekannten
+Zwei Dutzend Fälle sind keine Statistik. Sie sind ein Netz, das die bekannten
 Fehler festhält — mehr nicht und nicht weniger. Ein Wert von 100 % heisst
-nicht „fehlerfrei", sondern „keiner der zwanzig Fehler, die wir kennen, ist
+nicht „fehlerfrei", sondern „keiner der Fehler, die wir kennen, ist
 zurückgekommen".

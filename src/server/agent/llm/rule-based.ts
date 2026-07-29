@@ -512,13 +512,22 @@ export function createRuleBasedLlm(): LlmPort {
         return Promise.resolve(ok({ blocks, usage }));
       }
 
-      // Schritt 2: Sind Ziel und Zeitraum bekannt, nach Flügen suchen.
+      /*
+       * Schritt 2: Sind Ziel, Zeitraum **und Reisendenzahl** bekannt, nach
+       * Flügen suchen.
+       *
+       * Hier stand einmal `adults: params.adults ?? 1` — dieselbe stille
+       * Erfindung, die dem Sprachmodell vorgeworfen wurde, nur in meinem
+       * eigenen Code. Ein `??` an einer Stelle, an der niemand etwas gesagt
+       * hat, ist geraten und nicht gewusst.
+       */
       if (
         !alreadyCalled(request, 'search_flights') &&
         params.originIata !== null &&
         params.destinationIata !== null &&
         params.departureDate !== null &&
-        params.returnDate !== null
+        params.returnDate !== null &&
+        params.adults !== null
       ) {
         const blocks: ContentBlock[] = [
           {
@@ -530,7 +539,7 @@ export function createRuleBasedLlm(): LlmPort {
               destinationIata: params.destinationIata,
               departureDate: params.departureDate,
               returnDate: params.returnDate,
-              adults: params.adults ?? 1,
+              adults: params.adults,
               childAges: [],
             },
           },

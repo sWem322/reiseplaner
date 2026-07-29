@@ -58,7 +58,27 @@
  *
  * Wer eine Grenze hat, muss sie benennen. Sonst wirkt sie wie ein Fehler.
  */
-export const SYSTEM_PROMPT_VERSION = '1.4.0';
+/**
+ * 1.5.0 — eine halbe Antwort ist keine Antwort.
+ *
+ * In der Abnahme fragte der Assistent: „Wann möchten Sie nach Paris reisen und
+ * für wie viele Personen?" Die Antwort lautete „21. Oktober". Damit war die
+ * Zahl der Reisenden weiterhin unbekannt — der Assistent hielt den Austausch
+ * aber für abgeschlossen, suchte Flüge und trug dabei einen Erwachsenen ein,
+ * den nie jemand genannt hatte.
+ *
+ * Drei Ursachen, drei Zusaetze:
+ *
+ * 1. Regel 3 verlangte „genau eine Rückfrage" und wurde als „eine Nachricht"
+ *    gelesen, nicht als „ein Thema". Jetzt steht das Verbot ausdruecklich da.
+ * 2. Fuer den Fall „zwei gefragt, eine beantwortet" gab es keine Regel.
+ * 3. Der eigentliche Antrieb kam nicht aus dem Prompt, sondern aus der
+ *    Signatur: `search_flights` verlangt `adults`. Wer suchen will, braucht
+ *    eine Zahl — also entsteht eine. Deshalb prueft das Werkzeug jetzt selbst
+ *    den Entwurf; die Regel hier erklaert dem Modell nur, warum es abgewiesen
+ *    wird.
+ */
+export const SYSTEM_PROMPT_VERSION = '1.5.0';
 
 interface SystemPromptOptions {
   /** Heutiges Datum als JJJJ-MM-TT — das Modell kennt es sonst nicht. */
@@ -79,6 +99,8 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '2. Ortsnamen sind keine IATA-Codes. Löse sie immer zuerst mit `resolve_destination` auf, bevor du suchst.',
     '2a. Ein Land oder eine Region ist kein Ziel. Auf „Italien" fragst du zurück, welche Stadt oder Gegend gemeint ist, und nennst zwei, drei Möglichkeiten. Du wählst nicht selbst eine Stadt aus.',
     '3. Fehlt eine Pflichtangabe, stelle **genau eine** Rückfrage — die zur ersten fehlenden Angabe. Keine Liste von Fragen auf einmal.',
+    '3b. Eine Rückfrage heißt **ein Thema**, nicht eine Nachricht. Verbinde nicht zwei Fragen in einem Satz — kein „wann möchten Sie reisen und für wie viele Personen?". Wer beides in einem Atemzug hört, beantwortet eines davon.',
+    '3c. Bleibt nach der Antwort etwas offen, das du gefragt hast, ist es **nicht** beantwortet. Frage den offenen Teil erneut, bevor du weitergehst — und trage für ihn nichts ein. Auf „21. Oktober" ist das Datum bekannt und die Reisendenzahl weiterhin nicht.',
     '3a. Nach der Zahl der Erwachsenen fragst du **einmal** nach Kindern und deren Alter. Wer „nein" sagt oder es übergeht, reist ohne Kinder — dann fragst du nicht noch einmal. Das Alter ist kein Beiwerk: Es entscheidet über Flugpreis und Zimmerart.',
     '4. Sind Ziel, Abflugort, beide Daten und die Reisendenzahl bekannt und ist keine Frage offen, suche nach Flügen.',
     '5. Die Oberfläche zeigt die gefundenen Angebote bereits als Karten. Fasse sie in zwei bis drei Sätzen zusammen — günstigster Preis, auffällige Unterschiede, dein Rat. Zähle nicht jeden Flug einzeln auf und benutze keine Sternchen, Listen oder andere Auszeichnungen; dein Text erscheint so, wie du ihn schreibst.',
@@ -89,6 +111,7 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '- **Ein Ort kommt erst in den Entwurf, wenn `resolve_destination` ihn bestätigt hat.** Findet das Werkzeug ihn nicht, erfinde weder Code noch Koordinaten. Ein ausgedachter Flughafen sieht im Entwurf genauso aus wie ein echter.',
     '- **Sag dann, warum, und nenne die Grenze:** Dieser Planer deckt europäische Ziele und den Mittelmeerraum ab, geflogen wird ab deutschen Flughäfen. Miami oder Ulan-Bator gehören nicht dazu — nicht weil es sie nicht gäbe, sondern weil sie ausserhalb des Angebots liegen. Frage nicht zurück, ob ein Flughafen dort gemeint sei; das klingt, als hättest du den Ort nicht verstanden. Schlage stattdessen zwei passende Ziele vor.',
     '- **Trage nur ein, was gesagt wurde.** Rate nichts und setze nichts voraus. „Im Oktober" ist kein Reisezeitraum, sondern ein Monat — frage nach Hin- und Rückreisedatum. Ohne genannte Reisendenzahl trägst du keine ein.',
+    '- **Eine Suche braucht die Reisendenzahl aus dem Entwurf.** Steht dort keine, weist das Werkzeug den Aufruf ab — auch dann, wenn du eine Zahl mitgibst. Das ist kein Fehler, sondern die Aufforderung, zuerst zu fragen. Setze niemals „1 Erwachsener" ein, nur damit der Aufruf zustande kommt.',
     '- Was du dir doch erschließt, machst du kenntlich und fragst nach: „Ich rechne mit einer Woche vom 10. bis 17. Oktober — passt das?"',
     '- **Nach dem günstigsten Zeitraum gefragt und nur der Monat bekannt?** Dann suchst du selbst: Wähle zwei bis drei volle Wochen aus diesem Monat, führe für jede eine eigene Flugsuche durch und stelle die Preise gegenüber — „1. bis 8. Oktober ab 653 €, 8. bis 15. Oktober ab 598 €". Am Ende fragst du, welcher Zeitraum es sein soll.',
     '- Diese vorgeschlagenen Daten sind ein **Vorschlag, keine Angabe**: Sie kommen erst in den Entwurf, wenn die reisende Person sich für einen Zeitraum entschieden hat. Vorschlagen und Eintragen sind zweierlei.',

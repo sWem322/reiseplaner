@@ -70,7 +70,7 @@ erst mit dem Schlusstext des Modells.
 
 ## Gemessen statt vermutet
 
-Zwanzig Gespräche liegen als Datensatz vor, mit dem erwarteten Zustand des
+Zweiundzwanzig Gespräche liegen als Datensatz vor, mit dem erwarteten Zustand des
 Entwurfs nach jedem. Der Runner prüft drei Dinge getrennt: richtig, falsch —
 und **erfunden**, also ein Wert, der dasteht, obwohl niemand ihn genannt hat.
 Der dritte Fall ist der gefährlichste, weil ihn niemand bemerkt.
@@ -80,6 +80,10 @@ Der dritte Fall ist der gefährlichste, weil ihn niemand bemerkt.
 | regelbasiert         | 91,8 %           | 2        | 12/20     | 1,1            |
 | Gemini, Prompt 1.1.0 | 96,7 %           | 1        | 16/20     | 3,6            |
 | Gemini, Prompt 1.3.0 | **100 %**        | **0**    | **20/20** | 4,1            |
+
+Zwei Fälle sind seither dazugekommen, beide aus einer Abnahme: ein Ziel
+ausserhalb Europas und eine halbe Antwort auf eine Doppelfrage. Die Zeile für
+Prompt 1.5.0 folgt mit dem nächsten Lauf.
 
 ```bash
 npm run eval            # regelbasiert — kostenlos, deterministisch
@@ -174,7 +178,7 @@ npm run flow:check  # derselbe Ablauf ohne Browser, gegen einen laufenden Server
 npm run llm:check   # ein echter Aufruf gegen Gemini, mit zweitem Zug
 ```
 
-432 Tests: Domäne, Adapter gegen untergeschobene Antworten, Agenten-Loop gegen
+434 Tests: Domäne, Adapter gegen untergeschobene Antworten, Agenten-Loop gegen
 ein skriptgesteuertes Modell, Repositories und Prozeduren gegen echtes
 PostgreSQL, vier E2E-Fälle im Browser.
 

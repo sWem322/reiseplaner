@@ -1,7 +1,10 @@
 import type { TripSlot } from '@/domain/trip/trip';
 
 /**
- * Zwanzig Gespräche als Daten.
+ * Gespräche als Daten.
+ *
+ * Bewusst ohne Zahl in dieser Zeile: Der Satz „zwanzig Fälle" wurde schon
+ * zweimal falsch, weil ein Fall dazukam und niemand den Kommentar mitzog.
  *
  * Sie beschreiben, wie sich der Assistent verhalten **soll** — nicht, wie er
  * sich heute verhält. Mehrere Fälle stammen unmittelbar aus der Abnahme und
@@ -165,6 +168,21 @@ export const EVAL_FAELLE: readonly EvalFall[] = [
       adults: 2,
       childAges: [6, 9],
     },
+  },
+  {
+    id: 'halbe-antwort',
+    beschreibung: 'Zwei Dinge gefragt, eines beantwortet — das andere bleibt offen',
+    nachrichten: ['Ich möchte nach Paris', 'ab Düsseldorf', '7. bis 14. Oktober'],
+    /*
+     * Aus der Abnahme. Der Assistent fragte „Wann möchten Sie reisen und für
+     * wie viele Personen?", bekam nur das Datum — und trug trotzdem einen
+     * Erwachsenen ein, weil `search_flights` eine Zahl verlangt. Der Fall
+     * misst beides: dass nichts erfunden wird und dass die offene Frage
+     * wiederkommt.
+     */
+    erwartet: { destination: 'CDG', origin: 'DUS', departureDate: '2026-10-07', adults: null },
+    erwarteteRueckfrage: 'adults',
+    erwarteteSuche: false,
   },
   {
     id: 'nach-kindern-fragen',
