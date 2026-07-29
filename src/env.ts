@@ -17,8 +17,13 @@ const envSchema = z.object({
     .min(1)
     .default('postgresql://reiseplaner:reiseplaner@localhost:5432/reiseplaner'),
 
-  // Auth.js — im Entwicklungsmodus mit Fallback, in Produktion Pflicht.
-  AUTH_SECRET: z.string().min(1).optional(),
+  /*
+   * Kein AUTH_SECRET: Es stammte aus dem urspruenglichen Plan mit Auth.js und
+   * wurde nie gelesen. Die Sitzungen dieses Projekts sind Zufallswerte in der
+   * Datenbank — es gibt kein selbsttragendes Token, das zu signieren waere.
+   * Eine Variable, die nichts tut, aber nach Sicherheit klingt, ist schlimmer
+   * als keine: Sie laesst glauben, es haenge etwas daran.
+   */
 
   // --- Optionale Anbieter. Fehlen sie, greift der Seed-Adapter. ---
   GEMINI_API_KEY: z.string().min(1).optional(),
