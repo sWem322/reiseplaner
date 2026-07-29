@@ -44,6 +44,13 @@ Fassung braucht deshalb eine Datenbank, die über das Netz erreichbar ist.
 Neon liefert eine leere Datenbank. Ohne diesen Schritt gibt es keine Tabellen,
 und der erste Gastzugang scheitert mit `42P01`.
 
+**Zur Warnung des Treibers.** `pg` weist darauf hin, dass es `sslmode=require`
+derzeit wie `verify-full` behandelt und das in einer kommenden Fassung nicht
+mehr tun wird. Wer die Warnung loswerden und zugleich die strengere Prüfung
+festschreiben will, schreibt in der Adresse `sslmode=verify-full` statt
+`sslmode=require`. Neon stellt ein Zertifikat einer öffentlichen
+Zertifizierungsstelle aus; die strenge Prüfung geht also durch.
+
 ## Vercel
 
 Projekt aus dem GitHub-Repository anlegen; Next.js wird erkannt, an den
