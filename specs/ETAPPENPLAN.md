@@ -162,6 +162,35 @@ Gedächtnis und Angebotskarten, die erst nach dem Neuladen erschienen.
 - [ ] Deployment, öffentliche Adresse
 - [ ] Prüfung gegen die Definition of Done der Aufgabenstellung
 
+## Abgleich mit der Definition of Done
+
+Abschnitt 11 der Aufgabenstellung, Punkt für Punkt. Stand 31.07.2026.
+
+| Nr. | Forderung                                               | Stand   | Beleg                                                                                                       |
+| --- | ------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| 1   | Lint, Typecheck, Unit, Integration, E2E — lokal und CI  | offen   | Lokal grün; die CI-Zeile wird erst nach dem nächsten Push wieder grün, der letzte Lauf scheiterte am Format |
+| 2   | Kein `any`, keine Typunterdrückung im Servercode        | erfüllt | Keine Fundstelle ausserhalb der Tests; ESLint verbietet `any`, `@ts-ignore` und Nicht-Null-Assertion        |
+| 3   | README auf Deutsch: Aufgabe, Architektur, Start, Gründe | erfüllt | Alle vier Abschnitte vorhanden; die Architektur steht als Verzeichnisbaum, nicht als Zeichnung              |
+| 4   | Lebende öffentliche Demo-Adresse                        | offen   | Die Anwendung läuft auf Vercel — **die Adresse steht nirgends im README**                                   |
+| 5   | GIF von 20 Sekunden im README                           | offen   | Noch nicht aufgenommen                                                                                      |
+| 6   | Sinnvolle Commit-Historie                               | erfüllt | 102 Commits, jeder mit Grund im Text                                                                        |
+| 7   | Start ohne Schlüssel fremder Anbieter                   | erfüllt | Seed-Adapter und regelbasierter Extraktor greifen ohne jede Variable                                        |
+
+### Drei Punkte, die der Abgleich zusätzlich zutage fördert
+
+**„Eine Kommando" ist es nicht.** Abschnitt 1 verlangt, dass das Projekt bei
+einer fremden Person mit **einem** Befehl startet. Heute sind es vier in zwei
+Terminals: `npm install`, `npm run db:local`, `npm run db:migrate`,
+`npm run dev`. Das ist kein grosser Aufwand, aber es ist nicht, was dasteht.
+
+**Der echte Anbieter ist bisher nur Open-Meteo.** Abschnitt 2 verspricht
+„echte Anbieter-API statt Attrappen". Der Duffel-Adapter ist geschrieben und
+geprüft, lief aber nie gegen die echte Sandbox — es gibt kein Token. Overpass
+antwortet derzeit gar nicht. Belegt ist damit die Fähigkeit, nicht der Betrieb.
+
+**Der Eval misst 22 Fälle, die Zahlen im README stammen von 20.** Der Lauf
+gegen das Modell mit dem vollständigen Satz steht aus.
+
 ## Verschiebungen
 
 | Datum      | Punkt                                        | Von      | Nach          | Grund                                                                                                                                                                            | Zustimmung |
