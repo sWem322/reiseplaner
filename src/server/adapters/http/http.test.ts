@@ -32,6 +32,23 @@ function failingFetch(error: Error): typeof fetch {
   return () => Promise.reject(error);
 }
 
+/**
+ * Die Adresse aus dem ersten Argument von `fetch`.
+ *
+ * `String(url)` sieht kuerzer aus, ist aber falsch: Der Parameter ist
+ * `Request | string | URL`, und ein `Request` hat keine brauchbare
+ * Zeichenketten-Darstellung — dabei kaeme „[object Object]" heraus. ESLint
+ * hat genau das beanstandet, und zu Recht: Der Test haette dann geprueft,
+ * ob „[object Object]" den Namen der Instanz enthaelt.
+ */
+function adresseVon(url: RequestInfo | URL): string {
+  if (typeof url === 'string') {
+    return url;
+  }
+
+  return url instanceof URL ? url.href : url.url;
+}
+
 const duesseldorf = { name: 'Düsseldorf', iataCode: 'DUS', latitude: 51.2895, longitude: 6.7668 };
 const palma = { name: 'Palma de Mallorca', iataCode: 'PMI', latitude: 39.5517, longitude: 2.7388 };
 
@@ -388,7 +405,7 @@ describe('Overpass Unterkunftssuche', () => {
     const angefragt: string[] = [];
 
     const fetchImpl: typeof fetch = (url) => {
-      const adresse = String(url);
+      const adresse = adresseVon(url);
       angefragt.push(adresse);
 
       return Promise.resolve(
