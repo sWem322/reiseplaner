@@ -164,8 +164,13 @@ Gedächtnis und Angebotskarten, die erst nach dem Neuladen erschienen.
 
 ## Verschiebungen
 
-Bisher keine bewilligten Verschiebungen.
+| Datum      | Punkt                                        | Von      | Nach          | Grund                                                                                                                                                                            | Zustimmung |
+| ---------- | -------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 2026-07-31 | Verhalten der Hotelsuche bei Ausfall der API | Etappe 6 | nach Etappe 6 | Keine der drei Overpass-Instanzen antwortet zuverlässig; die Wahl zwischen Rückfall auf Seed-Daten und offener Absage braucht erst einen Lauf, bei dem der Dienst erreichbar ist | ja         |
 
-| Datum | Punkt | Von | Nach | Grund | Zustimmung |
-| ----- | ----- | --- | ---- | ----- | ---------- |
-| —     | —     | —   | —    | —     | —          |
+**Zum Stand der Hotelsuche.** Der Adapter ist vollständig, geprüft und
+gegenüber drei Instanzen abgesichert — verschoben ist nur die Entscheidung,
+was geschehen soll, wenn keine davon antwortet. Heute sagt der Assistent das
+offen; ob stattdessen Seed-Daten mit Quellenhinweis einspringen sollen, wird
+entschieden, sobald `npm run providers:check` einen erreichbaren Dienst
+zeigt.
