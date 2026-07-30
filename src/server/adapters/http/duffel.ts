@@ -149,9 +149,22 @@ export function createDuffelFlightSearch(
       const known: readonly Place[] = [query.origin, query.destination];
       const offers: FlightOffer[] = [];
 
+      /*
+       * Welche Waehrungen kamen zurueck, obwohl EUR erwartet wurde?
+       *
+       * Duffel richtet sich nach der Standardwaehrung des Kontos, und die
+       * steht bei einem frischen Konto oft auf GBP. Ohne diese Sammlung
+       * verschwaende jedes Angebot stillschweigend im `continue`, und die
+       * Anwendung meldete nur „keine verwertbaren Angebote" — eine Aussage,
+       * aus der niemand ableiten kann, dass eine Einstellung im Dashboard
+       * fehlt.
+       */
+      const fremdeWaehrungen = new Set<string>();
+
       for (const raw of response.value.data.offers) {
         if (raw.total_currency !== 'EUR') {
           // Waehrungsumrechnung ist ausdruecklich nicht Teil dieses Projekts.
+          fremdeWaehrungen.add(raw.total_currency);
           continue;
         }
 
@@ -179,6 +192,18 @@ export function createDuffelFlightSearch(
           // Der Testmodus liefert nur die fiktive Duffel Airways.
           isDemoData: true,
         });
+      }
+
+      if (offers.length === 0 && fremdeWaehrungen.size > 0) {
+        const genannt = [...fremdeWaehrungen].sort().join(', ');
+
+        return fail(
+          'upstream_error',
+          `${PROVIDER} lieferte Angebote in ${genannt} statt in EUR. ` +
+            'Die Standardwährung des Duffel-Kontos steht nicht auf EUR — ' +
+            'im Dashboard unter Settings umstellen. Umrechnung leistet dieses Projekt nicht.',
+          { waehrungen: [...fremdeWaehrungen] },
+        );
       }
 
       if (offers.length === 0 && response.value.data.offers.length > 0) {

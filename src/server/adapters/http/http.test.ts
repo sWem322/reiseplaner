@@ -525,6 +525,13 @@ describe('Duffel Flugsuche', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.kind).toBe('upstream_error');
+      /*
+       * Die Meldung muss die Waehrung nennen und sagen, was zu tun ist.
+       * Ein frisches Duffel-Konto steht oft auf GBP; „keine verwertbaren
+       * Angebote" haette den ersten Lauf zu einem Raetsel gemacht.
+       */
+      expect(result.error.message).toContain('USD');
+      expect(result.error.message).toContain('EUR');
     }
   });
 
