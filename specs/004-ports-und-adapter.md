@@ -81,6 +81,33 @@ Die Fabrik protokolliert beim Start, welcher Adapter aktiv ist. Ohne jede
 Variable läuft das Projekt vollständig auf Seed-Daten — Bedingung aus der
 Definition of Done.
 
+### Overpass: drei Instanzen statt einer
+
+Die Hotelsuche hat monatelang **kein einziges Mal** funktioniert, ohne dass es
+jemandem auffiel. Der Assistent sagte „bei der Hotelsuche ist ein technischer
+Fehler aufgetreten" — höflich, wahr und vollkommen unbrauchbar.
+
+Der Grund, gefunden mit `npm run providers:check`: `overpass-api.de` antwortet
+seit Frühjahr 2026 auf einen grossen Teil der Anfragen mit **406 Not
+Acceptable**. Nicht wegen der Abfrage, sondern als Abwehr gegen
+automatisierte Massenzugriffe, die den freiwillig betriebenen Dienst
+überrennen. Nach 149 ms, ohne Umweg.
+
+Zwei Änderungen, beide klein:
+
+1. Der Adapter geht eine Liste gleichwertiger Instanzen durch, bis eine
+   antwortet, und meldet sonst den Fehler der letzten — mit Hostnamen, damit
+   die Meldung etwas aussagt.
+2. Er gibt sich per `User-Agent` zu erkennen. Overpass bittet ausdrücklich
+   darum, und eine Anfrage ohne Absender sieht für einen überlasteten Dienst
+   genau wie das aus, wogegen er sich wehrt.
+
+Die eigentliche Lehre betrifft aber die Tests. Fünf Unit-Tests deckten diesen
+Adapter ab, alle grün, keiner konnte den Ausfall bemerken: Sie schieben dem
+Adapter eine Antwort unter und prüfen die **Übersetzung** von JSON in
+Angebote. Ob überhaupt jemand antwortet, ist eine andere Frage — und sie
+braucht ein anderes Werkzeug. Dafür gibt es jetzt `providers:check`.
+
 ## Seed-Daten
 
 - Rund 20 deutsche Abflughäfen (DUS, CGN, FRA, MUC, BER, HAM, STR, …)

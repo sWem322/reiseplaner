@@ -379,6 +379,72 @@ describe('Overpass Unterkunftssuche', () => {
     }
   });
 
+  /*
+   * Der Hauptserver antwortet seit Fruehjahr 2026 haeufig mit 406 — nicht
+   * wegen der Abfrage, sondern gegen automatisierte Zugriffe. Ohne diesen
+   * Wechsel hat die Hotelsuche nie ein Ergebnis geliefert.
+   */
+  it('geht zur naechsten Instanz, wenn die erste mit 406 abweist', async () => {
+    const angefragt: string[] = [];
+
+    const fetchImpl: typeof fetch = (url) => {
+      const adresse = String(url);
+      angefragt.push(adresse);
+
+      return Promise.resolve(
+        adresse.includes('erste')
+          ? new Response('{}', { status: 406 })
+          : new Response(JSON.stringify(overpassPayload), {
+              status: 200,
+              headers: { 'content-type': 'application/json' },
+            }),
+      );
+    };
+
+    const hotels = createOverpassHotelSearch(fetchImpl, [
+      'https://erste.example/api/interpreter',
+      'https://zweite.example/api/interpreter',
+    ]);
+
+    const offers = unwrap(await hotels.search(input, 10));
+
+    expect(angefragt).toHaveLength(2);
+    expect(offers).toHaveLength(2);
+  });
+
+  it('nennt die zuletzt gescheiterte Instanz, wenn keine antwortet', async () => {
+    const hotels = createOverpassHotelSearch(statusResponse(406), [
+      'https://erste.example/api/interpreter',
+      'https://zweite.example/api/interpreter',
+    ]);
+
+    const result = await hotels.search(input, 10);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('zweite.example');
+    }
+  });
+
+  it('gibt sich gegenueber Overpass zu erkennen', async () => {
+    const kopfzeilen: Headers[] = [];
+
+    const fetchImpl: typeof fetch = (_url, init) => {
+      kopfzeilen.push(new Headers(init?.headers));
+
+      return Promise.resolve(
+        new Response(JSON.stringify(overpassPayload), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+    };
+
+    await createOverpassHotelSearch(fetchImpl).search(input, 10);
+
+    expect(kopfzeilen[0]?.get('user-agent')).toContain('ai-reiseplaner');
+  });
+
   it('lehnt einen Aufenthalt ohne Uebernachtung ab', async () => {
     const hotels = createOverpassHotelSearch(jsonResponse(overpassPayload));
 

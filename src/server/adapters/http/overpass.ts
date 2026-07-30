@@ -20,10 +20,42 @@ import { fetchJson } from './fetch-json';
  */
 
 const PROVIDER = 'Overpass';
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 
-/** Overpass ist ein geteilter, freiwillig betriebener Dienst — grosszuegiger Zeitrahmen. */
-const TIMEOUT_MS = 25_000;
+/**
+ * Mehrere Instanzen statt einer.
+ *
+ * Der Hauptserver `overpass-api.de` beantwortet seit Fruehjahr 2026 einen
+ * grossen Teil der Anfragen mit **406 Not Acceptable** — nicht wegen der
+ * Abfrage, sondern weil er sich gegen automatisierte Massenzugriffe wehrt.
+ * Die Hotelsuche dieses Projekts hat deshalb nie ein einziges Mal
+ * funktioniert, und die Unit-Tests konnten das nicht bemerken: Sie schieben
+ * dem Adapter eine Antwort unter und pruefen die Uebersetzung, nicht die
+ * Erreichbarkeit.
+ *
+ * OpenStreetMap betreibt mehrere gleichwertige Spiegel derselben Daten. Der
+ * Adapter geht sie der Reihe nach durch und gibt den Fehler der letzten
+ * Instanz zurueck, wenn keine antwortet.
+ */
+export const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+] as const;
+
+/**
+ * Overpass bittet ausdruecklich darum, sich zu erkennen zu geben.
+ *
+ * Node schickt von sich aus keine brauchbare Kennung, und eine Anfrage ohne
+ * Absender sieht fuer einen Dienst, der gerade von anonymen Skripten
+ * ueberrannt wird, genau wie eines davon aus.
+ */
+const USER_AGENT = 'ai-reiseplaner/0.1 (+https://github.com/sWem322/reiseplaner)';
+
+/**
+ * Kuerzer als frueher: Drei Instanzen nacheinander duerfen zusammen nicht
+ * laenger brauchen als der Agent insgesamt Zeit hat.
+ */
+const TIMEOUT_MS = 12_000;
 const SEARCH_RADIUS_METERS = 12_000;
 
 const overpassResponseSchema = z.object({
@@ -50,7 +82,10 @@ function parseStars(tags: Record<string, string> | undefined): number | null {
   return Number.isInteger(parsed) && parsed >= 1 && parsed <= 5 ? parsed : null;
 }
 
-export function createOverpassHotelSearch(fetchImpl: typeof fetch = fetch): HotelSearchPort {
+export function createOverpassHotelSearch(
+  fetchImpl: typeof fetch = fetch,
+  endpoints: readonly string[] = OVERPASS_ENDPOINTS,
+): HotelSearchPort {
   return {
     async search(input: HotelSearchInput, limit: number): Promise<Result<HotelOffer[]>> {
       if (nightsBetween(input.checkIn, input.checkOut) < 1) {
@@ -76,26 +111,50 @@ export function createOverpassHotelSearch(fetchImpl: typeof fetch = fetch): Hote
         out center ${String(Math.max(limit * 3, 30))};
       `;
 
-      const response = await fetchJson(
-        {
-          url: OVERPASS_URL,
-          method: 'POST',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          body: undefined,
-          timeoutMs: TIMEOUT_MS,
-          provider: PROVIDER,
-        },
-        overpassResponseSchema,
-        // Overpass erwartet die Abfrage als Formularfeld, nicht als JSON.
-        async (url, init) =>
-          fetchImpl(url, {
-            ...init,
-            body: new URLSearchParams({ data: query }).toString(),
-          }),
+      /*
+       * Der Reihe nach, bis eine Instanz antwortet. Aufgegeben wird erst,
+       * wenn keine mehr uebrig ist — dann steht der Fehler der letzten in der
+       * Antwort, damit sichtbar bleibt, woran es zuletzt lag.
+       */
+      let letzterFehler: Result<HotelOffer[]> = fail(
+        'upstream_error',
+        `${PROVIDER}: keine Instanz konfiguriert`,
       );
 
-      if (!response.ok) {
-        return response;
+      let elemente: z.infer<typeof overpassResponseSchema>['elements'] | null = null;
+
+      for (const endpoint of endpoints) {
+        const response = await fetchJson(
+          {
+            url: endpoint,
+            method: 'POST',
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded',
+              'user-agent': USER_AGENT,
+            },
+            body: undefined,
+            timeoutMs: TIMEOUT_MS,
+            provider: `${PROVIDER} (${new URL(endpoint).host})`,
+          },
+          overpassResponseSchema,
+          // Overpass erwartet die Abfrage als Formularfeld, nicht als JSON.
+          async (url, init) =>
+            fetchImpl(url, {
+              ...init,
+              body: new URLSearchParams({ data: query }).toString(),
+            }),
+        );
+
+        if (response.ok) {
+          elemente = response.value.elements;
+          break;
+        }
+
+        letzterFehler = response;
+      }
+
+      if (elemente === null) {
+        return letzterFehler;
       }
 
       const month = Number.parseInt(input.checkIn.slice(5, 7), 10);
@@ -103,7 +162,7 @@ export function createOverpassHotelSearch(fetchImpl: typeof fetch = fetch): Hote
 
       const offers: HotelOffer[] = [];
 
-      for (const element of response.value.elements) {
+      for (const element of elemente) {
         const lat = element.lat ?? element.center?.lat;
         const lon = element.lon ?? element.center?.lon;
         const name = element.tags?.name;

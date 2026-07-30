@@ -5,7 +5,7 @@ import {
   createOpenMeteoGeocoding,
   createOpenMeteoWeather,
 } from '@/server/adapters/http/open-meteo';
-import { createOverpassHotelSearch } from '@/server/adapters/http/overpass';
+import { createOverpassHotelSearch, OVERPASS_ENDPOINTS } from '@/server/adapters/http/overpass';
 import { createDuffelFlightSearch } from '@/server/adapters/http/duffel';
 import type { Place } from '@/domain/trip/trip';
 import type { Result } from '@/domain/result';
@@ -124,17 +124,26 @@ async function main(): Promise<void> {
     ),
   );
 
-  befunde.push(
-    await messen(
-      'Overpass · Unterkünfte',
-      () =>
-        createOverpassHotelSearch().search(
-          { destination: palma, checkIn: '2026-10-07', checkOut: '2026-10-14', guests: 2 },
-          5,
-        ),
-      (hotels) => `${String(hotels.length)} Häuser, erstes: ${hotels[0]?.name ?? '—'}`,
-    ),
-  );
+  /*
+   * Jede Instanz einzeln, nicht die Kette als Ganzes.
+   *
+   * „Overpass antwortet nicht" ist keine brauchbare Auskunft, wenn drei
+   * Server dahinterstehen. Die Zeile je Instanz sagt, welche noch lebt — und
+   * ob die Reihenfolge in `OVERPASS_ENDPOINTS` noch die richtige ist.
+   */
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    befunde.push(
+      await messen(
+        `Overpass · ${new URL(endpoint).host}`,
+        () =>
+          createOverpassHotelSearch(fetch, [endpoint]).search(
+            { destination: palma, checkIn: '2026-10-07', checkOut: '2026-10-14', guests: 2 },
+            5,
+          ),
+        (hotels) => `${String(hotels.length)} Häuser, erstes: ${hotels[0]?.name ?? '—'}`,
+      ),
+    );
+  }
 
   if (duffelToken.length === 0) {
     befunde.push({
@@ -180,12 +189,28 @@ async function main(): Promise<void> {
     console.log(`${zeichen} ${befund.dienst.padEnd(breite)}  ${dauer.padStart(8)}  ${befund.text}`);
   }
 
-  const gescheitert = befunde.filter((befund) => befund.zustand === 'fehler');
+  /*
+   * Eine tote Overpass-Instanz ist kein Ausfall, solange eine andere
+   * antwortet — genau dafuer ist die Kette da. Erst wenn keine mehr geht,
+   * fehlt die Hotelsuche wirklich.
+   */
+  const overpass = befunde.filter((befund) => befund.dienst.startsWith('Overpass'));
+  const overpassLebt = overpass.some((befund) => befund.zustand === 'ok');
+
+  const gescheitert = befunde.filter(
+    (befund) =>
+      befund.zustand === 'fehler' && !(overpassLebt && befund.dienst.startsWith('Overpass')),
+  );
 
   console.log('');
 
   if (gescheitert.length === 0) {
-    console.log('Alle erreichbaren Dienste antworten.');
+    console.log(
+      overpassLebt && overpass.some((befund) => befund.zustand === 'fehler')
+        ? 'Alle Dienste antworten — bei Overpass nicht jede Instanz, aber genug.'
+        : 'Alle erreichbaren Dienste antworten.',
+    );
+
     return;
   }
 
