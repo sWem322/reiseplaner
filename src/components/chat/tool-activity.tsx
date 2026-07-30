@@ -59,7 +59,7 @@ export function ToolActivity({ tools }: { tools: readonly RunningTool[] }) {
           data-testid="tool-activity"
           data-tool={tool.toolName}
           data-outcome={tool.outcome ?? 'running'}
-          className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${outcomeClass(tool.outcome)}`}
+          className={`flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs ${outcomeClass(tool.outcome)}`}
         >
           {tool.outcome === null && (
             <span
@@ -76,6 +76,20 @@ export function ToolActivity({ tools }: { tools: readonly RunningTool[] }) {
           {tool.outcome !== null && (
             <span className="text-[0.7rem] tracking-wide uppercase opacity-70">
               {outcomeLabel(tool.outcome)}
+            </span>
+          )}
+
+          {/*
+            Die Meldung des Anbieters im Klartext.
+
+            „Anbieter nicht erreichbar" beantwortet die naechste Frage nicht:
+            welcher, und woran lag es? Die Antwort lag schon im Ereignis, sie
+            wurde nur verschwiegen — und damit war jeder Ausfall eine Frage an
+            das Serverprotokoll statt an den Bildschirm.
+          */}
+          {tool.errorMessage !== null && (
+            <span data-testid="tool-error" className="opacity-90">
+              {tool.errorMessage}
             </span>
           )}
 

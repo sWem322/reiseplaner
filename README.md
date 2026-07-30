@@ -176,7 +176,14 @@ npm run verify      # Lint, Typecheck, Format, Unit- und Integrationstests
 npm run test:e2e    # Playwright gegen einen Produktionsbuild
 npm run flow:check  # derselbe Ablauf ohne Browser, gegen einen laufenden Server
 npm run llm:check   # ein echter Aufruf gegen Gemini, mit zweitem Zug
+npm run providers:check  # ein echter Aufruf gegen jeden fremden Dienst
 ```
+
+`providers:check` beantwortet die Frage, die Unit-Tests nicht beantworten
+können: Die Tests schieben dem Adapter eine Antwort unter und prüfen die
+Übersetzung — ob der Dienst überhaupt antwortet, sagen sie nicht. Das Skript
+ruft dieselben Adapter auf, die im Betrieb laufen, und nennt bei einem Ausfall
+Status und Ursache.
 
 434 Tests: Domäne, Adapter gegen untergeschobene Antworten, Agenten-Loop gegen
 ein skriptgesteuertes Modell, Repositories und Prozeduren gegen echtes

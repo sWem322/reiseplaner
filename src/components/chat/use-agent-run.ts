@@ -24,6 +24,29 @@ export interface RunningTool {
   readonly durationMs: number | null;
   /** Als Karte darstellbares Ergebnis, sofern es eines ist. */
   readonly payload: ToolPayload | null;
+  /**
+   * Die Meldung des Anbieters, wenn der Aufruf scheiterte.
+   *
+   * Sie war immer da — der Loop legt sie als `{ error: … }` in den Inhalt —
+   * und wurde nur nirgends gezeigt. Auf dem Bildschirm stand „Anbieter nicht
+   * erreichbar", und die Frage „welcher, und warum?" liess sich ohne
+   * Serverprotokoll nicht beantworten.
+   */
+  readonly errorMessage: string | null;
+}
+
+/** Liest die Fehlermeldung aus dem Inhalt eines gescheiterten Aufrufs. */
+function fehlertext(content: unknown): string | null {
+  if (
+    typeof content === 'object' &&
+    content !== null &&
+    'error' in content &&
+    typeof content.error === 'string'
+  ) {
+    return content.error;
+  }
+
+  return null;
 }
 
 export interface AgentRunState {
@@ -122,6 +145,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
                   outcome: null,
                   durationMs: null,
                   payload: null,
+                  errorMessage: null,
                 },
               ];
               break;
@@ -137,6 +161,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
                         event.outcome === 'ok'
                           ? readToolPayload(event.toolName, event.content)
                           : null,
+                      errorMessage: event.outcome === 'ok' ? null : fehlertext(event.content),
                     }
                   : tool,
               );
