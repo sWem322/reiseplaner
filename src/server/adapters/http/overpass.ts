@@ -52,11 +52,27 @@ export const OVERPASS_ENDPOINTS = [
 const USER_AGENT = 'ai-reiseplaner/0.1 (+https://github.com/sWem322/reiseplaner)';
 
 /**
- * Kuerzer als frueher: Drei Instanzen nacheinander duerfen zusammen nicht
- * laenger brauchen als der Agent insgesamt Zeit hat.
+ * Wie lange der Server selbst rechnen darf — und wie lange wir warten.
+ *
+ * Die beiden gehoeren zusammen, und genau das war der zweite Fehler: Der
+ * Client brach nach 12 s ab, waehrend die Abfrage dem Server 20 s einraeumte.
+ * Damit gab es nie eine Antwort zu sehen, nur den eigenen Abbruch — und der
+ * sagt nichts darueber, was der Dienst gemeldet haette.
+ *
+ * Jetzt gibt der Server zuerst auf. Was zurueckkommt, ist seine Auskunft.
  */
-const TIMEOUT_MS = 12_000;
-const SEARCH_RADIUS_METERS = 12_000;
+const SERVER_TIMEOUT_S = 10;
+const TIMEOUT_MS = 15_000;
+
+/**
+ * Kleinerer Umkreis als frueher.
+ *
+ * 12 km rund um eine Grossstadt sind fuer eine ueberlastete Instanz eine
+ * teure Abfrage; 5 km decken die Innenstadt und die Strandlagen ab, um die
+ * es hier geht. Eine Antwort in Reichweite ist mehr wert als eine
+ * vollstaendige, die nie ankommt.
+ */
+const SEARCH_RADIUS_METERS = 5_000;
 
 const overpassResponseSchema = z.object({
   elements: z.array(
@@ -102,13 +118,14 @@ export function createOverpassHotelSearch(
       }
 
       const { latitude, longitude } = input.destination;
+      const umkreis = `${String(SEARCH_RADIUS_METERS)},${String(latitude)},${String(longitude)}`;
       const query = `
-        [out:json][timeout:20];
+        [out:json][timeout:${String(SERVER_TIMEOUT_S)}];
         (
-          node["tourism"="hotel"]["name"](around:${String(SEARCH_RADIUS_METERS)},${String(latitude)},${String(longitude)});
-          way["tourism"="hotel"]["name"](around:${String(SEARCH_RADIUS_METERS)},${String(latitude)},${String(longitude)});
+          node["tourism"="hotel"]["name"](around:${umkreis});
+          way["tourism"="hotel"]["name"](around:${umkreis});
         );
-        out center ${String(Math.max(limit * 3, 30))};
+        out center ${String(Math.max(limit * 2, 20))};
       `;
 
       /*
