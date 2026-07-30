@@ -176,6 +176,9 @@ function zeigeBericht(bericht: EvalBericht): void {
 
   console.log('');
   console.log('─'.repeat(60));
+  // Zuerst, wovon die Rede ist: Modell und Prompt-Fassung. Eine Zahl ohne
+  // diese Zeile laesst sich spaeter keinem Stand mehr zuordnen.
+  console.log(`Modell / Prompt:       ${bericht.llm} · ${bericht.promptVersion}`);
   console.log(`Slot-Genauigkeit:      ${(k.genauigkeit * 100).toFixed(1)} %`);
   console.log(`  richtig:             ${String(k.richtig)} von ${String(k.slotsGesamt)}`);
   console.log(`  falsch:              ${String(k.falsch)}`);

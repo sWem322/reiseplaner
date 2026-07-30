@@ -108,6 +108,28 @@ Adapter eine Antwort unter und prüfen die **Übersetzung** von JSON in
 Angebote. Ob überhaupt jemand antwortet, ist eine andere Frage — und sie
 braucht ein anderes Werkzeug. Dafür gibt es jetzt `providers:check`.
 
+### Und danach: der Seed-Katalog als Rückfallebene
+
+Auch mit drei Instanzen blieb die Hotelsuche unzuverlässig. Ein Werkzeug, das
+manchmal kein Ergebnis liefert, ist noch zu ertragen; eines, das praktisch nie
+eines liefert, ist keines. Deshalb verhalten sich Unterkünfte jetzt wie Flüge:
+Ist der echte Anbieter nicht erreichbar, übernimmt der Seed-Katalog.
+
+Drei Dinge halten das ehrlich:
+
+1. Jede so entstandene Unterkunft trägt `isDemoData: true`. Die Karte zeigt
+   „Beispieldaten", nicht die Quelle.
+2. Der Systemprompt verpflichtet den Assistenten seit 1.6.0, es **im ersten
+   Satz** zu sagen, in dem Unterkünfte vorkommen — nicht als Fussnote danach.
+3. Ein `validation_error` wird nicht aufgefangen. War die Anfrage selbst
+   falsch — null Nächte, null Gäste —, dann scheiterte auch der Ersatz daran,
+   und ein Rückfall verschluckte nur die Meldung, die den Fehler erklärt.
+   Aufgefangen wird, was am Anbieter liegt, nicht, was am Aufrufer liegt.
+
+Ebenso wird eine **leere** Trefferliste durchgereicht. „Hier gibt es keine
+Unterkunft" ist eine Auskunft und darf nicht durch erfundene Häuser ersetzt
+werden.
+
 ## Seed-Daten
 
 - Rund 20 deutsche Abflughäfen (DUS, CGN, FRA, MUC, BER, HAM, STR, …)

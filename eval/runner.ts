@@ -4,7 +4,7 @@ import type { LlmMessage, LlmPort } from '@/domain/ports/llm';
 import type { Providers } from '@/domain/ports/providers';
 import { emptyTripDraft, type TripDraft, type TripSlot } from '@/domain/trip/trip';
 import { runAgent } from '@/server/agent/loop';
-import { buildSystemPromptForDate } from '@/server/agent/prompts/system';
+import { buildSystemPromptForDate, SYSTEM_PROMPT_VERSION } from '@/server/agent/prompts/system';
 import { createToolRegistry } from '@/server/agent/tools';
 import { createInMemoryTripDrafts } from './in-memory-drafts';
 import { EVAL_HEUTE, type ErwarteterEntwurf, type EvalFall } from './faelle';
@@ -45,6 +45,15 @@ export interface FallErgebnis {
 
 export interface EvalBericht {
   readonly llm: string;
+  /**
+   * Welche Prompt-Fassung gemessen wurde.
+   *
+   * Ohne diese Zeile ist ein gespeicherter Bericht eine Zahl ohne Bezug: Der
+   * Prompt ist das Verhalten des Agenten, und er ändert sich häufiger als der
+   * Code drumherum. Die Tabelle im README nennt die Fassung je Zeile — bis
+   * hierher stand sie dort von Hand, und genau so veralten Tabellen.
+   */
+  readonly promptVersion: string;
   readonly zeitpunkt: string;
   readonly faelle: readonly FallErgebnis[];
   readonly kennzahlen: {
@@ -162,7 +171,16 @@ export async function runEval({
     onFall?.(ergebnis, ergebnisse.length, faelle.length);
   }
 
-  return neuBerechnet({ llm: llm.name, zeitpunkt: '', faelle: [], kennzahlen: LEER }, ergebnisse);
+  return neuBerechnet(
+    {
+      llm: llm.name,
+      promptVersion: SYSTEM_PROMPT_VERSION,
+      zeitpunkt: '',
+      faelle: [],
+      kennzahlen: LEER,
+    },
+    ergebnisse,
+  );
 }
 
 const LEER: EvalBericht['kennzahlen'] = {
@@ -197,6 +215,7 @@ export function neuBerechnet(vorlage: EvalBericht, faelle: readonly FallErgebnis
 
   return {
     llm: vorlage.llm,
+    promptVersion: vorlage.promptVersion,
     zeitpunkt: new Date().toISOString(),
     faelle: ergebnisse,
     kennzahlen: {

@@ -9,6 +9,7 @@ import { createOverpassHotelSearch } from './http/overpass';
 import { createSeedFlightSearch } from './seed/flights';
 import { createSeedHotelSearch } from './seed/hotels';
 import { createSeedGeocoding, createSeedWeather } from './seed/places';
+import { createHotelSearchWithFallback } from './hotel-fallback';
 
 /**
  * Auswahl der Anbieter-Implementierungen.
@@ -39,7 +40,14 @@ export interface ProviderConfig {
 }
 
 export type AdapterName =
-  'seed' | 'duffel' | 'travelpayouts' | 'open-meteo' | 'overpass' | 'rule-based' | 'gemini';
+  | 'seed'
+  | 'duffel'
+  | 'travelpayouts'
+  | 'open-meteo'
+  /** Overpass zuerst, Seed-Katalog als Rueckfallebene. */
+  | 'overpass+seed'
+  | 'rule-based'
+  | 'gemini';
 
 export interface ProviderSelection {
   readonly providers: Providers;
@@ -72,7 +80,15 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
     ? createDuffelFlightSearch(config.duffelAccessToken ?? '', fetchImpl)
     : createSeedFlightSearch();
 
-  const hotels = useNetwork ? createOverpassHotelSearch(fetchImpl) : createSeedHotelSearch();
+  /*
+   * Unterkuenfte haben als einziger Port keinen Schluessel — und trotzdem
+   * keine Garantie: Overpass ist ein freiwillig betriebener Dienst und weist
+   * derzeit einen grossen Teil der Anfragen ab. Deshalb steht der
+   * Seed-Katalog dahinter, wie bei den Fluegen. Gekennzeichnet wird beides.
+   */
+  const hotels = useNetwork
+    ? createHotelSearchWithFallback(createOverpassHotelSearch(fetchImpl), createSeedHotelSearch())
+    : createSeedHotelSearch();
   const geocoding = useNetwork ? createOpenMeteoGeocoding(fetchImpl) : createSeedGeocoding();
   const weather = useNetwork ? createOpenMeteoWeather(fetchImpl) : createSeedWeather();
 
@@ -105,7 +121,7 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
     llm,
     active: {
       flights: hasDuffel ? 'duffel' : 'seed',
-      hotels: useNetwork ? 'overpass' : 'seed',
+      hotels: useNetwork ? 'overpass+seed' : 'seed',
       geocoding: useNetwork ? 'open-meteo' : 'seed',
       weather: useNetwork ? 'open-meteo' : 'seed',
       llm: hasGemini ? 'gemini' : 'rule-based',

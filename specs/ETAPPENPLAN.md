@@ -193,13 +193,16 @@ gegen das Modell mit dem vollständigen Satz steht aus.
 
 ## Verschiebungen
 
-| Datum      | Punkt                                        | Von      | Nach          | Grund                                                                                                                                                                            | Zustimmung |
-| ---------- | -------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| 2026-07-31 | Verhalten der Hotelsuche bei Ausfall der API | Etappe 6 | nach Etappe 6 | Keine der drei Overpass-Instanzen antwortet zuverlässig; die Wahl zwischen Rückfall auf Seed-Daten und offener Absage braucht erst einen Lauf, bei dem der Dienst erreichbar ist | ja         |
+| Datum      | Punkt                                        | Von      | Nach                               | Grund                                                                                                                              | Zustimmung |
+| ---------- | -------------------------------------------- | -------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 2026-07-31 | Verhalten der Hotelsuche bei Ausfall der API | Etappe 6 | — (noch am selben Tag entschieden) | Keine der drei Overpass-Instanzen antwortet zuverlässig; entschieden wurde für den Rückfall auf den Seed-Katalog mit Kennzeichnung | ja         |
 
-**Zum Stand der Hotelsuche.** Der Adapter ist vollständig, geprüft und
-gegenüber drei Instanzen abgesichert — verschoben ist nur die Entscheidung,
-was geschehen soll, wenn keine davon antwortet. Heute sagt der Assistent das
-offen; ob stattdessen Seed-Daten mit Quellenhinweis einspringen sollen, wird
-entschieden, sobald `npm run providers:check` einen erreichbaren Dienst
-zeigt.
+**Erledigt am 31.07.2026.** Die Entscheidung fiel, ohne auf einen erreichbaren
+Dienst zu warten: Unterkünfte fallen auf den Seed-Katalog zurück, genau wie
+Flüge ohne Anbieter-Token. Jedes Ergebnis trägt `isDemoData`, und der
+Systemprompt verpflichtet den Assistenten seit 1.6.0, die Herkunft im ersten
+Satz zu nennen. Erfundene Daten sind vertretbar, solange sie als solche
+benannt werden — verschwiegen wären sie es nicht.
+
+Overpass bleibt als erste Wahl verdrahtet. Antwortet er wieder, kommen echte
+Häuser zurück, ohne dass etwas umgestellt werden müsste.

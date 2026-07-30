@@ -79,10 +79,39 @@ describe('Auswahl der Anbieter', () => {
     const selection = createProviders({ useNetworkProviders: true, fetchImpl: offlineFetch });
 
     expect(selection.active).toMatchObject({
-      hotels: 'overpass',
+      hotels: 'overpass+seed',
       geocoding: 'open-meteo',
       weather: 'open-meteo',
     });
+  });
+
+  /*
+   * Der Beleg dafuer, dass die Rueckfallebene wirklich verdrahtet ist und
+   * nicht nur im Namen steht: `offlineFetch` laesst jeden Netzaufruf
+   * scheitern — trotzdem muessen Unterkuenfte herauskommen.
+   */
+  it('liefert Unterkuenfte, obwohl kein Netzdienst erreichbar ist', async () => {
+    const { providers } = createProviders({ useNetworkProviders: true, fetchImpl: offlineFetch });
+
+    const offers = unwrap(
+      await providers.hotels.search(
+        {
+          destination: {
+            name: 'Palma de Mallorca',
+            iataCode: 'PMI',
+            latitude: 39.5517,
+            longitude: 2.7388,
+          },
+          checkIn: '2026-09-05',
+          checkOut: '2026-09-12',
+          guests: 2,
+        },
+        5,
+      ),
+    );
+
+    expect(offers.length).toBeGreaterThan(0);
+    expect(offers.every((offer) => offer.isDemoData)).toBe(true);
   });
 
   it('liefert einsatzbereite Ports ohne jede Konfiguration', async () => {

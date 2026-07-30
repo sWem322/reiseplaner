@@ -78,7 +78,20 @@
  *    den Entwurf; die Regel hier erklaert dem Modell nur, warum es abgewiesen
  *    wird.
  */
-export const SYSTEM_PROMPT_VERSION = '1.5.0';
+/**
+ * 1.6.0 — Unterkuenfte kommen aus einem Beispielkatalog, und das gehoert gesagt.
+ *
+ * Overpass, die einzige schluessellose Quelle fuer echte Haeuser, weist seit
+ * Fruehjahr 2026 einen grossen Teil der Anfragen ab. Die Hotelsuche lieferte
+ * deshalb nie ein Ergebnis. Jetzt uebernimmt der Seed-Katalog, wenn kein
+ * Dienst antwortet — und damit waechst die Pflicht, die Herkunft zu nennen.
+ *
+ * Die alte Regel („ist ein Ergebnis als `isDemoData` gekennzeichnet, sage das
+ * dazu") stand als Nebensatz unter zwoelf anderen und wurde entsprechend
+ * behandelt. Bei Unterkuenften ist sie kein Nebensatz mehr, denn dort ist der
+ * Beispielfall inzwischen der Regelfall.
+ */
+export const SYSTEM_PROMPT_VERSION = '1.6.0';
 
 interface SystemPromptOptions {
   /** Heutiges Datum als JJJJ-MM-TT — das Modell kennt es sonst nicht. */
@@ -117,6 +130,8 @@ export function buildSystemPrompt({ today }: SystemPromptOptions): string {
     '- Diese vorgeschlagenen Daten sind ein **Vorschlag, keine Angabe**: Sie kommen erst in den Entwurf, wenn die reisende Person sich für einen Zeitraum entschieden hat. Vorschlagen und Eintragen sind zweierlei.',
     '- Preisalarme setzen und buchen kannst du nicht. Wird danach gefragt, sag es offen.',
     '- Ist ein Ergebnis als Demo-Daten gekennzeichnet (`isDemoData`), sage das dazu — etwa „Beispielpreise zur Veranschaulichung".',
+    '- **Unterkünfte sind derzeit immer Beispieldaten.** Nenne das im ersten Satz, in dem du Unterkünfte erwähnst, und nicht als Fussnote danach: „Das sind Beispielunterkünfte — echte Verfügbarkeiten und Preise kann ich nicht abrufen." Danach darfst du sie ganz normal besprechen: Lage, Entfernung zum Zentrum, Preisspanne.',
+    '- Diese Offenheit gilt auch, wenn dich jemand nach der Buchbarkeit fragt. Nichts davon lässt sich buchen, und ein Ausweichen wäre schlimmer als die Auskunft.',
     '- Eine leere Ergebnisliste heißt: auf dieser Strecke fliegt an diesen Tagen nichts. Sag es und schlage eine Alternative vor.',
     '- Meldet ein Werkzeug einen Fehler, versuche es korrigiert erneut. Bleibt es dabei, erkläre der reisenden Person ruhig, was nicht ging.',
     '- Buchen kannst du nicht. Wird danach gefragt, sag es offen.',

@@ -123,6 +123,13 @@ Sprachmodell tatsächlich beiträgt.
 Anfrage liefert dieselben Preise, weshalb E2E-Tests und Demo reproduzierbar
 sind.
 
+**Und als Rückfallebene, nicht nur als Ersatz.** Overpass — die einzige
+schlüssellose Quelle für echte Unterkünfte — weist seit Frühjahr 2026 einen
+grossen Teil der Anfragen ab. Statt einer Absage übernimmt dann der
+Seed-Katalog, und der Assistent sagt im ersten Satz, dass es Beispieldaten
+sind. Ausgedachte Daten sind vertretbar, solange sie als solche benannt
+werden.
+
 ## Architektur
 
 ```
