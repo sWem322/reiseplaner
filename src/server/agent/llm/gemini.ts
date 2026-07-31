@@ -317,12 +317,16 @@ export function createGeminiLlm(options: GeminiOptions): LlmPort {
 
         try {
           const zug = createTurnBuilder();
-          const streamen = client.models.generateContentStream;
 
-          if (streamen === undefined) {
+          /*
+           * Beide Aufrufe stehen bewusst am Objekt, statt die Methode vorher
+           * in eine Variable zu holen: Eine herausgeloeste Methode verliert
+           * ihr `this`, und das SDK braucht seines.
+           */
+          if (client.models.generateContentStream === undefined) {
             zug.add(await client.models.generateContent(anfrage), hooks?.onTextDelta);
           } else {
-            for await (const stueck of await streamen.call(client.models, anfrage)) {
+            for await (const stueck of await client.models.generateContentStream(anfrage)) {
               zug.add(stueck, hooks?.onTextDelta);
             }
           }
