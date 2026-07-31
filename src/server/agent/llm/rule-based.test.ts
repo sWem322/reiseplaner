@@ -170,6 +170,12 @@ describe('Regelbasiertes Modell im Loop', () => {
     expect(result.stopReason).toBe('completed');
   });
 
+  /*
+   * Dieser Fall bewacht mehr, als er auf den ersten Blick sagt: Der Loop haengt
+   * Werkzeugergebnisse als Nachricht der Rolle `user` an. Wer daraus schliesst,
+   * ein neuer Zug habe begonnen, sucht in jeder Iteration erneut und laeuft in
+   * die Iterationsgrenze. Genau so ist es einmal passiert.
+   */
   it('arbeitet ohne Netzwerk und ohne Schlüssel', async () => {
     const { events } = run('von Düsseldorf nach Mallorca im September für eine Woche zu zweit');
 
@@ -177,6 +183,16 @@ describe('Regelbasiertes Modell im Loop', () => {
 
     expect(result.stopReason).toBe('completed');
     expect(result.toolCalls).toBeGreaterThan(0);
+  });
+
+  it('sucht genau einmal je Zug, nicht je Iteration', async () => {
+    const { events } = run('von Düsseldorf nach Mallorca im September für eine Woche zu zweit');
+
+    const suchen = (await events).filter(
+      (event) => event.type === 'tool_started' && event.toolName === 'search_flights',
+    );
+
+    expect(suchen).toHaveLength(1);
   });
 
   it('verbraucht keine Tokens', async () => {

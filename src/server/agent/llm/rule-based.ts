@@ -590,16 +590,39 @@ function alsAntwortAuf(slot: TripSlot | null, text: string): ExtractedTripParame
  * dem, was gesagt wurde, und endet mit der Antwort darauf.
  */
 function zugNachrichten(request: LlmRequest): readonly LlmMessage[] {
-  let letzterNutzer = -1;
+  /*
+   * „Die letzte Nachricht der Rolle `user`" ist hier **nicht** dasselbe wie
+   * „das Zuletztgesagte": Der Loop haengt auch die Werkzeugergebnisse als
+   * Nachricht der Rolle `user` an — das ist die Konvention des Protokolls,
+   * nicht eine Aeusserung eines Menschen.
+   *
+   * Die erste Fassung uebersah das. Damit begann der Zug nach jedem
+   * Werkzeugergebnis von vorn, „in diesem Zug wurde noch nicht gesucht" war
+   * immer wahr, und der Loop suchte in jeder Iteration erneut, bis die
+   * Iterationsgrenze griff. Ein Test aus Etappe 3 hat es gefunden.
+   *
+   * Eine Aeusserung erkennt man am Textblock.
+   */
+  let letzteAeusserung = -1;
 
   for (let index = request.messages.length - 1; index >= 0; index -= 1) {
-    if (request.messages[index]?.role === 'user') {
-      letzterNutzer = index;
+    const message = request.messages[index];
+
+    if (message?.role !== 'user') {
+      continue;
+    }
+
+    const gesprochen = message.blocks.some(
+      (block) => block.type === 'text' && block.text.trim().length > 0,
+    );
+
+    if (gesprochen) {
+      letzteAeusserung = index;
       break;
     }
   }
 
-  return letzterNutzer < 0 ? request.messages : request.messages.slice(letzterNutzer + 1);
+  return letzteAeusserung < 0 ? request.messages : request.messages.slice(letzteAeusserung + 1);
 }
 
 /** Wie ist die Flugsuche in diesem Zug ausgegangen? */
