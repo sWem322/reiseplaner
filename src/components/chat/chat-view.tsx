@@ -54,20 +54,31 @@ interface LocalMessage {
  * eine Beobachtung.
  */
 function useVergangeneZeit(laeuft: boolean): number {
-  const [ms, setMs] = useState(0);
+  /*
+   * Im Zustand steht der Zeitpunkt, nicht die Dauer — und gesetzt wird er
+   * ausschliesslich aus dem Intervall heraus.
+   *
+   * Der erste Versuch rief `setMs(0)` im Rumpf des Effekts, um beim Ende
+   * zurueckzusetzen. Genau das verbietet `react-hooks/set-state-in-effect`,
+   * und zu Recht: Ein setState im Effektrumpf loest sofort ein weiteres
+   * Rendern aus. Die Regel erlaubt, was hier gebraucht wird — setState im
+   * Rueckruf, wenn sich eine Groesse ausserhalb von React aendert. Und die
+   * Uhr ist genau das.
+   */
+  const [jetzt, setJetzt] = useState(0);
+  const begonnen = useRef(0);
 
   useEffect(() => {
     if (!laeuft) {
-      setMs(0);
-
       return;
     }
 
-    const start = Date.now();
+    begonnen.current = Date.now();
+
     // Viermal je Sekunde: fein genug, dass die Zahl lebt, grob genug, dass
     // sie sich lesen laesst.
     const ticker = setInterval(() => {
-      setMs(Date.now() - start);
+      setJetzt(Date.now());
     }, 250);
 
     return () => {
@@ -75,7 +86,13 @@ function useVergangeneZeit(laeuft: boolean): number {
     };
   }, [laeuft]);
 
-  return ms;
+  /*
+   * Das Zuruecksetzen passiert damit in der Berechnung statt im Zustand.
+   * Zwischen dem Start und dem ersten Tick stammt `jetzt` noch aus dem
+   * vorigen Lauf und liegt vor `begonnen` — dann ist die Antwort null, und
+   * es blitzt keine alte Dauer auf.
+   */
+  return laeuft && jetzt > begonnen.current ? jetzt - begonnen.current : 0;
 }
 
 const BEISPIELE = [
