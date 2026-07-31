@@ -131,16 +131,21 @@ des Entwurfs nach jedem. Der Runner prüft drei Dinge getrennt: richtig, falsch
 — und **erfunden**, also ein Wert, der dasteht, obwohl niemand ihn genannt hat.
 Der dritte Fall ist der gefährlichste, weil ihn niemand bemerkt.
 
-| Lauf                 | Slot-Genauigkeit | erfunden | bestanden | Werkzeuge/Fall |
-| -------------------- | ---------------- | -------- | --------- | -------------- |
-| regelbasiert         | 91,8 %           | 2        | 12/20     | 1,1            |
-| Gemini, Prompt 1.1.0 | 96,7 %           | 1        | 16/20     | 3,6            |
-| Gemini, Prompt 1.3.0 | **100 %**        | **0**    | **20/20** | 4,1            |
+| Lauf                 | Fälle | Slot-Genauigkeit | erfunden | bestanden | Werkzeuge/Fall |
+| -------------------- | ----- | ---------------- | -------- | --------- | -------------- |
+| regelbasiert         | 20    | 91,8 %           | 2        | 12/20     | 1,1            |
+| Gemini, Prompt 1.1.0 | 20    | 96,7 %           | 1        | 16/20     | 3,6            |
+| Gemini, Prompt 1.3.0 | 20    | 100 %            | 0        | 20/20     | 4,1            |
+| Gemini, Prompt 1.6.0 | 22    | **100 %**        | **0**    | **22/22** | 4,0            |
 
-Gemessen an den zwanzig Fällen, die es damals gab; jeder Bericht trägt die
-Prompt-Fassung, gegen die er gelaufen ist. Zwei Fälle sind seither
-dazugekommen, beide aus einer Abnahme: ein Ziel ausserhalb Europas und eine
-halbe Antwort auf eine Doppelfrage.
+Jeder Bericht trägt die Prompt-Fassung, gegen die er gelaufen ist — die Zeile
+im README lässt sich damit nicht mehr unbemerkt von den Zahlen lösen. Die
+beiden zusätzlichen Fälle stammen aus Abnahmen: ein Ziel ausserhalb Europas
+und eine halbe Antwort auf eine Doppelfrage.
+
+1,1 % der Werkzeugaufrufe schlugen dabei fehl, und das ist kein Makel: Es ist
+die Selbstkorrektur bei der Arbeit. Der Agent ruft ein Werkzeug falsch auf,
+bekommt den Fehler als Ergebnis zurück und macht es im nächsten Zug richtig.
 
 ```bash
 npm run eval            # regelbasiert — kostenlos, deterministisch

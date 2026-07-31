@@ -87,16 +87,26 @@ Fehler, der einmal aufgetreten ist, hat ab dann einen Wächter.
 
 ## Was dabei herauskam
 
-| Lauf                 | Slot-Genauigkeit | erfunden | bestanden | Werkzeuge/Fall |
-| -------------------- | ---------------- | -------- | --------- | -------------- |
-| regelbasiert         | 91,8 %           | 2        | 12/20     | 1,1            |
-| Gemini, Prompt 1.1.0 | 96,7 %           | 1        | 16/20     | 3,6            |
-| Gemini, Prompt 1.3.0 | **100 %**        | **0**    | **20/20** | 4,1            |
+| Lauf                 | Fälle | Slot-Genauigkeit | erfunden | bestanden | Werkzeuge/Fall |
+| -------------------- | ----- | ---------------- | -------- | --------- | -------------- |
+| regelbasiert         | 20    | 91,8 %           | 2        | 12/20     | 1,1            |
+| Gemini, Prompt 1.1.0 | 20    | 96,7 %           | 1        | 16/20     | 3,6            |
+| Gemini, Prompt 1.3.0 | 20    | 100 %            | 0        | 20/20     | 4,1            |
+| Gemini, Prompt 1.6.0 | 22    | **100 %**        | **0**    | **22/22** | 4,0            |
 
-Gemessen an den zwanzig Fällen, die es damals gab. Seither sind zwei
-dazugekommen — „Miami" und die halbe Antwort —, beide aus einer Abnahme, beide
-mit einer Prompt-Änderung im Rücken. Die Zeile für 1.5.0 folgt, wenn das
-Tageskontingent den Lauf wieder zulässt.
+Der letzte Lauf lief gegen `gemini-flash-lite-latest` — das schwächste Modell
+der Kette, weil es das grösste Kontingent hat. 66 von 66 Angaben richtig, bei
+zwei Fällen mehr als beim Lauf davor: „Miami" und die halbe Antwort auf eine
+Doppelfrage.
+
+Seit diesem Lauf trägt jeder Bericht die Prompt-Fassung, gegen die er gemessen
+wurde. Die Zahl allein sagt nichts — sie gehört zu einem Verhalten, und das
+Verhalten steht im Prompt.
+
+**1,1 % der Werkzeugaufrufe schlugen fehl, und das ist keine Schwäche.** Es ist
+die Selbstkorrektur im Betrieb: Der Agent ruft ein Werkzeug falsch auf, bekommt
+den Fehler als `tool_result` zurück und macht es im nächsten Zug richtig. Eine
+Quote von 0 % wäre hier eher ein Hinweis darauf, dass die Fälle zu leicht sind.
 
 Der Weg dorthin ist die eigentliche Geschichte:
 
