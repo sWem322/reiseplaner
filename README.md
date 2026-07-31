@@ -254,9 +254,10 @@ npm run llm:check        # ein echter Aufruf gegen Gemini, mit zweitem Zug
 npm run providers:check  # ein echter Aufruf gegen jeden fremden Dienst
 ```
 
-Mehr als vierhundert Tests: Domäne, Adapter gegen untergeschobene Antworten,
-Agenten-Loop gegen ein skriptgesteuertes Modell, Repositories und Prozeduren
-gegen echtes PostgreSQL, vier E2E-Fälle im Browser.
+464 Tests in 23 Dateien, Durchlauf in gut fünf Sekunden: Domäne, Adapter gegen
+untergeschobene Antworten, Agenten-Loop gegen ein skriptgesteuertes Modell,
+Repositories und Prozeduren gegen echtes PostgreSQL, vier E2E-Fälle im
+Browser.
 
 Die Trennung ist Absicht und ein eigenes Gesprächsthema: Die **Orchestrierung**
 wird deterministisch geprüft — skriptgesteuertes Modell, Seed-Adapter, kein
