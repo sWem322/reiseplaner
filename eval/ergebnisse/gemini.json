@@ -1,6 +1,7 @@
 {
   "llm": "gemini:gemini-flash-lite-latest",
-  "zeitpunkt": "2026-07-30T23:13:16.400Z",
+  "promptVersion": "1.6.0",
+  "zeitpunkt": "2026-07-31T01:17:06.096Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -39,10 +40,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 6,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Flüge von Düsseldorf nach Palma de Mallorca vom 8. bis 15. Oktober 2026 für zwei Personen (Beispielpreise zur Veranschaulichung) liegen die Kosten zwischen 426 Euro und 449 Euro für Direktflüge. Alle Angebote bieten Nonstop-Verbindungen, wobei der günstigste Flug mit Demo Air am frühen Morgen startet. Suchen wir direkt nach einer passenden Unterkunft dazu?",
+      "antwort": "Die Flüge vom 8. bis 15. Oktober 2026 von Düsseldorf nach Palma de Mallorca kosten für zwei Personen ab 426 Euro mit Demo Air (Direktflüge). Das sind beispielhafte Daten zur Veranschaulichung.\n\nDas sind Beispielunterkünfte — echte Verfügbarkeiten und Preise kann ich nicht abrufen. Die Unterkünfte vor Ort liegen preislich zwischen 947 und 1.196 Euro für die sieben Nächte, wobei das günstigste Angebot mit 135 Euro pro Nacht etwas außerhalb des Zentrums liegt.",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -103,10 +104,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 9,
+      "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Die Beispielflüge ab Düsseldorf nach Barcelona vom 12. bis 19. September 2026 kosten für zwei Personen ab 553 Euro. Alle angebotenen Flüge sind Direktflüge, der günstigste ist ein Frühflug mit Demo Air. \n\nFür Ihre Unterkunft im gleichen Zeitraum finden Sie Beispielpreise ab 1.050 Euro für sieben Nächte, etwa im Hotel Central Barcelona. Im September erwarten Sie in Barcelona angenehme Höchstwerte um 29 Grad und eine Wassertemperatur von rund 24 Grad bei etwa neun Regentagen.",
+      "antwort": "Die Flüge von Düsseldorf nach Barcelona vom 12. bis 19. September 2026 kosten für zwei Personen ab 553 € bei Demo Air. Alle Angebote sind Direktflüge mit sehr ähnlichen Flugzeiten über den Tag verteilt. \n\nSoll ich passende Unterkünfte in Barcelona für Sie heraussuchen?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -167,10 +168,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 6,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Strecke von Frankfurt nach Lissabon vom 5. bis 12. November 2026 für zwei Personen liegen die Beispielpreise zur Veranschaulichung zwischen 607 Euro und 637 Euro für alle angezeigten Direktflüge. Die Tarife liegen damit recht nah beieinander, wobei der günstigste Flug mit Musterflug bei 607 Euro startet. \n\nMöchten Sie, dass ich passende Unterkünfte in Lissabon für diesen Zeitraum heraussuche?",
+      "antwort": "Die günstigsten Flüge von Frankfurt nach Lissabon vom 05.11. bis 12.11.2026 kosten für zwei Personen ab 607 Euro für Direktverbindungen. Die Angebote liegen preislich sehr nah beieinander, sodass Sie vor allem nach Ihren bevorzugten Abflugzeiten wählen können.\n\nDas sind Beispielunterkünfte — echte Verfügbarkeiten und Preise kann ich nicht abrufen. Die angezeigten Unterkünfte für die sieben Nächte in Lissabon beginnen bei rund 710 Euro Gesamtkosten für das einfache Strandhotel Aurora etwas außerhalb bis hin zu 1.238 Euro für zentralere oder gehobene Häuser.",
       "entwurf": {
         "origin": {
           "name": "Frankfurt am Main",
@@ -225,10 +226,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 3,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchten Sie denn abfliegen?",
+      "antwort": "Von welchem Flughafen aus möchten Sie denn abfliegen?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -260,10 +261,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 0,
+      "werkzeugaufrufe": 1,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Italien ist wunderschön, aber recht groß. Welche Stadt oder Gegend schwebt Ihnen denn vor – zieht es Sie eher nach Rom, an die Amalfiküste oder nach Mailand?",
+      "antwort": "Italien ist ein wunderbares Ziel, allerdings recht groß. Welches Reiseziel in Italien schwebt Ihnen denn vor, zum Beispiel Rom, Mailand oder Venedig?",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -311,7 +312,7 @@
       "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Mit wie vielen Erwachsenen reisen Sie?",
+      "antwort": "Mit wie vielen Erwachsenen möchten Sie nach Wien reisen?",
       "entwurf": {
         "origin": {
           "name": "Hamburg",
@@ -363,7 +364,7 @@
       "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Kreta ist ein wunderbares Ziel. Von welchem Flughafen in Deutschland aus möchten Sie abfliegen?",
+      "antwort": "Von wo aus möchtet ihr denn abfliegen?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -419,10 +420,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 7,
+      "werkzeugaufrufe": 5,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für den Reisezeitraum vom 15. bis 29. August 2026 von München nach Antalya gibt es Direktflüge (Beispielpreise zur Veranschaulichung) ab 1.707 Euro für zwei Erwachsene und zwei Kinder. Im August erwarten Sie in Antalya sommerliche Höchstwerte um 35 Grad und eine Wassertemperatur von rund 31 Grad. Als Unterkünfte stehen zum Beispiel die Villa Serena Antalya ab 3.622 Euro für den gesamten Aufenthalt oder das Hotel Playa Antalya ab 3.669 Euro zur Auswahl.\n\nSoll ich eine der Unterkünfte genauer für Sie ansehen?",
+      "antwort": "Für Ihre Reise von München nach Antalya vom 15. bis 29. August 2026 gibt es Direktflüge ab 1.707 Euro für alle vier Personen insgesamt. Alle angebotenen Flüge sind nonstop, preislich liegen sie nah beieinander.\n\nDas sind Beispielunterkünfte — echte Verfügbarkeiten und Preise kann ich nicht abrufen. Unterkünfte wie die Villa Serena Antalya oder das Hotel Playa Antalya starten bei etwa 259 bis 262 Euro pro Nacht für vier Gäste.",
       "entwurf": {
         "origin": {
           "name": "München",
@@ -535,7 +536,7 @@
       "werkzeugaufrufe": 6,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für die Flüge von Berlin nach Rhodos vom 5. bis 12. September 2026 (Beispielpreise zur Veranschaulichung) gibt es Direktflüge ab 891 € für zwei Personen. Dazu passende Unterkünfte vor Ort starten bei 951 € für die gesamte Woche. Möchten Sie eines dieser Angebote näher betrachten?",
+      "antwort": "Für Ihre Reise von Berlin nach Rhodos vom 5. bis 12. September 2026 für zwei Erwachsene gibt es Nonstop-Flüge ab 891 € Gesamtpreis für beide Personen (Beispielpreise zur Veranschaulichung). Die Angebote liegen preislich nah beieinander, wobei Musterflug das günstigste Ticket bietet.\n\nDas sind Beispielunterkünfte — echte Verfügbarkeiten und Preise kann ich nicht abrufen. Unter den Beispielen startet die Residenz am Hafen Rhodos bei rund 951 € für die sieben Nächte, während luxuriösere Optionen wie die Villa Serena bei 1.937 € liegen. \n\nMöchten Sie nach diesen Flügen oder Unterkünften schauen oder haben Sie noch spezielle Wünsche?",
       "entwurf": {
         "origin": {
           "name": "Berlin Brandenburg",
@@ -578,10 +579,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für wie viele Tage oder in welchem Zeitraum soll ich denn nach alternativen Flügen suchen?",
+      "antwort": "Hier ist ein Preisvergleich für verschiedene Wochen im Oktober 2026 ab Düsseldorf nach Mallorca für zwei Personen (Beispielpreise zur Veranschaulichung):\n\n- 1. bis 8. Oktober: ab 279 €\n- 8. bis 15. Oktober: ab 426 €\n- 15. bis 22. Oktober: ab 325 €\n- 22. bis 29. Oktober: ab 348 €\n\nDer Start Anfang Oktober ist am günstigsten. Welcher Zeitraum sagt Ihnen am meisten zu?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -630,10 +631,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 6,
+      "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Hier sind ein paar Beispielpreise für verschiedene Wochen im Oktober ab Düsseldorf für zwei Personen (Beispieldaten zur Veranschaulichung):\n\n- 1. bis 8. Oktober: ab 279 €\n- 8. bis 15. Oktober: ab 426 €\n- 15. bis 22. Oktober: ab 325 €\n\nWelcher dieser Zeiträume passt für Sie am besten?",
+      "antwort": "Hier sind die günstigsten Flugwochen im Oktober für zwei Personen ab Düsseldorf: vom 1. bis 8. Oktober geht es ab 279 € los, vom 15. bis 22. Oktober ab 325 €, vom 22. bis 29. Oktober ab 348 € und vom 8. bis 15. Oktober ab 426 €. \n\nWelcher dieser Zeiträume passt für Sie?",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -673,7 +674,7 @@
       "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Im Oktober ist es auf Teneriffa angenehm warm mit durchschnittlichen Höchstwerten von etwa 35 Grad und Tiefstwerten um 26 Grad. Die Wassertemperatur liegt bei sommerlichen 29 Grad, und es ist mit rund 9 Regentagen zu rechnen (Hinweis: Dies sind Beispieldaten zur Veranschaulichung). \n\nMöchten Sie im Oktober eine Reise nach Teneriffa planen?",
+      "antwort": "Im Oktober liegen die durchschnittlichen Höchstwerte auf Teneriffa bei rund 35 Grad und die Tiefstwerte bei etwa 26 Grad. Dazu gibt es im Schnitt 9 Regentage, und das Wasser hat eine Temperatur von knapp 29 Grad (Beispielwerte zur Veranschaulichung).",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -706,10 +707,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 6,
+      "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Ich kann leider keine Buchungen durchführen, da ich dich bei der Planung unterstütze, aber den Buchungsprozess selbst nicht übernehmen kann. Du müsstest den Flug direkt über eine Buchungsplattform oder die Airline reservieren. \n\nMöchtest du, dass wir uns stattdessen die Unterkünfte genauer ansehen oder noch etwas an der Planung anpassen?",
+      "antwort": "Buchen kann ich leider nicht, da ich Sie hier nur bei der Planung und Zusammenstellung der Reise unterstütze. Sie können den Flug direkt über die Website der Fluggesellschaft oder ein Buchungsportal reservieren. \n\nMöchten wir stattdessen nach passenden Unterkünften in Faro schauen?",
       "entwurf": {
         "origin": {
           "name": "Köln/Bonn",
@@ -749,7 +750,7 @@
       "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Von welchem Flughafen möchten Sie nach Neapel abfliegen?",
+      "antwort": "Von welchem Flughafen möchten Sie nach Neapel fliegen?",
       "entwurf": {
         "origin": null,
         "destination": {
@@ -796,7 +797,7 @@
       "werkzeugaufrufe": 7,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für den neuen Zeitraum vom 11. bis 18. September 2026 kosten die Beispielflüge für zwei Personen zwischen 635 und 665 Euro. Es handelt sich wiederum ausschließlich um Direktflüge, wobei Demo Air das günstigste Angebot stellt. Soll ich nun nach einer Unterkunft in Athen für diesen Zeitraum suchen?",
+      "antwort": "Für den neuen Zeitraum vom 11. bis 18. September 2026 starten die Beispielpreise für den Hin- und Rückflug für zwei Personen bei etwa 635 Euro mit Demo Air für Direktflüge. Die Tarife liegen alle nah beieinander. Soll ich nun nach Unterkünften in Athen suchen?",
       "entwurf": {
         "origin": {
           "name": "Stuttgart",
@@ -845,10 +846,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 3,
+      "werkzeugaufrufe": 4,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Der Rückflug am 12. September liegt vor dem Hinflug am 20. Oktober. Welches Datum meinen Sie für die Rückreise?",
+      "antwort": "Der Rückflug am 12. September 2026 liegt vor dem Hinflug am 20. Oktober 2026. Welches Rückreisedatum darf es stattdessen sein?",
       "entwurf": {
         "origin": {
           "name": "Hannover",
@@ -900,7 +901,7 @@
       "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Das Abflugdatum 2020 liegt in der Vergangenheit. Für welches Datum im kommenden Jahr oder für einen späteren Zeitraum möchtest du die Reise planen?",
+      "antwort": "Das Datum liegt in der Vergangenheit. Für welchen Zeitraum im kommenden Jahr oder zu welchem späteren Datum möchten Sie reisen?",
       "entwurf": {
         "origin": {
           "name": "Bremen",
@@ -915,7 +916,7 @@
           "longitude": -4.4991
         },
         "departureDate": null,
-        "returnDate": "2020-05-08",
+        "returnDate": null,
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -937,10 +938,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
-      "misslungeneAufrufe": 0,
+      "werkzeugaufrufe": 2,
+      "misslungeneAufrufe": 1,
       "hatGesucht": false,
-      "antwort": "Miami liegt leider außerhalb unseres Angebots, da wir uns auf Ziele in Europa und dem Mittelmeerraum sowie Abflüge von deutschen Flughäfen konzentrieren. \n\nWie wäre es stattdessen mit einer Reise nach Barcelona oder Rom?",
+      "antwort": "Miami liegt außerhalb unseres Angebots, da dieser Planer auf europäische Ziele und den Mittelmeerraum abfliegt. Wie wäre es stattdessen mit einer Reise nach Barcelona oder Mallorca?",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -970,7 +971,7 @@
       "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Ulan-Bator liegt leider außerhalb unseres Angebots, da sich unser Planer auf europäische Ziele und den Mittelmeerraum ab deutschen Flughäfen konzentriert. Wie wäre es stattdessen mit einer Reise nach Istanbul oder Athen?",
+      "antwort": "Ulan-Bator liegt leider außerhalb unseres Angebots, da wir uns auf europäische Ziele und den Mittelmeerraum ab deutschen Flughäfen konzentrieren. \n\nWie wäre es stattdessen mit einer Reise nach Istanbul oder Athen?",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -1018,7 +1019,7 @@
       "werkzeugaufrufe": 0,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Ich helfe dir gerne bei allem rund um deine Reiseplanung – von Flügen bis zum passenden Hotel. Für Kochrezepte bist du hier allerdings an der falschen Adresse. \n\nWohin soll denn deine nächste Reise gehen?",
+      "antwort": "Da kann ich Ihnen leider nicht weiterhelfen — ich bin auf die Planung von individuellen Reisen spezialisiert. Möchten Sie vielleicht eine Reise an einen schönen Ort planen, an dem es hervorragendes Tiramisu gibt?",
       "entwurf": {
         "origin": null,
         "destination": null,
@@ -1063,10 +1064,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 5,
+      "werkzeugaufrufe": 6,
       "misslungeneAufrufe": 0,
       "hatGesucht": true,
-      "antwort": "Für Ihre Flüge von Nürnberg nach Palma vom 19. bis 26. September 2026 (Beispielpreise zur Veranschaulichung) gibt es Direktverbindungen ab etwa 502 Euro für zwei Personen. \n\nBei den Unterkünften für denselben Zeitraum startet das günstigste angezeigte Strandhotel (Beispielpreise) bei rund 1.249 Euro für die gesamte Woche. Damit liegen die kombinierten Kosten voraussichtlich über Ihrem Budget von 1.200 Euro. \n\nMöchten Sie das Budget anpassen oder nach einer günstigeren Unterkunft beziehungsweise einem anderen Zeitraum schauen?",
+      "antwort": "Die Flüge von Nürnberg nach Palma kosten im Beispielszeitraum 19. bis 26. September 2026 zu zweit ab ca. 502 € für Direktflüge. \n\nBitte beachte: Die angezeigten Unterkünfte sind Beispieldaten, da echte Verfügbarkeiten und Preise nicht abrufbar sind. Mit dem günstigsten Beispielflug und der günstigsten Beispielunterkunft (ca. 1.249 € für 7 Nächte) liegst du insgesamt leicht über deinem Budget von 1.200 €. \n\nMöchtest du nach einer günstigeren Unterkunft schauen oder den Reisezeitraum anpassen?",
       "entwurf": {
         "origin": {
           "name": "Nürnberg",
@@ -1100,8 +1101,8 @@
     "erfunden": 0,
     "fehlt": 0,
     "genauigkeit": 1,
-    "werkzeugaufrufeJeFall": 3.8181818181818183,
-    "anteilMisslungenerAufrufe": 0,
+    "werkzeugaufrufeJeFall": 4.045454545454546,
+    "anteilMisslungenerAufrufe": 0.011235955056179775,
     "bestandeneFaelle": 22,
     "offeneFaelle": 0,
     "nichtGemesseneFaelle": 0

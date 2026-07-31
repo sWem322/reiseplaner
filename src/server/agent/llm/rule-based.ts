@@ -495,7 +495,7 @@ function entwurfAusVerlauf(request: LlmRequest): ExtractedTripParameters | null 
         continue;
       }
 
-      return fromDraftPatch((inhalt as { draft: unknown }).draft);
+      return fromDraftPatch(inhalt.draft);
     }
   }
 
@@ -606,19 +606,21 @@ function zugNachrichten(request: LlmRequest): readonly LlmMessage[] {
 function sucheImZug(request: LlmRequest): 'ok' | 'fehler' | 'keine' {
   const zug = zugNachrichten(request);
 
-  const aufruf = zug
-    .flatMap((message) => message.blocks)
-    .find((block) => block.type === 'tool_use' && block.toolName === 'search_flights');
+  const bloecke = zug.flatMap((message) => message.blocks);
 
-  if (aufruf === undefined || aufruf.type !== 'tool_use') {
+  const aufruf = bloecke.find(
+    (block) => block.type === 'tool_use' && block.toolName === 'search_flights',
+  );
+
+  if (aufruf?.type !== 'tool_use') {
     return 'keine';
   }
 
-  const ergebnis = zug
-    .flatMap((message) => message.blocks)
-    .find((block) => block.type === 'tool_result' && block.toolCallId === aufruf.toolCallId);
+  const ergebnis = bloecke.find(
+    (block) => block.type === 'tool_result' && block.toolCallId === aufruf.toolCallId,
+  );
 
-  if (ergebnis === undefined || ergebnis.type !== 'tool_result') {
+  if (ergebnis?.type !== 'tool_result') {
     // Der Aufruf steht, das Ergebnis noch nicht — dieser Zug ist mitten drin.
     return 'ok';
   }
