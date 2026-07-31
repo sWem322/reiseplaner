@@ -2,17 +2,63 @@
 
 [![CI](https://github.com/sWem322/reiseplaner/actions/workflows/ci.yml/badge.svg)](https://github.com/sWem322/reiseplaner/actions/workflows/ci.yml)
 
+**Live: [reiseplaner-sooty.vercel.app](https://reiseplaner-sooty.vercel.app/)** — ein
+Klick auf „Als Gast starten", kein Konto nötig.
+
 Ein Chat-Assistent, der Reisen im Gespräch plant. Er hört zu, fragt nach und
 entscheidet dabei selbst, wann er Flüge, Unterkünfte oder das Klima am Zielort
 nachschlägt. Was er versteht, steht als Reise-Entwurf daneben und wächst mit
 jeder Nachricht.
 
-**Das Projekt startet ohne eine einzige Umgebungsvariable.** Ohne Schlüssel
-greifen Seed-Adapter und ein regelbasierter Extraktor — die Anwendung bleibt
-vollständig bedienbar, nur mit Beispieldaten statt echter Preise. Jede Karte
-nennt ihre Quelle.
+---
+
+## Zu den Daten: ein Token trennt Demo von Betrieb
+
+Der Assistent läuft in der Demo auf **Beispieldaten**, und jede Karte sagt das
+offen. Das ist keine Auslassung, sondern die Lage am Markt:
+
+| Anbieter               | Zugang im Juli 2026                                          |
+| ---------------------- | ------------------------------------------------------------ |
+| Amadeus Self-Service   | Portal am **17.07.2026 abgeschaltet**, Schlüssel deaktiviert |
+| Skyscanner Travel API  | nur für geprüfte Partner, ausdrücklich „commercial use only" |
+| Kiwi.com Tequila       | nur auf Einladung, Schwelle ab 50 000 MAU                    |
+| Booking.com Demand API | Registrierung neuer Partner derzeit ausgesetzt               |
+
+**Vollständig gebaut ist die Anbindung trotzdem.** Der Duffel-Adapter ist
+geschrieben, gegen untergeschobene Antworten geprüft und an denselben Port
+gehängt wie die Seed-Daten. Es fehlt nur der Zugang.
+
+Wer einen hat, trägt ihn ein — und mehr passiert nicht:
+
+```bash
+# .env
+DUFFEL_ACCESS_TOKEN="duffel_test_…"
+```
+
+Ab dem nächsten Start kommen die Flüge vom echten Dienst. Kein Umbau, keine
+zweite Codepfad-Variante, keine Zeile Fachlogik. Dieselbe Mechanik gilt für
+das Sprachmodell (`GEMINI_API_KEY`) und für die Datenbank. Was einen Schlüssel
+hat, spricht mit dem Anbieter; was keinen hat, greift auf Seed-Daten zurück und
+**sagt es** — im Text des Assistenten und als Markierung auf jeder Karte.
+
+Genau dafür gibt es Ports und Adapter. Der Beleg steht in der
+Versionsgeschichte: Der Wechsel von Prisma zu Drizzle und der Tausch von
+Amadeus gegen Duffel betrafen jeweils **eine Datei** und keine einzige Zeile
+Domänenlogik.
+
+```bash
+npm run providers:check   # ein echter Aufruf gegen jeden fremden Dienst
+```
+
+Das Skript ruft dieselben Adapter auf, die im Betrieb laufen, und nennt bei
+einem Ausfall Status und Ursache — es hat den Grund gefunden, warum die
+Hotelsuche monatelang nichts lieferte.
+
+---
 
 ## Schnellstart
+
+Das Projekt startet **ohne eine einzige Umgebungsvariable**.
 
 ```bash
 npm install
@@ -25,11 +71,10 @@ npm run db:migrate
 npm run dev
 ```
 
-Auf `http://localhost:3000` genügt ein Klick auf **Als Gast starten**. Wer ein
-Sprachmodell einbinden will, legt einen kostenlosen Schlüssel unter
-[aistudio.google.com/apikey](https://aistudio.google.com/apikey) an und trägt
-ihn als `GEMINI_API_KEY` in `.env` ein. Alle Variablen sind in `.env.example`
-erklärt und alle optional.
+Auf `http://localhost:3000` genügt „Als Gast starten". Ein kostenloser
+Modellschlüssel liegt unter
+[aistudio.google.com/apikey](https://aistudio.google.com/apikey); alle
+Variablen sind in `.env.example` erklärt und alle optional.
 
 ## Was hier interessant ist
 
@@ -55,6 +100,15 @@ Entwurfs, wird nur dieses verworfen und ausdrücklich benannt — nicht der ganz
 Entwurf. Sonst verlöre „von Bremen nach Málaga am 2020-05-01" mit dem
 vergangenen Datum auch Abflugort und Ziel.
 
+### Eine Grenze, die das Werkzeug zieht
+
+`search_flights` weigert sich zu suchen, solange die Zahl der Reisenden nicht
+im Entwurf steht — auch dann, wenn der Aufruf eine Zahl mitbringt. Der Grund
+ist eine Lektion aus der Abnahme: Im Prompt stand „ohne genannte Reisendenzahl
+trägst du keine ein", und das Modell tat es trotzdem, weil `adults` ein
+Pflichtfeld der Signatur ist. **Wo Prompt und Signatur einander
+widersprechen, gewinnt die Signatur.** Also wurde aus der Bitte eine Grenze.
+
 ### Guardrails
 
 Iterationen, Werkzeugaufrufe und Token-Budget sind begrenzt. Jeder Abbruch hat
@@ -63,16 +117,18 @@ kann — ein Abbruch ist ein Ergebnis, kein Fehler.
 
 ### Die Oberfläche zeigt die Arbeit
 
-Während der Agent arbeitet, ist sichtbar, welches Werkzeug läuft, wie lange es
-gebraucht hat und ob es geklappt hat. Ein fehlgeschlagener Aufruf wird nicht
-versteckt. Angebote erscheinen als Karten, sobald die Suche fertig ist — nicht
-erst mit dem Schlusstext des Modells.
+Sichtbar ist, welches Werkzeug lief, wie lange es brauchte, ob es geklappt hat
+und — seit der Frage „warum dauert das so lange?" — wie lange das Modell je Zug
+gedacht hat. Ein fehlgeschlagener Aufruf wird nicht versteckt, sondern zeigt
+die Meldung des Anbieters im Klartext. Angebote erscheinen als Karten, sobald
+die Suche fertig ist, nicht erst mit dem Schlusstext. Der Text des Modells
+läuft ein, während es ihn schreibt.
 
 ## Gemessen statt vermutet
 
-Zweiundzwanzig Gespräche liegen als Datensatz vor, mit dem erwarteten Zustand des
-Entwurfs nach jedem. Der Runner prüft drei Dinge getrennt: richtig, falsch —
-und **erfunden**, also ein Wert, der dasteht, obwohl niemand ihn genannt hat.
+Zweiundzwanzig Gespräche liegen als Datensatz vor, mit dem erwarteten Zustand
+des Entwurfs nach jedem. Der Runner prüft drei Dinge getrennt: richtig, falsch
+— und **erfunden**, also ein Wert, der dasteht, obwohl niemand ihn genannt hat.
 Der dritte Fall ist der gefährlichste, weil ihn niemand bemerkt.
 
 | Lauf                 | Slot-Genauigkeit | erfunden | bestanden | Werkzeuge/Fall |
@@ -81,9 +137,10 @@ Der dritte Fall ist der gefährlichste, weil ihn niemand bemerkt.
 | Gemini, Prompt 1.1.0 | 96,7 %           | 1        | 16/20     | 3,6            |
 | Gemini, Prompt 1.3.0 | **100 %**        | **0**    | **20/20** | 4,1            |
 
-Zwei Fälle sind seither dazugekommen, beide aus einer Abnahme: ein Ziel
-ausserhalb Europas und eine halbe Antwort auf eine Doppelfrage. Die Zeile für
-Prompt 1.5.0 folgt mit dem nächsten Lauf.
+Gemessen an den zwanzig Fällen, die es damals gab; jeder Bericht trägt die
+Prompt-Fassung, gegen die er gelaufen ist. Zwei Fälle sind seither
+dazugekommen, beide aus einer Abnahme: ein Ziel ausserhalb Europas und eine
+halbe Antwort auf eine Doppelfrage.
 
 ```bash
 npm run eval            # regelbasiert — kostenlos, deterministisch
@@ -119,16 +176,15 @@ oben. Der Loop merkt davon nichts.
 und liefert im Eval die Vergleichslinie, an der sich zeigt, was das
 Sprachmodell tatsächlich beiträgt.
 
-**Seed-Adapter.** Deterministisch aus einem Hash, nie `Math.random()`. Dieselbe
-Anfrage liefert dieselben Preise, weshalb E2E-Tests und Demo reproduzierbar
-sind.
+**Seed-Adapter, deterministisch.** Aus einem Hash, nie `Math.random()`.
+Dieselbe Anfrage liefert dieselben Preise, weshalb E2E-Tests und Demo
+reproduzierbar sind.
 
-**Und als Rückfallebene, nicht nur als Ersatz.** Overpass — die einzige
-schlüssellose Quelle für echte Unterkünfte — weist seit Frühjahr 2026 einen
-grossen Teil der Anfragen ab. Statt einer Absage übernimmt dann der
-Seed-Katalog, und der Assistent sagt im ersten Satz, dass es Beispieldaten
-sind. Ausgedachte Daten sind vertretbar, solange sie als solche benannt
-werden.
+**Rückfallebene statt Absage.** Overpass — die einzige schlüssellose Quelle für
+echte Unterkünfte — weist seit Frühjahr 2026 einen grossen Teil der Anfragen
+mit `406` ab. Statt einer Absage übernimmt dann der Seed-Katalog, und der
+Assistent nennt die Herkunft im ersten Satz. Ausgedachte Daten sind vertretbar,
+solange sie als solche benannt werden.
 
 ## Architektur
 
@@ -146,9 +202,12 @@ eval/           Datensatz, Runner, Ergebnisse
 specs/          Warum es so ist, wie es ist
 ```
 
-Die Domäne definiert Schnittstellen, die Adapter erfüllen sie. Das ist der
-Grund, warum der Wechsel von Prisma zu Drizzle und der Tausch von Amadeus gegen
-Duffel jeweils eine Datei betrafen und keine einzige Zeile Fachlogik.
+Die Domäne definiert Schnittstellen, die Adapter erfüllen sie. Ein
+Anbieterwechsel ist damit eine zusätzliche Implementierung, kein Umbau.
+
+**Stack:** TypeScript streng, Next.js App Router, React, tRPC und Zod
+end-to-end, Drizzle auf PostgreSQL, Gemini über das offizielle SDK, Vitest und
+Playwright, ESLint mit Typinformation.
 
 ## Entscheidungen und ihre Gründe
 
@@ -162,13 +221,18 @@ in der Datenbank, nicht in einem selbsttragenden Token — so lassen sie sich
 widerrufen. Argon2id mit ausdrücklichen Parametern; ein unbekanntes Konto wird
 gegen einen festen Hash geprüft, damit die Antwortzeit nichts verrät.
 
+**Drizzle statt Prisma.** Prisma lädt native Engine-Dateien von einer fremden
+Domäne nach; in der Entwicklungsumgebung dieses Projekts ist sie nicht
+erreichbar. Drizzle ist reines TypeScript, erzeugt lesbare SQL-Migrationen im
+Repository und braucht keinen Codegenerierungsschritt.
+
 **Verdichten statt Abschneiden.** Wächst der Kontext, wird der Anfang des
 Gesprächs zusammengefasst. Wer abschneidet, verliert die zuerst genannten
 Reisewünsche — genau die, die am Anfang stehen.
 
 **`seq` statt Zeitstempel.** Die Verdichtungsgrenze hängt an einer streng
 monotonen Zahl. PostgreSQL speichert Mikrosekunden, JavaScript kennt nur
-Millisekunden; ein Zeitstempel als exakte Grenze schließt gelegentlich eine
+Millisekunden; ein Zeitstempel als exakte Grenze schliesst gelegentlich eine
 Nachricht zu viel oder zu wenig ein. Ein Test hat genau das gefunden.
 
 **Eingebettetes PostgreSQL für Tests.** Echte Datenbank statt Attrappe, damit
@@ -176,34 +240,39 @@ Constraints, Kaskaden und Transaktionen wirklich geprüft werden — aber ohne
 Docker-Daemon, damit die Tests überall laufen. Jede Testdatei bekommt einen
 eigenen Cluster auf einem vom Betriebssystem zugeteilten Port.
 
+**Der Systemprompt ist eine versionierte Datei.** Er ist das Verhalten des
+Agenten; ändert sich hier ein Satz, ändert sich das Produkt. Jede Fassung trägt
+im Kommentar den Fehler, der sie erzwungen hat.
+
 ## Prüfen
 
 ```bash
-npm run verify      # Lint, Typecheck, Format, Unit- und Integrationstests
-npm run test:e2e    # Playwright gegen einen Produktionsbuild
-npm run flow:check  # derselbe Ablauf ohne Browser, gegen einen laufenden Server
-npm run llm:check   # ein echter Aufruf gegen Gemini, mit zweitem Zug
+npm run verify           # Lint, Typecheck, Unit- und Integrationstests
+npm run test:e2e         # Playwright gegen einen Produktionsbuild
+npm run flow:check       # derselbe Ablauf ohne Browser, gegen einen laufenden Server
+npm run llm:check        # ein echter Aufruf gegen Gemini, mit zweitem Zug
 npm run providers:check  # ein echter Aufruf gegen jeden fremden Dienst
 ```
 
-`providers:check` beantwortet die Frage, die Unit-Tests nicht beantworten
-können: Die Tests schieben dem Adapter eine Antwort unter und prüfen die
-Übersetzung — ob der Dienst überhaupt antwortet, sagen sie nicht. Das Skript
-ruft dieselben Adapter auf, die im Betrieb laufen, und nennt bei einem Ausfall
-Status und Ursache.
+Mehr als vierhundert Tests: Domäne, Adapter gegen untergeschobene Antworten,
+Agenten-Loop gegen ein skriptgesteuertes Modell, Repositories und Prozeduren
+gegen echtes PostgreSQL, vier E2E-Fälle im Browser.
 
-434 Tests: Domäne, Adapter gegen untergeschobene Antworten, Agenten-Loop gegen
-ein skriptgesteuertes Modell, Repositories und Prozeduren gegen echtes
-PostgreSQL, vier E2E-Fälle im Browser.
+Die Trennung ist Absicht und ein eigenes Gesprächsthema: Die **Orchestrierung**
+wird deterministisch geprüft — skriptgesteuertes Modell, Seed-Adapter, kein
+Netz. Die **Modellqualität** getrennt davon im Eval, von Hand gestartet, weil
+sie Kontingent verbraucht und nicht zweimal dasselbe antwortet.
 
 ## Veröffentlichung
 
-Neon für die Datenbank, Vercel für die Anwendung — beides im kostenlosen
-Tarif. Schritt für Schritt in
-[`specs/007-deployment.md`](specs/007-deployment.md).
+Neon für die Datenbank, Vercel für die Anwendung — beides im kostenlosen Tarif.
+Schritt für Schritt in [`specs/007-deployment.md`](specs/007-deployment.md),
+einschliesslich der Stolperstelle, die einen Lauf mit drei Flugsuchen nach 60
+Sekunden mit `504` beendete.
 
 ## Stand
 
 Was zu welcher Etappe gehörte und was unterwegs schiefging, steht in
-[`specs/ETAPPENPLAN.md`](specs/ETAPPENPLAN.md) — einschließlich der Fehler, die
-erst die Abnahme oder der Eval zutage gefördert hat.
+[`specs/ETAPPENPLAN.md`](specs/ETAPPENPLAN.md) — einschliesslich der Fehler,
+die erst die Abnahme oder der Eval zutage gefördert hat, und des Abgleichs mit
+der Definition of Done.
