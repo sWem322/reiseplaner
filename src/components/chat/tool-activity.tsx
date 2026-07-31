@@ -1,16 +1,24 @@
 'use client';
 
-import type { ToolCallOutcome } from '@/domain/conversation';
 import { formatMillis } from '@/lib/format';
 import type { ModelTurn, RunningTool } from './use-agent-run';
 
 /**
- * Was der Agent gerade tut.
+ * Was der Agent getan hat, als schmale Zeile.
  *
  * Der sichtbarste Unterschied zu einem gewoehnlichen Chat: Hier steht, welches
- * Werkzeug laeuft, wie lange es gebraucht hat und ob es geklappt hat. Ein
- * fehlgeschlagener Aufruf wird nicht versteckt — der Agent bekommt ihn als
- * Ergebnis zurueck und versucht es anders, und genau das soll man sehen.
+ * Werkzeug lief, wie lange es brauchte und wie lange das Modell dachte. Ein
+ * fehlgeschlagener Aufruf wird nicht versteckt.
+ *
+ * Die erste Fassung setzte jeden Eintrag als Plakette mit Rahmen, Hintergrund
+ * und einem Wort fuer den Ausgang („ERLEDIGT"). Zusammen ergab das mehr
+ * Aufmerksamkeit als die Antwort darunter — und „erledigt" sagte nichts, was
+ * die Zahl daneben nicht schon sagte. Ein Werkzeug, das eine Dauer meldet, ist
+ * fertig.
+ *
+ * Jetzt: eine Zeile, grau, klein, ohne Rahmen. Wer hinsieht, liest sie; wer
+ * nicht hinsieht, wird nicht gestoert. Farbe bekommt nur noch der Fehlerfall,
+ * denn der ist die einzige Abweichung, die eine Frage aufwirft.
  */
 
 const TOOL_LABELS: Record<string, string> = {
@@ -26,27 +34,6 @@ function toolLabel(name: string): string {
   return TOOL_LABELS[name] ?? name;
 }
 
-function outcomeLabel(outcome: ToolCallOutcome): string {
-  switch (outcome) {
-    case 'ok':
-      return 'erledigt';
-    case 'validation_error':
-      return 'Eingabe abgelehnt';
-    case 'upstream_error':
-      return 'Anbieter nicht erreichbar';
-  }
-}
-
-function outcomeClass(outcome: ToolCallOutcome | null): string {
-  if (outcome === null) {
-    return 'border-brand-100 bg-brand-50 text-brand-700';
-  }
-
-  return outcome === 'ok'
-    ? 'border-slate-200 bg-white text-slate-600'
-    : 'border-amber-200 bg-amber-50 text-amber-800';
-}
-
 export interface ToolActivityProps {
   readonly tools: readonly RunningTool[];
   /** Abgeschlossene Züge des Modells — die Denkzeit gehört daneben. */
@@ -59,21 +46,24 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
   }
 
   return (
-    <ul className="flex flex-wrap gap-2" aria-label="Werkzeuge dieses Laufs">
-      {/*
-        Die Denkzeit zuerst, denn zeitlich kommt sie zuerst: Das Modell
-        entscheidet, dann laufen die Werkzeuge. Ein Zug je Plakette macht
-        ausserdem sichtbar, wie viele Runden eine Frage gekostet hat — die
-        eigentliche Antwort auf „warum dauert das so lange?".
-      */}
+    <ul
+      aria-label="Werkzeuge dieses Laufs"
+      /*
+       * `flex-nowrap` und `shrink-0` je Eintrag halten alles in einer Zeile;
+       * was nicht hineinpasst, laesst sich seitlich schieben. Ein Umbruch
+       * ueber drei Zeilen wog schwerer als die Nachricht, zu der er gehoert.
+       */
+      className="flex flex-nowrap items-center gap-x-3 overflow-x-auto text-[0.7rem] text-slate-400"
+    >
+      {/* Die Denkzeit zuerst: Das Modell entscheidet, dann laufen die Werkzeuge. */}
       {modelTurns.map((turn) => (
         <li
           key={`turn-${String(turn.iteration)}`}
           data-testid="model-turn"
-          className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500"
+          className="flex shrink-0 items-center gap-1"
         >
-          <span className="font-medium">Modell</span>
-          <span className="tabular-nums opacity-70">{formatMillis(turn.durationMs)}</span>
+          <span>Modell</span>
+          <span className="tabular-nums">{formatMillis(turn.durationMs)}</span>
         </li>
       ))}
 
@@ -83,42 +73,36 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
           data-testid="tool-activity"
           data-tool={tool.toolName}
           data-outcome={tool.outcome ?? 'running'}
-          className={`flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs ${outcomeClass(tool.outcome)}`}
+          className={`flex shrink-0 items-center gap-1 ${
+            tool.outcome !== null && tool.outcome !== 'ok' ? 'text-amber-700' : ''
+          }`}
         >
           {tool.outcome === null && (
             <span
               aria-hidden
-              className="bg-brand-500 size-1.5 animate-pulse rounded-full"
+              className="bg-brand-400 size-1.5 animate-pulse rounded-full"
               /* Ein Punkt statt eines Spinners: Es laufen mehrere Werkzeuge
                  gleichzeitig, und rotierende Ringe nebeneinander sind Unruhe
                  ohne Information. */
             />
           )}
 
-          <span className="font-medium">{toolLabel(tool.toolName)}</span>
-
-          {tool.outcome !== null && (
-            <span className="text-[0.7rem] tracking-wide uppercase opacity-70">
-              {outcomeLabel(tool.outcome)}
-            </span>
-          )}
+          <span>{toolLabel(tool.toolName)}</span>
 
           {/*
-            Die Meldung des Anbieters im Klartext.
-
-            „Anbieter nicht erreichbar" beantwortet die naechste Frage nicht:
-            welcher, und woran lag es? Die Antwort lag schon im Ereignis, sie
-            wurde nur verschwiegen — und damit war jeder Ausfall eine Frage an
-            das Serverprotokoll statt an den Bildschirm.
+            Die Meldung des Anbieters im Klartext — gekürzt, damit sie die
+            Zeile nicht sprengt, vollständig im Titel. Sie ersetzt das frühere
+            „Anbieter nicht erreichbar": Welcher, und woran lag es, stand dort
+            nie.
           */}
           {tool.errorMessage !== null && (
-            <span data-testid="tool-error" className="opacity-90">
+            <span data-testid="tool-error" title={tool.errorMessage} className="max-w-56 truncate">
               {tool.errorMessage}
             </span>
           )}
 
           {tool.durationMs !== null && (
-            <span className="tabular-nums opacity-60">{formatMillis(tool.durationMs)}</span>
+            <span className="tabular-nums">{formatMillis(tool.durationMs)}</span>
           )}
         </li>
       ))}

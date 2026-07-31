@@ -181,7 +181,7 @@ export function ChatView({
                   nachlesen wollte.
                 */}
                 {nachricht.role === 'assistant' && (
-                  <div className="mb-2">
+                  <div className="mb-1">
                     <ToolActivity tools={nachricht.tools} modelTurns={nachricht.modelTurns} />
                   </div>
                 )}
