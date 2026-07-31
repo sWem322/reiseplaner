@@ -47,52 +47,41 @@ interface LocalMessage {
 }
 
 /**
- * Vergangene Zeit seit dem Beginn eines Laufs, in Millisekunden.
+ * Die Wartezeit als eigene Komponente — und genau darin liegt die Lösung.
  *
- * „Der Assistent überlegt …" ohne Zahl ist eine Aussage ohne Mass: Nach fünf
- * Sekunden liest sie sich wie nach dreissig. Der Zähler macht aus dem Warten
- * eine Beobachtung.
+ * Zwei Anläufe zuvor scheiterten am Linter, beide zu Recht: Der erste setzte
+ * den Zähler im Rumpf eines Effekts zurück, der zweite las während des
+ * Renderns aus einer Ref. Beide Male ging es um dieselbe Frage — wie setzt man
+ * den Zähler bei einem neuen Lauf auf null?
+ *
+ * React beantwortet sie ohne Zutun: Diese Komponente wird nur gerendert,
+ * solange ein Lauf läuft. Sie entsteht mit ihm und vergeht mit ihm, und ihr
+ * Zustand beginnt jedes Mal bei null. Der Lebenszyklus **ist** das
+ * Zurücksetzen; jede Mechanik dafür wäre die Wiederholung von etwas, das
+ * das Framework schon kann.
  */
-function useVergangeneZeit(laeuft: boolean): number {
-  /*
-   * Im Zustand steht der Zeitpunkt, nicht die Dauer — und gesetzt wird er
-   * ausschliesslich aus dem Intervall heraus.
-   *
-   * Der erste Versuch rief `setMs(0)` im Rumpf des Effekts, um beim Ende
-   * zurueckzusetzen. Genau das verbietet `react-hooks/set-state-in-effect`,
-   * und zu Recht: Ein setState im Effektrumpf loest sofort ein weiteres
-   * Rendern aus. Die Regel erlaubt, was hier gebraucht wird — setState im
-   * Rueckruf, wenn sich eine Groesse ausserhalb von React aendert. Und die
-   * Uhr ist genau das.
-   */
-  const [jetzt, setJetzt] = useState(0);
-  const begonnen = useRef(0);
+function Wartezeit() {
+  const [ms, setMs] = useState(0);
 
   useEffect(() => {
-    if (!laeuft) {
-      return;
-    }
-
-    begonnen.current = Date.now();
+    const start = Date.now();
 
     // Viermal je Sekunde: fein genug, dass die Zahl lebt, grob genug, dass
     // sie sich lesen laesst.
     const ticker = setInterval(() => {
-      setJetzt(Date.now());
+      setMs(Date.now() - start);
     }, 250);
 
     return () => {
       clearInterval(ticker);
     };
-  }, [laeuft]);
+  }, []);
 
-  /*
-   * Das Zuruecksetzen passiert damit in der Berechnung statt im Zustand.
-   * Zwischen dem Start und dem ersten Tick stammt `jetzt` noch aus dem
-   * vorigen Lauf und liegt vor `begonnen` — dann ist die Antwort null, und
-   * es blitzt keine alte Dauer auf.
-   */
-  return laeuft && jetzt > begonnen.current ? jetzt - begonnen.current : 0;
+  return (
+    <p className="text-sm text-slate-400">
+      Der Assistent überlegt … <span className="tabular-nums">{formatMillis(ms)}</span>
+    </p>
+  );
 }
 
 const BEISPIELE = [
@@ -124,7 +113,6 @@ export function ChatView({
   }, [lokal, state.text, state.tools]);
 
   const laeuft = state.running;
-  const ms = useVergangeneZeit(laeuft);
 
   async function absenden(event: React.SyntheticEvent): Promise<void> {
     event.preventDefault();
@@ -244,9 +232,7 @@ export function ChatView({
                 fünf Sekunden von „überlegt …" nach dreissig nicht zu
                 unterscheiden, und genau das war die Beschwerde.
               */}
-              <p className="text-sm text-slate-400">
-                Der Assistent überlegt … <span className="tabular-nums">{formatMillis(ms)}</span>
-              </p>
+              <Wartezeit />
             </li>
           )}
         </ul>
