@@ -1,6 +1,7 @@
 'use client';
 
 import type { ToolCallOutcome } from '@/domain/conversation';
+import { formatMillis } from '@/lib/format';
 import type { ModelTurn, RunningTool } from './use-agent-run';
 
 /**
@@ -123,8 +124,4 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
       ))}
     </ul>
   );
-}
-
-function formatMillis(millis: number): string {
-  return millis < 1_000 ? `${String(millis)} ms` : `${(millis / 1_000).toFixed(1)} s`;
 }

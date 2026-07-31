@@ -87,6 +87,7 @@ const IDLE: AgentRunState = {
 export interface AgentRunResult {
   readonly text: string;
   readonly tools: readonly RunningTool[];
+  readonly modelTurns: readonly ModelTurn[];
   readonly stopReason: StopReason | null;
 }
 
@@ -142,7 +143,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
 
           setState((vorher) => ({ ...IDLE, error: grund, quotaNotice: vorher.quotaNotice }));
 
-          return { text: '', tools: [], stopReason: null };
+          return { text: '', tools: [], modelTurns: [], stopReason: null };
         }
 
         for await (const event of readEventStream(response.body)) {
@@ -224,7 +225,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
           quotaNotice: vorher.quotaNotice,
         }));
 
-        return { text, tools, stopReason: null };
+        return { text, tools, modelTurns, stopReason: null };
       }
 
       /*
@@ -241,7 +242,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
         notice: satz === '' || doppelt ? null : satz,
       }));
 
-      return { text, tools, stopReason };
+      return { text, tools, modelTurns, stopReason };
     },
     [conversationId],
   );

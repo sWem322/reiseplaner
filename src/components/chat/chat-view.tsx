@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ContentBlock, Message } from '@/domain/conversation';
 import type { TripDraft } from '@/domain/trip/trip';
+import { formatMillis } from '@/lib/format';
 import type { ToolPayload } from '@/lib/tool-results';
 import { MessageView } from './message-view';
 import { OfferCards } from './offer-cards';
 import { ToolActivity } from './tool-activity';
 import { TripDraftPanel } from './trip-draft-panel';
-import { useAgentRun } from './use-agent-run';
+import { useAgentRun, type ModelTurn, type RunningTool } from './use-agent-run';
 
 /**
  * Der Chat.
@@ -33,6 +34,48 @@ interface LocalMessage {
   readonly text: string;
   /** Angebote dieses Zuges — sie bleiben stehen, wenn der Lauf endet. */
   readonly payloads: readonly ToolPayload[];
+  /**
+   * Werkzeuge und Denkzeiten dieses Laufs.
+   *
+   * Sie verschwanden bisher in dem Augenblick, in dem die Antwort fertig war
+   * — sichtbar waren sie also genau so lange, wie man nicht hinsehen konnte.
+   * Damit war die Frage „warum hat das so lange gedauert?" nachträglich nicht
+   * mehr zu beantworten, obwohl die Zahlen dafür da waren.
+   */
+  readonly tools: readonly RunningTool[];
+  readonly modelTurns: readonly ModelTurn[];
+}
+
+/**
+ * Vergangene Zeit seit dem Beginn eines Laufs, in Millisekunden.
+ *
+ * „Der Assistent überlegt …" ohne Zahl ist eine Aussage ohne Mass: Nach fünf
+ * Sekunden liest sie sich wie nach dreissig. Der Zähler macht aus dem Warten
+ * eine Beobachtung.
+ */
+function useVergangeneZeit(laeuft: boolean): number {
+  const [ms, setMs] = useState(0);
+
+  useEffect(() => {
+    if (!laeuft) {
+      setMs(0);
+
+      return;
+    }
+
+    const start = Date.now();
+    // Viermal je Sekunde: fein genug, dass die Zahl lebt, grob genug, dass
+    // sie sich lesen laesst.
+    const ticker = setInterval(() => {
+      setMs(Date.now() - start);
+    }, 250);
+
+    return () => {
+      clearInterval(ticker);
+    };
+  }, [laeuft]);
+
+  return ms;
 }
 
 const BEISPIELE = [
@@ -64,6 +107,7 @@ export function ChatView({
   }, [lokal, state.text, state.tools]);
 
   const laeuft = state.running;
+  const ms = useVergangeneZeit(laeuft);
 
   async function absenden(event: React.SyntheticEvent): Promise<void> {
     event.preventDefault();
@@ -77,7 +121,14 @@ export function ChatView({
     setEingabe('');
     setLokal((vorher) => [
       ...vorher,
-      { key: `user-${String(vorher.length)}`, role: 'user', text: nachricht, payloads: [] },
+      {
+        key: `user-${String(vorher.length)}`,
+        role: 'user',
+        text: nachricht,
+        payloads: [],
+        tools: [],
+        modelTurns: [],
+      },
     ]);
 
     const ergebnis = await send(nachricht);
@@ -94,6 +145,8 @@ export function ChatView({
           role: 'assistant',
           text: ergebnis.text,
           payloads: gefunden,
+          tools: ergebnis.tools,
+          modelTurns: ergebnis.modelTurns,
         },
       ]);
     }
@@ -115,6 +168,19 @@ export function ChatView({
               className={nachricht.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
             >
               <div className="w-full max-w-[85%]">
+                {/*
+                  Die Arbeit bleibt bei der Antwort stehen, zu der sie gehört:
+                  wie viele Züge das Modell gebraucht hat, wie lange jeder
+                  dauerte, welche Werkzeuge liefen. Vorher war das nur während
+                  des Laufs zu sehen — also genau dann nicht, wenn man es
+                  nachlesen wollte.
+                */}
+                {nachricht.role === 'assistant' && (
+                  <div className="mb-2">
+                    <ToolActivity tools={nachricht.tools} modelTurns={nachricht.modelTurns} />
+                  </div>
+                )}
+
                 {nachricht.text !== '' && (
                   <div
                     className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
@@ -155,9 +221,15 @@ export function ChatView({
                 </div>
               )}
 
-              {state.text === '' && state.tools.length === 0 && (
-                <p className="text-sm text-slate-400">Der Assistent überlegt …</p>
-              )}
+              {/*
+                Der Zähler läuft, solange der Zug läuft — auch dann, wenn
+                schon Werkzeuge zu sehen sind. Ohne ihn ist „überlegt …" nach
+                fünf Sekunden von „überlegt …" nach dreissig nicht zu
+                unterscheiden, und genau das war die Beschwerde.
+              */}
+              <p className="text-sm text-slate-400">
+                Der Assistent überlegt … <span className="tabular-nums">{formatMillis(ms)}</span>
+              </p>
             </li>
           )}
         </ul>

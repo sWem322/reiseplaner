@@ -39,3 +39,17 @@ export function formatDuration(fromIso: string, toIso: string): string {
 
   return `${String(Math.floor(minutes / 60))} h ${String(minutes % 60).padStart(2, '0')} min`;
 }
+
+/**
+ * Millisekunden als „812 ms" oder „3,1 s".
+ *
+ * Steht hier und nicht in der Werkzeugleiste, weil dieselbe Zahl an zwei
+ * Stellen erscheint: bei den abgeschlossenen Läufen und beim mitlaufenden
+ * Zähler während des Wartens. Zwei Formatierungen für dieselbe Grösse wären
+ * ein Widerspruch, den nur der Zufall auflöst.
+ */
+export function formatMillis(millis: number): string {
+  return millis < 1_000
+    ? `${String(Math.round(millis))} ms`
+    : `${(millis / 1_000).toFixed(1).replace('.', ',')} s`;
+}
