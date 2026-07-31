@@ -1,7 +1,7 @@
 'use client';
 
 import type { ToolCallOutcome } from '@/domain/conversation';
-import type { RunningTool } from './use-agent-run';
+import type { ModelTurn, RunningTool } from './use-agent-run';
 
 /**
  * Was der Agent gerade tut.
@@ -46,13 +46,36 @@ function outcomeClass(outcome: ToolCallOutcome | null): string {
     : 'border-amber-200 bg-amber-50 text-amber-800';
 }
 
-export function ToolActivity({ tools }: { tools: readonly RunningTool[] }) {
-  if (tools.length === 0) {
+export interface ToolActivityProps {
+  readonly tools: readonly RunningTool[];
+  /** Abgeschlossene Züge des Modells — die Denkzeit gehört daneben. */
+  readonly modelTurns?: readonly ModelTurn[];
+}
+
+export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
+  if (tools.length === 0 && modelTurns.length === 0) {
     return null;
   }
 
   return (
     <ul className="flex flex-wrap gap-2" aria-label="Werkzeuge dieses Laufs">
+      {/*
+        Die Denkzeit zuerst, denn zeitlich kommt sie zuerst: Das Modell
+        entscheidet, dann laufen die Werkzeuge. Ein Zug je Plakette macht
+        ausserdem sichtbar, wie viele Runden eine Frage gekostet hat — die
+        eigentliche Antwort auf „warum dauert das so lange?".
+      */}
+      {modelTurns.map((turn) => (
+        <li
+          key={`turn-${String(turn.iteration)}`}
+          data-testid="model-turn"
+          className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500"
+        >
+          <span className="font-medium">Modell</span>
+          <span className="tabular-nums opacity-70">{formatMillis(turn.durationMs)}</span>
+        </li>
+      ))}
+
       {tools.map((tool) => (
         <li
           key={tool.toolCallId}

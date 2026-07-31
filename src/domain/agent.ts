@@ -96,6 +96,24 @@ export interface ToolFinishedEvent {
   readonly content: unknown;
 }
 
+/**
+ * Ein Zug des Modells ist zu Ende.
+ *
+ * Die Oberflaeche zeigte bisher, wie lange jedes Werkzeug brauchte — und
+ * verschwieg, wie lange das Modell dachte. Damit liess sich die haeufigste
+ * Frage nicht beantworten: Woran haengt es eigentlich? Ein Lauf mit drei
+ * Zuegen zu je vier Sekunden sieht auf dem Bildschirm genauso aus wie einer
+ * mit einer langsamen Datenbank.
+ */
+export interface ModelTurnEvent {
+  readonly type: 'model_turn';
+  /** Der wievielte Zug dieses Laufs, bei 1 beginnend. */
+  readonly iteration: number;
+  readonly durationMs: number;
+  readonly inputTokens: number;
+  readonly outputTokens: number;
+}
+
 export interface DraftUpdatedEvent {
   readonly type: 'draft_updated';
   readonly draft: TripDraft;
@@ -111,7 +129,12 @@ export interface FinishedEvent {
 }
 
 export type AgentEvent =
-  TextDeltaEvent | ToolStartedEvent | ToolFinishedEvent | DraftUpdatedEvent | FinishedEvent;
+  | TextDeltaEvent
+  | ToolStartedEvent
+  | ToolFinishedEvent
+  | ModelTurnEvent
+  | DraftUpdatedEvent
+  | FinishedEvent;
 
 // --- Auswertung --------------------------------------------------------
 
@@ -142,6 +165,7 @@ export function summarize(events: readonly AgentEvent[]): AgentRunSummary {
         iterations = event.iterations;
         break;
       case 'tool_finished':
+      case 'model_turn':
       case 'draft_updated':
         break;
     }

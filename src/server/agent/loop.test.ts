@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_AGENT_LIMITS, summarize, type AgentEvent } from '@/domain/agent';
+import type { LlmPort } from '@/domain/ports/llm';
 import type { TripDraftRepository } from '@/domain/ports/repositories';
 import { emptyTripDraft, tripDraftSchema, type TripDraft } from '@/domain/trip/trip';
 import { ok, type Result } from '@/domain/result';
@@ -587,5 +588,94 @@ describe('Protokollierung', () => {
     expect(eintraege).toHaveLength(2);
     expect(eintraege.map((e) => e.outcome)).toEqual(['ok', 'upstream_error']);
     expect(eintraege.every((e) => e.durationMs >= 0)).toBe(true);
+  });
+});
+
+describe('Zuege des Modells', () => {
+  /**
+   * Ein Modell, das seinen Text stueckweise meldet — wie Gemini im
+   * Streambetrieb. Der Rueckruf feuert, bevor die Antwort steht; genau darin
+   * liegt der Sinn.
+   */
+  function streamendesModell(stuecke: readonly string[]): LlmPort {
+    return {
+      name: 'streamend',
+      complete(_request, hooks) {
+        for (const stueck of stuecke) {
+          hooks?.onTextDelta?.(stueck);
+        }
+
+        return Promise.resolve(
+          ok({
+            blocks: [{ type: 'text' as const, text: stuecke.join('') }],
+            usage: { inputTokens: 10, outputTokens: 4 },
+          }),
+        );
+      },
+    };
+  }
+
+  it('reicht jedes Textstueck einzeln weiter', async () => {
+    const llm = streamendesModell(['Ich ', 'suche ', 'Flüge.']);
+
+    const events = await collectEvents(runAgent(baseInput({ llm })));
+
+    expect(eventsOfType(events, 'text_delta').map((event) => event.text)).toEqual([
+      'Ich ',
+      'suche ',
+      'Flüge.',
+    ]);
+  });
+
+  it('gibt gestreamten Text nicht ein zweites Mal aus', async () => {
+    // Der Zug enthaelt denselben Text noch einmal als Block. Wuerde der Loop
+    // ihn erneut ausgeben, staende die Antwort doppelt auf dem Bildschirm.
+    const llm = streamendesModell(['Hallo']);
+
+    const events = await collectEvents(runAgent(baseInput({ llm })));
+
+    expect(summarize(events).text).toBe('Hallo');
+  });
+
+  it('gibt den Text eines Modells ohne Streaming trotzdem aus', async () => {
+    const llm = createScriptedLlm({ turns: [{ blocks: [{ type: 'text', text: 'Guten Tag' }] }] });
+
+    const events = await collectEvents(runAgent(baseInput({ llm })));
+
+    expect(summarize(events).text).toBe('Guten Tag');
+  });
+
+  it('meldet Dauer und Verbrauch je Zug, fortlaufend nummeriert', async () => {
+    const llm = createScriptedLlm({
+      turns: [
+        {
+          blocks: [
+            {
+              type: 'tool_use',
+              toolCallId: 'c1',
+              toolName: 'resolve_destination',
+              input: { query: 'Mallorca' },
+            },
+          ],
+        },
+        { blocks: [{ type: 'text', text: 'Gefunden.' }] },
+      ],
+    });
+
+    const events = await collectEvents(runAgent(baseInput({ llm })));
+    const zuege = eventsOfType(events, 'model_turn');
+
+    expect(zuege.map((zug) => zug.iteration)).toEqual([1, 2]);
+    for (const zug of zuege) {
+      expect(zug.durationMs).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('meldet keinen Zug, wenn das Modell nicht erreichbar ist', async () => {
+    // Eine Dauer ohne Antwort waere eine Zahl ohne Aussage.
+    const events = await collectEvents(runAgent(baseInput({ llm: createFailingLlm() })));
+
+    expect(eventsOfType(events, 'model_turn')).toHaveLength(0);
+    expect(summarize(events).stopReason).toBe('llm_error');
   });
 });

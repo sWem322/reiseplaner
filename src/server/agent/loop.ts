@@ -67,6 +67,59 @@ interface ExecutedCall {
 }
 
 /**
+ * Warteschlange zwischen Rueckruf und Generator.
+ *
+ * Der LLM-Adapter meldet jedes Textstueck ueber einen Rueckruf; der Loop ist
+ * ein Generator und kann nur an seiner eigenen Stelle `yield` sagen. Diese
+ * kleine Bruecke verbindet beides: Der Rueckruf legt ab, der Generator holt.
+ *
+ * `drain` wartet, wenn nichts da ist, und endet, sobald `close` gerufen wurde
+ * und der Puffer leer ist. Ohne die zweite Bedingung ginge das letzte
+ * Textstueck verloren, wenn es im selben Wimpernschlag wie das Ende ankommt.
+ */
+function createDeltaQueue() {
+  const puffer: string[] = [];
+  let geschlossen = false;
+  let wecken: (() => void) | null = null;
+
+  const anstossen = (): void => {
+    wecken?.();
+    wecken = null;
+  };
+
+  return {
+    push(text: string): void {
+      puffer.push(text);
+      anstossen();
+    },
+
+    close(): void {
+      geschlossen = true;
+      anstossen();
+    },
+
+    async *drain(): AsyncGenerator<string> {
+      for (;;) {
+        const stueck = puffer.shift();
+
+        if (stueck !== undefined) {
+          yield stueck;
+          continue;
+        }
+
+        if (geschlossen) {
+          return;
+        }
+
+        await new Promise<void>((resolve) => {
+          wecken = resolve;
+        });
+      }
+    },
+  };
+}
+
+/**
  * Fuehrt einen einzelnen Werkzeugaufruf aus.
  *
  * Wirft nie. Jeder Ausgang — ungueltige Eingabe, Anbieterfehler, unerwartete
@@ -156,12 +209,42 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
       break;
     }
 
-    const response = await input.llm.complete({
-      systemPrompt: input.systemPrompt,
-      messages: history,
-      tools: toolDescriptions,
-      maxOutputTokens: Math.min(4_096, guardrails.remainingTokens),
-    });
+    /*
+     * Der Text soll erscheinen, waehrend das Modell ihn schreibt — nicht
+     * danach. Der Adapter meldet jedes Stueck ueber einen Rueckruf, und ein
+     * Rueckruf kann nicht `yield`. Also sammelt eine Warteschlange die Stuecke
+     * ein, und die Schleife darunter gibt sie weiter, bis der Zug fertig ist.
+     */
+    const schlange = createDeltaQueue();
+    const begonnen = Date.now();
+
+    const laufenderZug = input.llm
+      .complete(
+        {
+          systemPrompt: input.systemPrompt,
+          messages: history,
+          tools: toolDescriptions,
+          maxOutputTokens: Math.min(4_096, guardrails.remainingTokens),
+        },
+        {
+          onTextDelta: (stueck) => {
+            schlange.push(stueck);
+          },
+        },
+      )
+      .finally(() => {
+        schlange.close();
+      });
+
+    let gestreamt = false;
+
+    for await (const stueck of schlange.drain()) {
+      gestreamt = true;
+      yield { type: 'text_delta', text: stueck };
+    }
+
+    const response = await laufenderZug;
+    const dauerMs = Date.now() - begonnen;
 
     if (!response.ok) {
       /*
@@ -184,9 +267,25 @@ export async function* runAgent(input: AgentRunInput): AsyncGenerator<AgentEvent
     guardrails.recordUsage(response.value.usage);
     input.onTurn?.({ role: 'assistant', blocks: response.value.blocks });
 
-    for (const block of response.value.blocks) {
-      if (block.type === 'text' && block.text.length > 0) {
-        yield { type: 'text_delta', text: block.text };
+    yield {
+      type: 'model_turn',
+      iteration: guardrails.state.iterations,
+      durationMs: dauerMs,
+      inputTokens: response.value.usage.inputTokens,
+      outputTokens: response.value.usage.outputTokens,
+    };
+
+    /*
+     * Nur, was nicht schon unterwegs herausging. Ein Modell ohne Streaming —
+     * der regelbasierte Ersatz, das skriptgesteuerte Testmodell — liefert den
+     * Text erst hier; ein streamendes haette ihn sonst doppelt auf dem
+     * Bildschirm.
+     */
+    if (!gestreamt) {
+      for (const block of response.value.blocks) {
+        if (block.type === 'text' && block.text.length > 0) {
+          yield { type: 'text_delta', text: block.text };
+        }
       }
     }
 

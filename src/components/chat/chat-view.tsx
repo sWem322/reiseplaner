@@ -136,7 +136,7 @@ export function ChatView({
 
           {laeuft && (
             <li className="flex flex-col gap-2">
-              <ToolActivity tools={state.tools} />
+              <ToolActivity tools={state.tools} modelTurns={state.modelTurns} />
 
               {/* Angebote erscheinen, sobald das Werkzeug fertig ist — nicht
                   erst mit dem Schlusstext des Modells. */}

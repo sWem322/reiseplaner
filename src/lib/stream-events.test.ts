@@ -143,6 +143,24 @@ describe('Ereignisstrom lesen', () => {
     expect(events.map((event) => event.type)).toEqual(['quota_exceeded', 'stream_error']);
   });
 
+  it('liest die Dauer eines Modellzuges', async () => {
+    // Ohne dieses Ereignis zeigte die Oberflaeche nur die Werkzeugzeiten und
+    // verschwieg, dass der groessere Teil des Wartens auf das Modell entfiel.
+    const events = await collect(
+      streamOf(
+        sse({
+          type: 'model_turn',
+          iteration: 2,
+          durationMs: 3_120,
+          inputTokens: 940,
+          outputTokens: 61,
+        }),
+      ),
+    );
+
+    expect(events[0]).toMatchObject({ type: 'model_turn', iteration: 2, durationMs: 3_120 });
+  });
+
   it('verwirft einen unvollständigen Block am Ende', async () => {
     // Reisst die Verbindung mitten im letzten Block ab, darf kein halbes
     // Ereignis in den Zustand geraten.

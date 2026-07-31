@@ -49,9 +49,23 @@ function fehlertext(content: unknown): string | null {
   return null;
 }
 
+/** Ein abgeschlossener Zug des Modells — für die Zeitanzeige. */
+export interface ModelTurn {
+  readonly iteration: number;
+  readonly durationMs: number;
+}
+
 export interface AgentRunState {
   readonly text: string;
   readonly tools: readonly RunningTool[];
+  /**
+   * Wie lange jeder Zug des Modells gedauert hat.
+   *
+   * Die Werkzeugzeiten standen schon immer auf dem Bildschirm, die Denkzeit
+   * nicht — dabei ist sie meist der grössere Teil. Ohne diese Liste liess
+   * sich „warum dauert das so lange?" nur raten.
+   */
+  readonly modelTurns: readonly ModelTurn[];
   readonly running: boolean;
   /** Hinweis zum Abbruchgrund, sobald der Lauf endet — leer bei `completed`. */
   readonly notice: string | null;
@@ -63,6 +77,7 @@ export interface AgentRunState {
 const IDLE: AgentRunState = {
   text: '',
   tools: [],
+  modelTurns: [],
   running: false,
   notice: null,
   error: null,
@@ -112,6 +127,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
 
       let text = '';
       let tools: RunningTool[] = [];
+      let modelTurns: ModelTurn[] = [];
       let stopReason: StopReason | null = null;
 
       try {
@@ -167,6 +183,13 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
               );
               break;
 
+            case 'model_turn':
+              modelTurns = [
+                ...modelTurns,
+                { iteration: event.iteration, durationMs: event.durationMs },
+              ];
+              break;
+
             case 'draft_updated':
               draftRef.current?.(event.draft);
               break;
@@ -192,7 +215,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
 
           // Der Zustand wird je Ereignis gesetzt, damit der Text waehrend des
           // Laufs sichtbar waechst.
-          setState((vorher) => ({ ...vorher, text, tools }));
+          setState((vorher) => ({ ...vorher, text, tools, modelTurns }));
         }
       } catch (error) {
         setState((vorher) => ({

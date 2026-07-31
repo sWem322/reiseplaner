@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import type { Content, GenerateContentResponse, Part } from '@google/genai';
 import type { ContentBlock } from '@/domain/conversation';
-import type { LlmMessage, LlmPort, LlmRequest, LlmResponse } from '@/domain/ports/llm';
+import type { LlmHooks, LlmMessage, LlmPort, LlmRequest, LlmResponse } from '@/domain/ports/llm';
 import { fail, ok, type Result } from '@/domain/result';
 import { toGeminiSchema } from './gemini-schema';
 import { buildModelChain, ModelRotation, suspensionFor } from './model-rotation';
@@ -33,14 +33,28 @@ import { buildModelChain, ModelRotation, suspensionFor } from './model-rotation'
  */
 export const DEFAULT_GEMINI_MODEL = 'gemini-flash-latest';
 
+interface GeminiRequest {
+  model: string;
+  contents: Content[];
+  config?: Record<string, unknown>;
+}
+
 /** Schmale Sicht auf das SDK — nur das, was dieser Adapter braucht. */
 export interface GeminiClient {
   readonly models: {
-    generateContent(request: {
-      model: string;
-      contents: Content[];
-      config?: Record<string, unknown>;
-    }): Promise<GenerateContentResponse>;
+    generateContent(request: GeminiRequest): Promise<GenerateContentResponse>;
+    /**
+     * Derselbe Aufruf, stueckweise.
+     *
+     * Optional, weil ein untergeschobener Client im Test ihn nicht braucht:
+     * Dort ist die Antwort ohnehin sofort da, und ein erzwungener Generator
+     * waere nur Beiwerk um eine einzige Zeile. Fehlt die Methode, faellt der
+     * Adapter auf den ganzen Zug zurueck — dasselbe Ergebnis, nur ohne
+     * Zwischenstaende.
+     */
+    generateContentStream?(
+      request: GeminiRequest,
+    ): Promise<AsyncGenerator<GenerateContentResponse>>;
   };
 }
 
@@ -131,42 +145,70 @@ function toGeminiContents(messages: readonly LlmMessage[]): Content[] {
 
 // --- Rückweg: Gemini → Domäne ------------------------------------------
 
-function fromGeminiResponse(response: GenerateContentResponse): LlmResponse {
-  const blocks: ContentBlock[] = [];
-  const parts = response.candidates?.[0]?.content?.parts ?? [];
-
+/**
+ * Sammelt einen Zug — aus einer Antwort oder aus vielen Bruchstuecken.
+ *
+ * Beim Streamen kommt der Text in Haeppchen, und ein Zug besteht am Ende
+ * trotzdem aus **einem** Textblock: Fuenfzig Blöcke mit je drei Woertern
+ * waeren im gespeicherten Verlauf nur Rauschen. Die Werkzeugaufrufe stehen
+ * danach — die Reihenfolge innerhalb eines Zuges ist bei Gemini ohnehin
+ * „erst reden, dann rufen".
+ */
+function createTurnBuilder() {
+  let text = '';
   let callIndex = 0;
-
-  for (const part of parts) {
-    if (typeof part.text === 'string' && part.text.length > 0) {
-      blocks.push({ type: 'text', text: part.text });
-    }
-
-    if (part.functionCall !== undefined) {
-      callIndex += 1;
-
-      blocks.push({
-        type: 'tool_use',
-        // Gemini liefert nicht immer eine Kennung — dann wird eine erzeugt,
-        // damit der Loop Aufruf und Ergebnis zuordnen kann.
-        toolCallId: part.functionCall.id ?? `gemini_${String(callIndex)}_${String(Date.now())}`,
-        toolName: part.functionCall.name ?? 'unbekannt',
-        input: part.functionCall.args ?? {},
-        // Wird nicht ausgewertet, nur aufbewahrt — der Rueckweg braucht sie.
-        ...(typeof part.thoughtSignature === 'string' && part.thoughtSignature.length > 0
-          ? { providerSignature: part.thoughtSignature }
-          : {}),
-      });
-    }
-  }
-
-  const usage = response.usageMetadata;
+  let usage = { inputTokens: 0, outputTokens: 0 };
+  const toolUses: ContentBlock[] = [];
 
   return {
-    blocks,
-    usage: {
-      inputTokens: usage?.promptTokenCount ?? 0,
-      outputTokens: usage?.candidatesTokenCount ?? 0,
+    add(response: GenerateContentResponse, onTextDelta?: (stueck: string) => void): void {
+      for (const part of response.candidates?.[0]?.content?.parts ?? []) {
+        if (typeof part.text === 'string' && part.text.length > 0) {
+          text += part.text;
+          onTextDelta?.(part.text);
+        }
+
+        if (part.functionCall !== undefined) {
+          callIndex += 1;
+
+          toolUses.push({
+            type: 'tool_use',
+            // Gemini liefert nicht immer eine Kennung — dann wird eine erzeugt,
+            // damit der Loop Aufruf und Ergebnis zuordnen kann.
+            toolCallId: part.functionCall.id ?? `gemini_${String(callIndex)}_${String(Date.now())}`,
+            toolName: part.functionCall.name ?? 'unbekannt',
+            input: part.functionCall.args ?? {},
+            // Wird nicht ausgewertet, nur aufbewahrt — der Rueckweg braucht sie.
+            ...(typeof part.thoughtSignature === 'string' && part.thoughtSignature.length > 0
+              ? { providerSignature: part.thoughtSignature }
+              : {}),
+          });
+        }
+      }
+
+      /*
+       * Die Zaehlung steht beim Streamen erst im letzten Bruchstueck — und
+       * dort vollstaendig, nicht als Zuwachs. Deshalb ueberschreiben statt
+       * addieren; sonst zaehlte jedes Haeppchen die Eingabe erneut.
+       */
+      const gezaehlt = response.usageMetadata;
+
+      if (gezaehlt !== undefined) {
+        usage = {
+          inputTokens: gezaehlt.promptTokenCount ?? 0,
+          outputTokens: gezaehlt.candidatesTokenCount ?? 0,
+        };
+      }
+    },
+
+    build(): LlmResponse {
+      const blocks: ContentBlock[] = [];
+
+      if (text.length > 0) {
+        blocks.push({ type: 'text', text });
+      }
+
+      return { blocks: [...blocks, ...toolUses], usage };
     },
   };
 }
@@ -237,7 +279,7 @@ export function createGeminiLlm(options: GeminiOptions): LlmPort {
   return {
     name: `gemini:${kette[0] ?? DEFAULT_GEMINI_MODEL}`,
 
-    async complete(request: LlmRequest): Promise<Result<LlmResponse>> {
+    async complete(request: LlmRequest, hooks?: LlmHooks): Promise<Result<LlmResponse>> {
       const contents = toGeminiContents(request.messages);
 
       if (contents.length === 0) {
@@ -258,23 +300,34 @@ export function createGeminiLlm(options: GeminiOptions): LlmPort {
           break;
         }
 
-        try {
-          const response = await client.models.generateContent({
-            model,
-            contents,
-            config: {
-              systemInstruction: request.systemPrompt,
-              ...(request.maxOutputTokens === undefined
-                ? {}
-                : { maxOutputTokens: request.maxOutputTokens }),
-              ...(functionDeclarations.length === 0 ? {} : { tools: [{ functionDeclarations }] }),
-              // Reproduzierbarkeit vor Kreativität: Der Agent soll auf dieselbe
-              // Anfrage möglichst dieselben Werkzeuge aufrufen.
-              temperature: 0.2,
-            },
-          });
+        const anfrage: GeminiRequest = {
+          model,
+          contents,
+          config: {
+            systemInstruction: request.systemPrompt,
+            ...(request.maxOutputTokens === undefined
+              ? {}
+              : { maxOutputTokens: request.maxOutputTokens }),
+            ...(functionDeclarations.length === 0 ? {} : { tools: [{ functionDeclarations }] }),
+            // Reproduzierbarkeit vor Kreativität: Der Agent soll auf dieselbe
+            // Anfrage möglichst dieselben Werkzeuge aufrufen.
+            temperature: 0.2,
+          },
+        };
 
-          return ok(fromGeminiResponse(response));
+        try {
+          const zug = createTurnBuilder();
+          const streamen = client.models.generateContentStream;
+
+          if (streamen === undefined) {
+            zug.add(await client.models.generateContent(anfrage), hooks?.onTextDelta);
+          } else {
+            for await (const stueck of await streamen.call(client.models, anfrage)) {
+              zug.add(stueck, hooks?.onTextDelta);
+            }
+          }
+
+          return ok(zug.build());
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
 

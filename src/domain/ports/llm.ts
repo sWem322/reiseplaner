@@ -46,9 +46,27 @@ export interface LlmResponse {
   readonly usage: TokenUsage;
 }
 
+/**
+ * Rueckmeldungen waehrend eines Zuges.
+ *
+ * Der Port bleibt eine Anfrage mit einer Antwort — das ist die Form, die der
+ * Loop braucht. Was fehlte, war ein Weg, den Text schon **waehrend** der
+ * Erzeugung nach aussen zu geben. Ohne ihn stand die Oberflaeche minutenlang
+ * auf „Der Assistent ueberlegt …" und zeigte die fertige Antwort dann in einem
+ * Stueck: Streaming, das keines war.
+ *
+ * Optional, weil nicht jedes Modell es kann. Der regelbasierte Extraktor
+ * rechnet in Millisekunden, das skriptgesteuerte Ersatzmodell antwortet
+ * sofort — beide rufen hier nichts, und das ist richtig so.
+ */
+export interface LlmHooks {
+  /** Ein Stueck Text, sobald es vorliegt. Nie der vollstaendige Zug. */
+  readonly onTextDelta?: (text: string) => void;
+}
+
 export interface LlmPort {
   /** Name der Implementierung — erscheint im Startprotokoll und in Evals. */
   readonly name: string;
 
-  complete(request: LlmRequest): Promise<Result<LlmResponse>>;
+  complete(request: LlmRequest, hooks?: LlmHooks): Promise<Result<LlmResponse>>;
 }

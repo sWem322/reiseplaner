@@ -60,6 +60,32 @@ const textResponse = {
   usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 30 },
 };
 
+/**
+ * Ein Client, der stueckweise antwortet — wie das SDK im Streambetrieb.
+ *
+ * Die Zaehlung steht bewusst nur im letzten Bruchstueck: Genau so liefert
+ * Gemini sie, und genau daran waere ein Adapter gescheitert, der die Werte
+ * je Haeppchen addiert.
+ */
+function streamingClient(stuecke: readonly Partial<GenerateContentResponse>[]): GeminiClient {
+  return {
+    models: {
+      generateContent() {
+        return Promise.reject(new Error('In diesem Test darf nur gestreamt werden'));
+      },
+      generateContentStream() {
+        async function* lauf(): AsyncGenerator<GenerateContentResponse> {
+          for (const stueck of stuecke) {
+            yield await Promise.resolve(stueck as GenerateContentResponse);
+          }
+        }
+
+        return Promise.resolve(lauf());
+      },
+    },
+  };
+}
+
 describe('Schema-Umbau für Gemini', () => {
   it('entfernt Felder, die Gemini nicht kennt', () => {
     const jsonSchema = z.toJSONSchema(z.object({ query: z.string() }), { io: 'input' });
@@ -750,5 +776,92 @@ describe('Wechsel des Modells bei erschöpftem Kontingent', () => {
 
     expect(gesehen).toHaveLength(2);
     expect(gesehen[1]).toEqual(gesehen[0]);
+  });
+});
+
+describe('Streaming', () => {
+  it('meldet jedes Textstueck, sobald es vorliegt', async () => {
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      client: streamingClient([
+        { candidates: [{ content: { parts: [{ text: 'Ich ' }] } }] },
+        { candidates: [{ content: { parts: [{ text: 'suche ' }] } }] },
+        {
+          candidates: [{ content: { parts: [{ text: 'Flüge.' }] } }],
+          usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 30 },
+        },
+      ]),
+    });
+
+    const stuecke: string[] = [];
+
+    const antwort = unwrap(
+      await llm.complete(request(), {
+        onTextDelta: (stueck) => {
+          stuecke.push(stueck);
+        },
+      }),
+    );
+
+    expect(stuecke).toEqual(['Ich ', 'suche ', 'Flüge.']);
+    // Im Verlauf steht ein Block, nicht drei: Bruchstuecke sind ein Transport,
+    // keine Struktur.
+    expect(antwort.blocks).toEqual([{ type: 'text', text: 'Ich suche Flüge.' }]);
+  });
+
+  it('zaehlt die Tokens des letzten Bruchstuecks, statt sie zu addieren', async () => {
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      client: streamingClient([
+        {
+          candidates: [{ content: { parts: [{ text: 'a' }] } }],
+          usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 5 },
+        },
+        {
+          candidates: [{ content: { parts: [{ text: 'b' }] } }],
+          usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 12 },
+        },
+      ]),
+    });
+
+    const antwort = unwrap(await llm.complete(request()));
+
+    expect(antwort.usage).toEqual({ inputTokens: 120, outputTokens: 12 });
+  });
+
+  it('sammelt Werkzeugaufrufe aus dem Strom ein', async () => {
+    const llm = createGeminiLlm({
+      apiKey: 'test',
+      client: streamingClient([
+        { candidates: [{ content: { parts: [{ text: 'Einen Moment.' }] } }] },
+        {
+          candidates: [
+            {
+              content: {
+                parts: [
+                  { functionCall: { name: 'resolve_destination', args: { query: 'Mallorca' } } },
+                ],
+              },
+            },
+          ],
+        },
+      ]),
+    });
+
+    const antwort = unwrap(await llm.complete(request()));
+
+    expect(antwort.blocks).toHaveLength(2);
+    expect(antwort.blocks[1]).toMatchObject({ type: 'tool_use', toolName: 'resolve_destination' });
+  });
+
+  it('kommt ohne Streamfunktion aus und liefert dasselbe Ergebnis', async () => {
+    // Ein Client ohne `generateContentStream` — der Fall im Test und bei
+    // jedem Anbieter, der nur ganze Antworten kennt.
+    const llm = createGeminiLlm({ apiKey: 'test', client: createClient(textResponse) });
+
+    const antwort = unwrap(await llm.complete(request()));
+
+    expect(antwort.blocks).toEqual([{ type: 'text', text: 'Wohin genau?' }]);
+    expect(antwort.usage).toEqual({ inputTokens: 120, outputTokens: 30 });
   });
 });

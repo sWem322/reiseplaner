@@ -37,6 +37,14 @@ const toolFinished = z.object({
   content: z.unknown().optional(),
 });
 
+const modelTurn = z.object({
+  type: z.literal('model_turn'),
+  iteration: z.number(),
+  durationMs: z.number(),
+  inputTokens: z.number(),
+  outputTokens: z.number(),
+});
+
 const draftUpdated = z.object({
   type: z.literal('draft_updated'),
   draft: tripDraftShapeSchema,
@@ -70,6 +78,7 @@ export const streamEventSchema = z.discriminatedUnion('type', [
   textDelta,
   toolStarted,
   toolFinished,
+  modelTurn,
   draftUpdated,
   finished,
   quotaExceeded,
