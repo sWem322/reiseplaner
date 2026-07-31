@@ -310,3 +310,167 @@ describe('Entwurf aus erkannten Orten', () => {
     expect(block?.type === 'tool_use' ? block.input : {}).not.toHaveProperty('destination');
   });
 });
+
+/**
+ * Was in der Abnahme geschah, nachdem das Gaestekontingent aufgebraucht war:
+ * Der Entwurf war zu vier Fuenfteln gefuellt — Ziel, Abflug, beide Daten —
+ * und der Ersatz fragte trotzdem nach dem Flughafen, verschluckte die Antwort
+ * „2" auf seine eigene Frage nach den Erwachsenen und behauptete in jedem
+ * weiteren Zug, er habe Verbindungen herausgesucht.
+ */
+describe('Der Entwurf ist die Wahrheit, nicht der Text', () => {
+  function mitEntwurf(draft: Record<string, unknown>, ...texte: readonly string[]): LlmRequest {
+    return {
+      systemPrompt: '',
+      messages: [
+        {
+          role: 'assistant',
+          blocks: [
+            { type: 'tool_use', toolCallId: 'c1', toolName: 'get_trip_draft', input: {} },
+            { type: 'tool_result', toolCallId: 'c1', isError: false, content: { draft } },
+          ],
+        },
+        ...texte.map((text) => ({
+          role: 'user' as const,
+          blocks: [{ type: 'text' as const, text }],
+        })),
+      ],
+      tools: [],
+    };
+  }
+
+  async function antwort(request: LlmRequest) {
+    return unwrap(await createRuleBasedLlm().complete(request));
+  }
+
+  async function text(request: LlmRequest): Promise<string> {
+    const block = (await antwort(request)).blocks[0];
+
+    return block?.type === 'text' ? block.text : '';
+  }
+
+  const fastFertig = {
+    origin: { iataCode: 'DUS' },
+    destination: { iataCode: 'PMI' },
+    departureDate: '2026-10-01',
+    returnDate: '2026-10-08',
+    adults: null,
+  };
+
+  it('fragt nicht nach einer Angabe, die im Entwurf steht', async () => {
+    // Genau der Fall aus der Abnahme: „Von welchem Flughafen?", waehrend
+    // „Düsseldorf (DUS)" in der Leiste danebenstand.
+    expect(await text(mitEntwurf(fastFertig, 'ok'))).not.toContain('Flughafen');
+  });
+
+  it('fragt nach der Reisendenzahl, statt sie zu übergehen', async () => {
+    // Sie ist Pflichtangabe und stand frueher in keiner einzigen Verzweigung.
+    expect(await text(mitEntwurf(fastFertig, 'ok'))).toContain('Erwachsenen');
+  });
+
+  it('liest die knappe Antwort auf die eigene Frage', async () => {
+    const request: LlmRequest = {
+      systemPrompt: '',
+      messages: [
+        {
+          role: 'assistant',
+          blocks: [
+            { type: 'tool_use', toolCallId: 'c1', toolName: 'get_trip_draft', input: {} },
+            {
+              type: 'tool_result',
+              toolCallId: 'c1',
+              isError: false,
+              content: { draft: fastFertig },
+            },
+          ],
+        },
+        {
+          role: 'assistant',
+          blocks: [{ type: 'text', text: 'Mit wie vielen Erwachsenen reist du?' }],
+        },
+        { role: 'user', blocks: [{ type: 'text', text: '2' }] },
+      ],
+      tools: [],
+    };
+
+    const block = (await antwort(request)).blocks[0];
+
+    expect(block).toMatchObject({
+      type: 'tool_use',
+      toolName: 'update_trip_draft',
+      input: { adults: 2 },
+    });
+  });
+
+  it('behauptet keine Suche, die in diesem Zug nicht stattgefunden hat', async () => {
+    /*
+     * Eine Suche aus einem frueheren Zug steht im Verlauf. Frueher galt sie
+     * fuer immer, und der Schlusssatz „…und passende Verbindungen
+     * herausgesucht" erschien danach auf jede beliebige Eingabe.
+     */
+    const request: LlmRequest = {
+      systemPrompt: '',
+      messages: [
+        {
+          role: 'assistant',
+          blocks: [
+            { type: 'tool_use', toolCallId: 'alt', toolName: 'search_flights', input: {} },
+            { type: 'tool_result', toolCallId: 'alt', isError: false, content: { offers: [] } },
+          ],
+        },
+        {
+          role: 'assistant',
+          blocks: [
+            { type: 'tool_use', toolCallId: 'c1', toolName: 'get_trip_draft', input: {} },
+            {
+              type: 'tool_result',
+              toolCallId: 'c1',
+              isError: false,
+              content: { draft: { ...fastFertig, adults: 2 } },
+            },
+          ],
+        },
+        { role: 'user', blocks: [{ type: 'text', text: '123' }] },
+      ],
+      tools: [],
+    };
+
+    // Alles bekannt, in diesem Zug noch nichts gesucht — also wird gesucht,
+    // statt eine Suche zu behaupten.
+    expect((await antwort(request)).blocks[0]).toMatchObject({
+      type: 'tool_use',
+      toolName: 'search_flights',
+    });
+  });
+
+  it('sagt es offen, wenn die Suche in diesem Zug scheiterte', async () => {
+    const request: LlmRequest = {
+      systemPrompt: '',
+      messages: [
+        { role: 'user', blocks: [{ type: 'text', text: 'los' }] },
+        {
+          role: 'assistant',
+          blocks: [
+            { type: 'tool_use', toolCallId: 'c1', toolName: 'get_trip_draft', input: {} },
+            {
+              type: 'tool_result',
+              toolCallId: 'c1',
+              isError: false,
+              content: { draft: { ...fastFertig, adults: 2 } },
+            },
+            { type: 'tool_use', toolCallId: 'c2', toolName: 'search_flights', input: {} },
+            {
+              type: 'tool_result',
+              toolCallId: 'c2',
+              isError: true,
+              content: { error: 'Anbieter nicht erreichbar' },
+            },
+          ],
+        },
+      ],
+      tools: [],
+    };
+
+    expect(await text(request)).toContain('nicht geklappt');
+  });
+});

@@ -1,6 +1,7 @@
 import type { ContentBlock } from '@/domain/conversation';
-import type { LlmPort, LlmRequest, LlmResponse } from '@/domain/ports/llm';
+import type { LlmMessage, LlmPort, LlmRequest, LlmResponse } from '@/domain/ports/llm';
 import { ok, type Result } from '@/domain/result';
+import { MISSING_SLOT_ORDER, type TripSlot } from '@/domain/trip/trip';
 import { findByIata, findExact, searchCatalog } from '@/server/adapters/seed/catalog';
 
 /**
@@ -461,11 +462,168 @@ function fromDraftPatch(input: unknown): ExtractedTripParameters {
   };
 }
 
-/** Wurde in diesem Verlauf bereits ein bestimmtes Werkzeug aufgerufen? */
-function alreadyCalled(request: LlmRequest, toolName: string): boolean {
-  return request.messages.some((message) =>
-    message.blocks.some((block) => block.type === 'tool_use' && block.toolName === toolName),
-  );
+/**
+ * Der Entwurf, wie ihn zuletzt ein Werkzeug zurueckgemeldet hat.
+ *
+ * Das ist die eigentliche Wahrheit ueber das Gespraech — und dieser Extraktor
+ * hat sie bisher nie gelesen. Er leitete alles aus dem Text ab, und wenn der
+ * Verlauf verdichtet wurde oder die Angabe aus einem Zug mit Sprachmodell
+ * stammte, war sie fuer ihn verschwunden. In der Abnahme fragte er deshalb
+ * „Von welchem Flughafen moechtest du starten?", waehrend „Duesseldorf (DUS)"
+ * in der Leiste danebenstand.
+ *
+ * Sowohl `update_trip_draft` als auch `get_trip_draft` liefern den Entwurf
+ * zurueck; beide Ergebnisse stehen als `tool_result` im Verlauf. Gesucht wird
+ * rueckwaerts, damit der juengste Stand gewinnt.
+ */
+function entwurfAusVerlauf(request: LlmRequest): ExtractedTripParameters | null {
+  for (let index = request.messages.length - 1; index >= 0; index -= 1) {
+    const message = request.messages[index];
+
+    if (message === undefined) {
+      continue;
+    }
+
+    for (const block of message.blocks) {
+      if (block.type !== 'tool_result' || block.isError) {
+        continue;
+      }
+
+      const inhalt = block.content;
+
+      if (typeof inhalt !== 'object' || inhalt === null || !('draft' in inhalt)) {
+        continue;
+      }
+
+      return fromDraftPatch((inhalt as { draft: unknown }).draft);
+    }
+  }
+
+  return null;
+}
+
+/** Die Fragen zu den Pflichtangaben — in derselben Reihenfolge wie die Domaene. */
+const FRAGEN: Readonly<Record<TripSlot, string>> = {
+  destination: 'Wohin soll die Reise gehen?',
+  origin: 'Von welchem Flughafen möchtest du starten?',
+  departureDate: 'An welchem Datum möchtest du hinfliegen?',
+  returnDate: 'Wie lange soll die Reise dauern?',
+  adults: 'Mit wie vielen Erwachsenen reist du?',
+};
+
+/** Welche Pflichtangabe fehlt noch — nach `MISSING_SLOT_ORDER`. */
+function fehlendeSlots(params: ExtractedTripParameters): readonly TripSlot[] {
+  return MISSING_SLOT_ORDER.filter((slot) => {
+    switch (slot) {
+      case 'destination':
+        return params.destinationIata === null;
+      case 'origin':
+        return params.originIata === null;
+      case 'departureDate':
+        return params.departureDate === null;
+      case 'returnDate':
+        return params.returnDate === null;
+      case 'adults':
+        return params.adults === null;
+    }
+  });
+}
+
+/** Zu welcher Angabe wurde zuletzt gefragt? */
+function zuletztGefragt(request: LlmRequest): TripSlot | null {
+  for (let index = request.messages.length - 1; index >= 0; index -= 1) {
+    const message = request.messages[index];
+
+    if (message?.role !== 'assistant') {
+      continue;
+    }
+
+    const text = message.blocks
+      .filter((block) => block.type === 'text')
+      .map((block) => block.text)
+      .join(' ');
+
+    if (text.trim().length === 0) {
+      continue;
+    }
+
+    return MISSING_SLOT_ORDER.find((slot) => text.includes(FRAGEN[slot])) ?? null;
+  }
+
+  return null;
+}
+
+/**
+ * Eine knappe Antwort im Licht der zuletzt gestellten Frage lesen.
+ *
+ * Auf „Mit wie vielen Erwachsenen reist du?" antwortet niemand „zwei
+ * Erwachsene" — man schreibt „2". Der Extraktor sucht nach Wortmustern und
+ * ging deshalb leer aus; die Antwort verfiel, die Frage kam wieder, und das
+ * Gespraech drehte sich. Nur fuer die Reisendenzahl noetig: Orte und Daten
+ * erkennt der Extraktor auch ohne Satz drumherum.
+ */
+function alsAntwortAuf(slot: TripSlot | null, text: string): ExtractedTripParameters {
+  const leer = leereParameter();
+
+  if (slot !== 'adults') {
+    return leer;
+  }
+
+  const knapp = text.trim();
+
+  if (!/^\d{1,2}$/.test(knapp)) {
+    return leer;
+  }
+
+  const anzahl = Number.parseInt(knapp, 10);
+
+  return anzahl >= 1 && anzahl <= 9 ? { ...leer, adults: anzahl } : leer;
+}
+
+/**
+ * Die Nachrichten des laufenden Zuges — alles nach der letzten Nutzereingabe.
+ *
+ * „Wurde schon gesucht?" ueber das ganze Gespraech zu fragen, war falsch in
+ * beide Richtungen: Nach der ersten Suche wurde nie wieder gesucht, auch wenn
+ * die reisende Person das Ziel wechselte — und der Schlusssatz behauptete in
+ * jedem weiteren Zug, er habe Verbindungen herausgesucht. Ein Zug beginnt mit
+ * dem, was gesagt wurde, und endet mit der Antwort darauf.
+ */
+function zugNachrichten(request: LlmRequest): readonly LlmMessage[] {
+  let letzterNutzer = -1;
+
+  for (let index = request.messages.length - 1; index >= 0; index -= 1) {
+    if (request.messages[index]?.role === 'user') {
+      letzterNutzer = index;
+      break;
+    }
+  }
+
+  return letzterNutzer < 0 ? request.messages : request.messages.slice(letzterNutzer + 1);
+}
+
+/** Wie ist die Flugsuche in diesem Zug ausgegangen? */
+function sucheImZug(request: LlmRequest): 'ok' | 'fehler' | 'keine' {
+  const zug = zugNachrichten(request);
+
+  const aufruf = zug
+    .flatMap((message) => message.blocks)
+    .find((block) => block.type === 'tool_use' && block.toolName === 'search_flights');
+
+  if (aufruf === undefined || aufruf.type !== 'tool_use') {
+    return 'keine';
+  }
+
+  const ergebnis = zug
+    .flatMap((message) => message.blocks)
+    .find((block) => block.type === 'tool_result' && block.toolCallId === aufruf.toolCallId);
+
+  if (ergebnis === undefined || ergebnis.type !== 'tool_result') {
+    // Der Aufruf steht, das Ergebnis noch nicht — dieser Zug ist mitten drin.
+    return 'ok';
+  }
+
+  return ergebnis.isError ? 'fehler' : 'ok';
 }
 
 export function createRuleBasedLlm(): LlmPort {
@@ -483,8 +641,21 @@ export function createRuleBasedLlm(): LlmPort {
        * — nur sie darf in den Entwurf geschrieben werden. `params` ist der
        * gesammelte Stand und entscheidet, was noch fehlt.
        */
-      const neu = extractTripParameters(lastUserText(request), heute);
-      const params = accumulate(request, heute);
+      const letzterText = lastUserText(request);
+      const gefragt = zuletztGefragt(request);
+
+      const neu = zusammen(
+        extractTripParameters(letzterText, heute),
+        alsAntwortAuf(gefragt, letzterText),
+      );
+
+      /*
+       * Der Entwurf schlaegt den Text. Was ein Werkzeug zurueckgemeldet hat,
+       * steht so in der Datenbank; was aus Saetzen abgeleitet wurde, ist eine
+       * Vermutung — und faellt weg, sobald der Verlauf verdichtet wird.
+       */
+      const entwurf = entwurfAusVerlauf(request);
+      const params = zusammen(accumulate(request, heute), entwurf ?? leereParameter());
 
       const usage = { inputTokens: 0, outputTokens: 0 };
 
@@ -496,7 +667,7 @@ export function createRuleBasedLlm(): LlmPort {
        * Barcelona", „vom 12. bis 19." und „zu zweit" landeten nirgends. Jetzt
        * entscheidet, ob die Angabe schon im Verlauf steht.
        */
-      const bereitsGeschrieben = ausVerlauf(request);
+      const bereitsGeschrieben = zusammen(ausVerlauf(request), entwurf ?? leereParameter());
       const zuSchreiben = nurNeues(neu, bereitsGeschrieben);
 
       if (hasAnything(zuSchreiben)) {
@@ -522,7 +693,7 @@ export function createRuleBasedLlm(): LlmPort {
        * hat, ist geraten und nicht gewusst.
        */
       if (
-        !alreadyCalled(request, 'search_flights') &&
+        sucheImZug(request) === 'keine' &&
         params.originIata !== null &&
         params.destinationIata !== null &&
         params.departureDate !== null &&
@@ -549,7 +720,9 @@ export function createRuleBasedLlm(): LlmPort {
       }
 
       // Schritt 3: Antworten — entweder mit Rückfrage oder mit dem Ergebnis.
-      return Promise.resolve(ok({ blocks: [{ type: 'text', text: reply(params) }], usage }));
+      return Promise.resolve(
+        ok({ blocks: [{ type: 'text', text: reply(params, sucheImZug(request)) }], usage }),
+      );
     },
   };
 }
@@ -603,20 +776,49 @@ function buildDraftPatch(params: ExtractedTripParameters): Record<string, unknow
   };
 }
 
-/** Genau eine Rückfrage — zur ersten fehlenden Angabe. */
-function reply(params: ExtractedTripParameters): string {
-  if (params.destinationIata === null) {
-    return 'Wohin soll die Reise gehen?';
-  }
-  if (params.originIata === null) {
-    return 'Von welchem Flughafen möchtest du starten?';
-  }
-  if (params.departureDate === null) {
-    return 'An welchem Datum möchtest du hinfliegen?';
-  }
-  if (params.returnDate === null) {
-    return 'Wie lange soll die Reise dauern?';
+/** Zwei Staende zu einem verschmelzen — der zweite gewinnt, wo er etwas weiss. */
+function zusammen(
+  grund: ExtractedTripParameters,
+  darueber: ExtractedTripParameters,
+): ExtractedTripParameters {
+  return {
+    originIata: darueber.originIata ?? grund.originIata,
+    destinationIata: darueber.destinationIata ?? grund.destinationIata,
+    departureDate: darueber.departureDate ?? grund.departureDate,
+    returnDate: darueber.returnDate ?? grund.returnDate,
+    adults: darueber.adults ?? grund.adults,
+    budgetEuros: darueber.budgetEuros ?? grund.budgetEuros,
+    nights: darueber.nights ?? grund.nights,
+  };
+}
+
+/**
+ * Genau eine Rückfrage — zur ersten fehlenden Angabe.
+ *
+ * Zwei Fehler steckten in der früheren Fassung, und beide fielen erst auf,
+ * als das Gästekontingent aufgebraucht war und dieser Ersatz das Gespräch
+ * allein führte:
+ *
+ * 1. Nach der Reisendenzahl wurde **nie** gefragt. Sie ist eine Pflichtangabe,
+ *    stand aber in keiner Verzweigung — das Gespräch sprang von den Daten
+ *    direkt zum Schlusssatz.
+ * 2. Der Schlusssatz behauptete „und passende Verbindungen herausgesucht",
+ *    ohne dass eine Suche gelaufen wäre. Eine Zeile, die dasteht, egal was
+ *    passiert ist, ist keine Antwort, sondern Dekoration.
+ */
+function reply(params: ExtractedTripParameters, suche: 'ok' | 'fehler' | 'keine'): string {
+  const naechste = fehlendeSlots(params)[0];
+
+  if (naechste !== undefined) {
+    return FRAGEN[naechste];
   }
 
-  return 'Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.';
+  switch (suche) {
+    case 'ok':
+      return 'Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.';
+    case 'fehler':
+      return 'Die Suche nach Verbindungen hat nicht geklappt. Sag Bescheid, dann versuche ich es noch einmal.';
+    case 'keine':
+      return 'Deine Angaben sind vollständig. Sag Bescheid, dann suche ich nach Verbindungen.';
+  }
 }
