@@ -1,6 +1,7 @@
 {
   "llm": "rule-based",
-  "zeitpunkt": "2026-07-29T14:22:55.407Z",
+  "promptVersion": "1.6.0",
+  "zeitpunkt": "2026-07-31T01:23:56.742Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -436,6 +437,64 @@
         "departureDate": "2026-08-15",
         "returnDate": null,
         "adults": 2,
+        "childAges": [],
+        "budgetEuros": null,
+        "preferences": [],
+        "status": "collecting"
+      },
+      "bestanden": false
+    },
+    {
+      "id": "halbe-antwort",
+      "beschreibung": "Zwei Dinge gefragt, eines beantwortet — das andere bleibt offen",
+      "nochOffen": false,
+      "nichtGemessen": false,
+      "befunde": [
+        {
+          "slot": "destination",
+          "erwartet": "CDG",
+          "tatsaechlich": "CDG",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "origin",
+          "erwartet": "DUS",
+          "tatsaechlich": "DUS",
+          "urteil": "richtig"
+        },
+        {
+          "slot": "departureDate",
+          "erwartet": "2026-10-07",
+          "tatsaechlich": "2026-10-15",
+          "urteil": "falsch"
+        },
+        {
+          "slot": "adults",
+          "erwartet": null,
+          "tatsaechlich": null,
+          "urteil": "richtig"
+        }
+      ],
+      "werkzeugaufrufe": 3,
+      "misslungeneAufrufe": 0,
+      "hatGesucht": false,
+      "antwort": "Wie lange soll die Reise dauern?",
+      "entwurf": {
+        "origin": {
+          "name": "Düsseldorf",
+          "iataCode": "DUS",
+          "latitude": 51.2895,
+          "longitude": 6.7668
+        },
+        "destination": {
+          "name": "Paris Charles de Gaulle",
+          "iataCode": "CDG",
+          "latitude": 49.0097,
+          "longitude": 2.5479
+        },
+        "departureDate": "2026-10-15",
+        "returnDate": null,
+        "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
@@ -1033,13 +1092,13 @@
     }
   ],
   "kennzahlen": {
-    "slotsGesamt": 62,
-    "richtig": 56,
-    "falsch": 0,
+    "slotsGesamt": 66,
+    "richtig": 59,
+    "falsch": 1,
     "erfunden": 2,
     "fehlt": 4,
-    "genauigkeit": 0.9032258064516129,
-    "werkzeugaufrufeJeFall": 1.0952380952380953,
+    "genauigkeit": 0.8939393939393939,
+    "werkzeugaufrufeJeFall": 1.1818181818181819,
     "anteilMisslungenerAufrufe": 0,
     "bestandeneFaelle": 13,
     "offeneFaelle": 0,

@@ -70,6 +70,23 @@ describe('Extraktion aus freiem Text', () => {
     expect(extractTripParameters(text, HEUTE).nights).toBe(expected);
   });
 
+  it('liest ein zweites Datum als Rückreisedatum', () => {
+    // „vom … bis …" nennt beide Enden. Frueher blieb das Rueckreisedatum
+    // leer, solange keine Dauer im Satz stand — der Eval meldete das in drei
+    // Faellen, die wie drei verschiedene Fehler aussahen.
+    const params = extractTripParameters('vom 12.09.2026 bis 19.09.2026');
+
+    expect(params.departureDate).toBe('2026-09-12');
+    expect(params.returnDate).toBe('2026-09-19');
+  });
+
+  it('nimmt keinen Monatsnamen als zweites Datum', () => {
+    // „im Oktober" ist ein Monat, kein Zeitraum.
+    const params = extractTripParameters('im Oktober nach Mallorca', new Date('2026-07-31'));
+
+    expect(params.returnDate).toBeNull();
+  });
+
   it('berechnet das Rückreisedatum aus Datum und Dauer', () => {
     const params = extractTripParameters('im September für eine Woche', HEUTE);
 

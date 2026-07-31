@@ -273,16 +273,56 @@ function extractPlaces(text: string): { origin: string | null; destination: stri
   return { origin, destination: null };
 }
 
+/**
+ * Alle ausgeschriebenen Daten eines Satzes, in ihrer Reihenfolge.
+ *
+ * „vom 12.09.2026 bis 19.09.2026" nennt beide Enden der Reise — der Extraktor
+ * las bisher nur das erste und liess das Rueckreisedatum leer, solange keine
+ * Dauer dabeistand. Der Eval hat das dreimal gemeldet, in drei Faellen, die
+ * wie drei verschiedene Fehler aussahen.
+ *
+ * Nur explizite Daten, kein Monatsname: „im Oktober" ist ein Monat und kein
+ * Zeitraum, und ein zweiter Monatsname im Satz waere kein Rueckreisedatum.
+ */
+function alleDaten(text: string): readonly string[] {
+  const gefunden: string[] = [];
+  const muster = /\b(\d{4}-\d{2}-\d{2})\b|\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b/g;
+
+  for (const treffer of text.matchAll(muster)) {
+    const [, iso, tag, monat, jahr] = treffer;
+
+    if (iso !== undefined) {
+      gefunden.push(iso);
+      continue;
+    }
+
+    if (tag !== undefined && monat !== undefined && jahr !== undefined) {
+      gefunden.push(`${jahr}-${monat.padStart(2, '0')}-${tag.padStart(2, '0')}`);
+    }
+  }
+
+  return gefunden;
+}
+
 export function extractTripParameters(text: string, today = new Date()): ExtractedTripParameters {
   const places = extractPlaces(text);
+  const daten = alleDaten(text);
   const departureDate = extractDeparture(text, today);
   const nights = extractNights(text);
+
+  /*
+   * Ein zweites Datum ist das Rueckreisedatum. Steht keins da, wird es aus der
+   * Dauer gerechnet — und wenn auch die fehlt, bleibt es leer. Geraten wird
+   * nichts.
+   */
+  const ausDauer =
+    departureDate === null || nights === null ? null : addDays(departureDate, nights);
 
   return {
     originIata: places.origin,
     destinationIata: places.destination,
     departureDate,
-    returnDate: departureDate === null || nights === null ? null : addDays(departureDate, nights),
+    returnDate: daten[1] ?? ausDauer,
     adults: extractAdults(text),
     budgetEuros: extractBudget(text),
     nights,
