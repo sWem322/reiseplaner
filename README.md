@@ -221,15 +221,46 @@ Ausführlich in `specs/`, hier die, nach denen am ehesten gefragt wird:
 **Eigene Anmeldung statt Auth.js.** Gebraucht werden zwei Wege — Zugangsdaten
 und Gastzugang. Auth.js hätte eine Konfigurationsschicht, einen
 Datenbankadapter und ein zweites Sitzungsmodell mitgebracht, ohne dass ein
-Verhalten dazugekommen wäre. Übernommen wurde die gute Idee: Sitzungen liegen
-in der Datenbank, nicht in einem selbsttragenden Token — so lassen sie sich
-widerrufen. Argon2id mit ausdrücklichen Parametern; ein unbekanntes Konto wird
-gegen einen festen Hash geprüft, damit die Antwortzeit nichts verrät.
+Verhalten dazugekommen wäre. Argon2id mit ausdrücklichen Parametern statt der
+Voreinstellungen der Bibliothek, weil sich die zwischen Versionen ändern und
+bestehende Hashes prüfbar bleiben müssen. Ein unbekanntes Konto wird gegen
+einen festen Hash geprüft, damit die Antwortzeit nicht verrät, ob es die
+E-Mail-Adresse gibt.
 
-**Drizzle statt Prisma.** Prisma lädt native Engine-Dateien von einer fremden
-Domäne nach; in der Entwicklungsumgebung dieses Projekts ist sie nicht
-erreichbar. Drizzle ist reines TypeScript, erzeugt lesbare SQL-Migrationen im
-Repository und braucht keinen Codegenerierungsschritt.
+### Wie eine Sitzung aussieht
+
+Vier Spalten, mehr nicht:
+
+| Spalte       | Inhalt                                          |
+| ------------ | ----------------------------------------------- |
+| `token`      | 32 Zufallsbytes aus dem CSPRNG, hex, 64 Zeichen |
+| `user_id`    | Verweis auf das Konto, `ON DELETE CASCADE`      |
+| `expires_at` | 30 Tage nach dem Anlegen                        |
+| `created_at` | Zeitpunkt des Anlegens                          |
+
+**Vom Gerät wird nichts gespeichert** — keine IP-Adresse, kein User-Agent, kein
+Fingerabdruck. Nicht aus Nachlässigkeit: Solche Werte wären personenbezogene
+Daten, sie müssten begründet, befristet und auskunftsfähig sein, und sie
+brächten hier keinen Gewinn. Was nicht erhoben wird, kann auch nicht
+verloren gehen.
+
+Der Token liegt in einem Cookie mit `HttpOnly`, `SameSite=Lax`, `Path=/` und
+in Produktion `Secure`. `Lax` statt `Strict` mit Grund: Bei `Strict` fehlt das
+Cookie nach einem Klick von aussen, und wer dem Demo-Link folgt, landet
+abgemeldet auf der Startseite.
+
+Entscheidend ist, was der Token **nicht** ist: kein JWT, kein selbsttragendes
+Token. Er trägt keine Information, sondern zeigt nur auf eine Zeile. Damit ist
+eine Sitzung durch ein `DELETE` sofort ungültig — bei einem selbsttragenden
+Token ginge das erst mit dessen Ablauf oder über eine Sperrliste, die dann
+doch wieder eine Datenbankabfrage je Anfrage bedeutet. Genau diese Idee ist
+von Auth.js übernommen.
+
+**Drizzle statt Prisma.** Reines TypeScript, kein Codegenerierungsschritt, und
+die Migrationen liegen als lesbares SQL im Repository statt hinter einer
+Abstraktion. Die Typen entstehen direkt aus dem Schema. Beides zusammen macht
+den Datenbankzugriff nachvollziehbar, ohne dass ein zusätzliches Werkzeug im
+Build stehen muss.
 
 **Verdichten statt Abschneiden.** Wächst der Kontext, wird der Anfang des
 Gesprächs zusammengefasst. Wer abschneidet, verliert die zuerst genannten

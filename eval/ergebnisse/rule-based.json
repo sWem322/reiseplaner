@@ -1,7 +1,7 @@
 {
   "llm": "rule-based",
   "promptVersion": "1.6.0",
-  "zeitpunkt": "2026-07-31T01:23:56.742Z",
+  "zeitpunkt": "2026-07-31T01:27:12.182Z",
   "faelle": [
     {
       "id": "vollstaendig-in-einem-satz",
@@ -94,8 +94,8 @@
         {
           "slot": "returnDate",
           "erwartet": "2026-09-19",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "2026-09-19",
+          "urteil": "richtig"
         },
         {
           "slot": "adults",
@@ -104,10 +104,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 4,
+      "werkzeugaufrufe": 5,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -122,14 +122,14 @@
           "longitude": 2.0785
         },
         "departureDate": "2026-09-12",
-        "returnDate": null,
+        "returnDate": "2026-09-19",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "deutsches-datumsformat",
@@ -158,8 +158,8 @@
         {
           "slot": "returnDate",
           "erwartet": "2026-11-12",
-          "tatsaechlich": null,
-          "urteil": "fehlt"
+          "tatsaechlich": "2026-11-12",
+          "urteil": "richtig"
         },
         {
           "slot": "adults",
@@ -168,10 +168,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Frankfurt am Main",
@@ -186,14 +186,14 @@
           "longitude": -9.1342
         },
         "departureDate": "2026-11-05",
-        "returnDate": null,
+        "returnDate": "2026-11-12",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "monat-ohne-datum",
@@ -312,7 +312,7 @@
       "werkzeugaufrufe": 1,
       "misslungeneAufrufe": 0,
       "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "antwort": "Mit wie vielen Erwachsenen reist du?",
       "entwurf": {
         "origin": {
           "name": "Hamburg",
@@ -327,14 +327,14 @@
           "longitude": 16.5697
         },
         "departureDate": "2026-09-03",
-        "returnDate": null,
+        "returnDate": "2026-09-08",
         "adults": null,
         "childAges": [],
         "budgetEuros": null,
         "preferences": [],
         "status": "collecting"
       },
-      "bestanden": false
+      "bestanden": true
     },
     {
       "id": "irgendwann-naechstes-jahr",
@@ -417,10 +417,10 @@
           "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "München",
@@ -435,7 +435,7 @@
           "longitude": 30.8005
         },
         "departureDate": "2026-08-15",
-        "returnDate": null,
+        "returnDate": "2026-08-29",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -527,10 +527,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 2,
+      "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Berlin Brandenburg",
@@ -545,7 +545,7 @@
           "longitude": 28.0862
         },
         "departureDate": "2026-09-05",
-        "returnDate": null,
+        "returnDate": "2026-09-12",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -573,10 +573,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Düsseldorf",
@@ -591,7 +591,7 @@
           "longitude": 2.7388
         },
         "departureDate": "2026-10-08",
-        "returnDate": null,
+        "returnDate": "2026-10-15",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -706,10 +706,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Köln/Bonn",
@@ -724,7 +724,7 @@
           "longitude": -7.9659
         },
         "departureDate": "2026-09-10",
-        "returnDate": null,
+        "returnDate": "2026-09-17",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -793,10 +793,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 3,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Stuttgart",
@@ -811,7 +811,7 @@
           "longitude": 23.9445
         },
         "departureDate": "2026-09-04",
-        "returnDate": null,
+        "returnDate": "2026-09-11",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -845,10 +845,10 @@
           "urteil": "richtig"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Hannover",
@@ -1063,10 +1063,10 @@
           "urteil": "fehlt"
         }
       ],
-      "werkzeugaufrufe": 1,
+      "werkzeugaufrufe": 2,
       "misslungeneAufrufe": 0,
-      "hatGesucht": false,
-      "antwort": "Wie lange soll die Reise dauern?",
+      "hatGesucht": true,
+      "antwort": "Ich habe deine Angaben notiert und passende Verbindungen herausgesucht.",
       "entwurf": {
         "origin": {
           "name": "Nürnberg",
@@ -1081,7 +1081,7 @@
           "longitude": 2.7388
         },
         "departureDate": "2026-09-19",
-        "returnDate": null,
+        "returnDate": "2026-09-26",
         "adults": 2,
         "childAges": [],
         "budgetEuros": null,
@@ -1093,14 +1093,14 @@
   ],
   "kennzahlen": {
     "slotsGesamt": 66,
-    "richtig": 59,
+    "richtig": 61,
     "falsch": 1,
     "erfunden": 2,
-    "fehlt": 4,
-    "genauigkeit": 0.8939393939393939,
-    "werkzeugaufrufeJeFall": 1.1818181818181819,
+    "fehlt": 2,
+    "genauigkeit": 0.9242424242424242,
+    "werkzeugaufrufeJeFall": 1.7272727272727273,
     "anteilMisslungenerAufrufe": 0,
-    "bestandeneFaelle": 13,
+    "bestandeneFaelle": 16,
     "offeneFaelle": 0,
     "nichtGemesseneFaelle": 0
   }
