@@ -10,6 +10,8 @@ entscheidet dabei selbst, wann er Flüge, Unterkünfte oder das Klima am Zielort
 nachschlägt. Was er versteht, steht als Reise-Entwurf daneben und wächst mit
 jeder Nachricht.
 
+![Ein Satz, drei Werkzeugaufrufe, fünf Flüge](docs/demo.gif)
+
 ---
 
 ## Zu den Daten: ein Token trennt Demo von Betrieb
@@ -255,6 +257,37 @@ eine Sitzung durch ein `DELETE` sofort ungültig — bei einem selbsttragenden
 Token ginge das erst mit dessen Ablauf oder über eine Sperrliste, die dann
 doch wieder eine Datenbankabfrage je Anfrage bedeutet. Genau diese Idee ist
 von Auth.js übernommen.
+
+### Wie ein Gerät seine eigene Sitzung wiederfindet
+
+Gar nicht — es zeigt bei jeder Anfrage denselben Ausweis vor, und das erledigt
+der Browser von allein:
+
+1. Klick auf „Als Gast starten" → der Server legt eine Zeile in `user` und eine
+   in `session` an und antwortet mit `Set-Cookie`.
+2. Der Browser legt das Cookie in seinem Speicher für diese Domain ab.
+3. Bei **jeder** weiteren Anfrage an diese Domain schickt er es von selbst mit.
+4. Der Server sucht die Zeile: `WHERE token = ? AND expires_at > now()`.
+
+Rechner und Telefon haben deshalb getrennte Sitzungen: zwei Browser, zwei
+Cookie-Speicher, zwei Klicks auf „Als Gast starten", zwei Zeilen in `user`.
+Sie sehen die Reisen des jeweils anderen nicht.
+
+Damit ist auch gesagt, was hier **nicht** geprüft wird: **Der Server erkennt
+den Token, nicht das Gerät.** Wer das Cookie auf einen anderen Rechner kopiert,
+setzt dieselbe Sitzung fort. Deshalb `HttpOnly` — kein JavaScript kommt an den
+Wert, also holt ihn auch kein XSS — und deshalb `Secure` im Betrieb. Eine
+Bindung an die IP-Adresse bricht beim Wechsel von WLAN zu Mobilfunk, eine
+Bindung an den User-Agent ist in einer Minute umgangen; beides kostet
+Verfügbarkeit und bringt keine Sicherheit.
+
+Der Gastzugang hat dafür einen Preis, und er gehört genannt: Ohne Passwort gibt
+es keinen zweiten Weg zum Konto. Gelöschte Cookies, ein privates Fenster oder
+ein anderer Browser bedeuten einen neuen Gast mit leerer Reiseliste. Die alten
+Reisen stehen weiter in der Datenbank, nur führt kein Schlüssel mehr zu ihnen.
+Für eine Demo ist das der richtige Tausch — ein Klick statt eines
+Registrierungsformulars. Ein Produkt würde hier anbieten, die Gastsitzung an
+eine E-Mail-Adresse zu binden.
 
 **Drizzle statt Prisma.** Reines TypeScript, kein Codegenerierungsschritt, und
 die Migrationen liegen als lesbares SQL im Repository statt hinter einer

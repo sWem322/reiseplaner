@@ -20,6 +20,11 @@ blob-report/
 # Lokale Datenbank (embedded-postgres)
 .postgres/
 
+# Rohaufnahmen des Demo-GIFs. Das fertige docs/demo.gif gehoert ins
+# Repository, die Videos dahinter nicht — sie sind ein Vielfaches gross und
+# entstehen jederzeit neu mit `npm run demo:record`.
+demo/aufnahme/
+
 # Umgebung
 .env
 .env.local
