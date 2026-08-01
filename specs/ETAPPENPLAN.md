@@ -169,19 +169,41 @@ Gedächtnis und Angebotskarten, die erst nach dem Neuladen erschienen.
 
 Abschnitt 11 der Aufgabenstellung, Punkt für Punkt. Stand 01.08.2026.
 
-| Nr. | Forderung                                               | Stand   | Beleg                                                                                                       |
-| --- | ------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| 1   | Lint, Typecheck, Unit, Integration, E2E — lokal und CI  | offen   | Lokal grün; die CI-Zeile wird erst nach dem nächsten Push wieder grün, der letzte Lauf scheiterte am Format |
-| 2   | Kein `any`, keine Typunterdrückung im Servercode        | erfüllt | Keine Fundstelle ausserhalb der Tests; ESLint verbietet `any`, `@ts-ignore` und Nicht-Null-Assertion        |
-| 3   | README auf Deutsch: Aufgabe, Architektur, Start, Gründe | erfüllt | Alle vier Abschnitte vorhanden; die Architektur steht als Verzeichnisbaum, nicht als Zeichnung              |
-| 4   | Lebende öffentliche Demo-Adresse                        | erfüllt | `reiseplaner-sooty.vercel.app`, in der ersten Zeile des README                                              |
-| 5   | GIF von 20 Sekunden im README                           | erfüllt | `docs/demo.gif`, 15 Sekunden, 2 MB — Anfrage, drei Werkzeugaufrufe, fünf Flüge                              |
-| 6   | Sinnvolle Commit-Historie                               | erfüllt | Über 110 Commits, jeder mit Grund im Text                                                                   |
-| 7   | Start ohne Schlüssel fremder Anbieter                   | erfüllt | Seed-Adapter und regelbasierter Extraktor greifen ohne jede Variable                                        |
+| Nr. | Forderung                                               | Stand   | Beleg                                                                                                |
+| --- | ------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| 1   | Lint, Typecheck, Unit, Integration, E2E — lokal und CI  | offen   | Lokal grün: 464 Tests in 23 Dateien. Die CI-Zeile gilt erst mit dem nächsten Push als belegt         |
+| 2   | Kein `any`, keine Typunterdrückung im Servercode        | erfüllt | Keine Fundstelle ausserhalb der Tests; ESLint verbietet `any`, `@ts-ignore` und Nicht-Null-Assertion |
+| 3   | README auf Deutsch: Aufgabe, Architektur, Start, Gründe | erfüllt | Zehn Abschnitte, darunter alle vier geforderten                                                      |
+| 4   | Lebende öffentliche Demo-Adresse                        | erfüllt | `reiseplaner-sooty.vercel.app`, erste Zeile des README                                               |
+| 5   | GIF von 20 Sekunden im README                           | erfüllt | `docs/demo.gif` — 15 Sekunden, 2 MB, Anfrage bis Angebotskarten                                      |
+| 6   | Sinnvolle Commit-Historie                               | erfüllt | 126 Commits, jeder mit dem Grund im Text                                                             |
+| 7   | Start ohne Schlüssel fremder Anbieter                   | erfüllt | Seed-Adapter und regelbasierter Extraktor greifen ohne jede Variable                                 |
+
+### Was die Aufgabenstellung sonst noch verlangt
+
+Abschnitt 5 und 7, ebenfalls einzeln:
+
+| Forderung                                               | Stand   | Beleg                                                                 |
+| ------------------------------------------------------- | ------- | --------------------------------------------------------------------- |
+| Iterativer Loop, Modell entscheidet über Werkzeuge      | erfüllt | `src/server/agent/loop.ts`                                            |
+| Mehrere Werkzeugaufrufe eines Zuges parallel            | erfüllt | `Promise.all` über die Aufrufe eines Zuges                            |
+| Selbstheilung: Fehler geht als `tool_result` zurück     | erfüllt | `Result<T, DomainError>`, kein `throw` im Werkzeugpfad                |
+| Harte Obergrenzen und ausdrücklicher `stopReason`       | erfüllt | `guardrails.ts`, zu jedem Grund ein Satz für die reisende Person      |
+| Sechs Werkzeuge mit Zod-Schema und JSON-Schema          | erfüllt | `tools/index.ts`, Schemata aus der Domäne abgeleitet                  |
+| `TripDraft` in der Datenbank, Statusmodell              | erfüllt | Tabelle `trip_draft`, Status `collecting` → `confirmed`               |
+| Inhaltsblöcke unverändert gespeichert                   | erfüllt | `text`, `tool_use`, `tool_result` — samt Signaturen des Modells       |
+| Verdichtung statt Abschneiden                           | erfüllt | `history.ts`                                                          |
+| Genau **eine** Rückfrage je fehlender Angabe            | erfüllt | `MISSING_SLOT_ORDER`, Prompt-Regeln 3, 3a, 3b, 3c                     |
+| Relative Datumsangaben in ISO                           | erfüllt | Heutiges Datum steht im Systemprompt                                  |
+| Streaming, Entwurfsleiste, Karten, Werkzeuganzeige      | erfüllt | Seit dieser Woche echtes Token-Streaming statt ganzer Züge            |
+| Protokoll je Werkzeugaufruf mit Ausgang und Latenz      | erfüllt | Tabelle `tool_call_log`, sichtbar auch in der Oberfläche              |
+| Tokenverbrauch je Dialog                                | erfüllt | Zähler auf `conversation`                                             |
+| Vier Testebenen, Eval getrennt und von Hand             | erfüllt | Unit, Integration, E2E in CI; `npm run eval` ausdrücklich nicht in CI |
+| Negativfälle: ungültige Werkzeugeingabe, Ausfall, Limit | erfüllt | In `loop.test.ts`, `http.test.ts` und `hotel-fallback.test.ts`        |
 
 ### Drei Punkte, die der Abgleich zusätzlich zutage fördert
 
-**„Eine Kommando" ist es nicht.** Abschnitt 1 verlangt, dass das Projekt bei
+**„Ein Kommando" ist es nicht.** Abschnitt 1 verlangt, dass das Projekt bei
 einer fremden Person mit **einem** Befehl startet. Heute sind es vier in zwei
 Terminals: `npm install`, `npm run db:local`, `npm run db:migrate`,
 `npm run dev`. Das ist kein grosser Aufwand, aber es ist nicht, was dasteht.
@@ -189,11 +211,14 @@ Terminals: `npm install`, `npm run db:local`, `npm run db:migrate`,
 **Der echte Anbieter ist bisher nur Open-Meteo.** Abschnitt 2 verspricht
 „echte Anbieter-API statt Attrappen". Der Duffel-Adapter ist geschrieben und
 geprüft, lief aber nie gegen die echte Sandbox — es gibt kein Token. Overpass
-antwortet derzeit gar nicht. Belegt ist damit die Fähigkeit, nicht der Betrieb.
+antwortet derzeit nicht. Belegt ist damit die Fähigkeit, nicht der Betrieb.
+Der Grund steht im README: Amadeus hat sein Self-Service-Portal am 17.07.2026
+abgeschaltet, Skyscanner und Kiwi vergeben nur an Partner, Booking.com nimmt
+derzeit keine neuen an.
 
-**Der Eval über alle 22 Fälle ist nachgeholt:** 66 von 66 Angaben richtig,
-nichts erfunden, gegen Prompt 1.6.0 und das schwächste Modell der Kette. Die
-Tabelle im README nennt seither die Fassung je Zeile.
+**Der Umfang ist enger als der Titel.** Der Planer deckt europäische Ziele ab
+deutschen Flughäfen ab. Das steht auf der Startseite, im Prompt und als
+Eval-Fall — aber es ist eine Einschränkung und keine Eigenschaft.
 
 ## Verschiebungen
 
