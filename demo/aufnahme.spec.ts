@@ -28,13 +28,23 @@ test('Reise planen — Aufnahme für das GIF', async ({ page }) => {
   // Kurz stehen lassen: Das GIF beginnt sonst mitten in der Bewegung.
   await page.waitForTimeout(1_200);
 
-  await page.getByRole('button', { name: /Als Gast starten/i }).click();
-  await expect(page.getByRole('textbox', { name: /Nachricht/i })).toBeVisible();
-  await page.waitForTimeout(800);
+  await page.getByRole('button', { name: 'Als Gast starten' }).click();
 
-  await page.getByRole('textbox', { name: /Nachricht/i }).pressSequentially(ANFRAGE, { delay: 45 });
+  /*
+   * Der Gastzugang führt in die Reiseliste, nicht in einen Dialog — erst der
+   * Knopf dort legt eine Reise an. Dieser Schritt fehlte im ersten Anlauf,
+   * und die Aufnahme suchte das Eingabefeld auf einer Seite, die keins hat.
+   */
+  await expect(page.getByRole('heading', { name: 'Deine Reisen' })).toBeVisible();
+  await page.waitForTimeout(700);
+
+  await page.getByTestId('new-trip').click();
+  await expect(page).toHaveURL(/\/reise\/[0-9a-f-]{36}$/);
+  await page.waitForTimeout(700);
+
+  await page.getByLabel('Nachricht').pressSequentially(ANFRAGE, { delay: 45 });
   await page.waitForTimeout(400);
-  await page.getByRole('button', { name: /Senden/i }).click();
+  await page.getByRole('button', { name: 'Senden' }).click();
 
   /*
    * Jetzt arbeitet der Agent: Ziel auflösen, Flüge suchen, antworten. Genau

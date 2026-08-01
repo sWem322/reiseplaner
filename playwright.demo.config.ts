@@ -14,7 +14,13 @@ import { defineConfig, devices } from '@playwright/test';
  * gerade offen.
  */
 
-const BASE_URL = process.env.DEMO_URL ?? 'http://127.0.0.1:3000';
+/*
+ * `localhost`, nicht `127.0.0.1`: Der Entwicklungsserver von Next.js sieht
+ * die zweite Schreibweise als fremde Herkunft an und blockt seine eigenen
+ * HMR-Ressourcen. Auf die Aufnahme wirkt sich das nicht aus, aber es füllt
+ * die Konsole mit einer Warnung, die nach einem Fehler aussieht.
+ */
+const BASE_URL = process.env.DEMO_URL ?? 'http://localhost:3000';
 
 export default defineConfig({
   testDir: './demo',
