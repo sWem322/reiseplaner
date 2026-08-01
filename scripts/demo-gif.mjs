@@ -90,15 +90,44 @@ async function juengstesVideo(ordner) {
   return bestes?.pfad ?? null;
 }
 
-function ffmpeg(argumente) {
+/**
+ * Wo liegt ffmpeg?
+ *
+ * Zwei Wege, weil beide ihre Berechtigung haben: Wer es ohnehin installiert
+ * hat, soll nichts weiter tun; wer es nicht hat, soll nicht erst eine
+ * Systeminstallation und ein neues Terminal brauchen, um ein GIF zu erzeugen.
+ * `ffmpeg-static` bringt eine passende Binärdatei als Paket mit.
+ */
+async function findeFfmpeg() {
+  try {
+    const paket = await import('ffmpeg-static');
+    const pfad = paket.default;
+
+    if (typeof pfad === 'string' && pfad.length > 0) {
+      return pfad;
+    }
+  } catch {
+    // Paket nicht installiert — dann eben das aus dem PATH.
+  }
+
+  return 'ffmpeg';
+}
+
+async function ffmpeg(argumente) {
+  const befehl = await findeFfmpeg();
+
   return new Promise((resolve, reject) => {
-    const lauf = spawn('ffmpeg', argumente, { stdio: ['ignore', 'ignore', 'inherit'] });
+    const lauf = spawn(befehl, argumente, { stdio: ['ignore', 'ignore', 'inherit'] });
 
     lauf.on('error', () => {
       reject(
         new Error(
-          'ffmpeg wurde nicht gefunden. Unter Windows: `winget install Gyan.FFmpeg`, ' +
-            'danach ein neues Terminal öffnen.',
+          [
+            'ffmpeg wurde nicht gefunden. Zwei Wege:',
+            '',
+            '  npm i -D ffmpeg-static      — Binärdatei als Paket, kein neues Terminal nötig',
+            '  winget install Gyan.FFmpeg  — systemweit, danach ein neues Terminal öffnen',
+          ].join('\n'),
         ),
       );
     });
