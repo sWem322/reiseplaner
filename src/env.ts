@@ -33,7 +33,6 @@ const envSchema = z.object({
    */
   GEMINI_MODEL: z.string().min(1).optional(),
   DUFFEL_ACCESS_TOKEN: z.string().min(1).optional(),
-  TRAVELPAYOUTS_TOKEN: z.string().min(1).optional(),
 
   // --- Guardrails: Obergrenzen des Agenten-Loops. ---
   AGENT_MAX_ITERATIONS: z.coerce.number().int().min(1).max(20).default(8),
@@ -90,15 +89,3 @@ function loadEnv(): Env {
 }
 
 export const env: Env = loadEnv();
-
-/**
- * Welche echten Anbieter stehen zur Verfuegung? Wird beim Start geloggt,
- * damit im Betrieb sofort sichtbar ist, welcher Adapter aktiv ist.
- */
-export const providerAvailability = {
-  llm: env.GEMINI_API_KEY !== undefined,
-  duffel: env.DUFFEL_ACCESS_TOKEN !== undefined,
-  travelpayouts: env.TRAVELPAYOUTS_TOKEN !== undefined,
-} as const;
-
-export type ProviderAvailability = typeof providerAvailability;

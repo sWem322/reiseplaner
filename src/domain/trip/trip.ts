@@ -80,8 +80,6 @@ export const MISSING_SLOT_ORDER = [
 
 export type TripSlot = (typeof MISSING_SLOT_ORDER)[number];
 
-export const REQUIRED_SLOTS: readonly TripSlot[] = MISSING_SLOT_ORDER;
-
 const MAX_TRIP_DURATION_DAYS = 365;
 
 const tripDraftShape = z.object({

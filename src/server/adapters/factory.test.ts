@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { unwrap } from '@/domain/result';
-import { createProviders, createSeedProviders, describeSelection } from './factory';
+import { createProviders, createSeedProviders } from './factory';
 
 const offlineFetch: typeof fetch = () =>
   Promise.reject(new Error('Im Test darf kein Netzwerkaufruf stattfinden'));
@@ -120,14 +120,6 @@ describe('Auswahl der Anbieter', () => {
     const places = unwrap(await providers.geocoding.resolve('Mallorca'));
 
     expect(places[0]?.iataCode).toBe('PMI');
-  });
-
-  it('beschreibt die aktive Auswahl lesbar', () => {
-    const selection = createProviders({ useNetworkProviders: false });
-
-    expect(describeSelection(selection)).toBe(
-      'Flüge: seed · Unterkünfte: seed · Orte: seed · Wetter: seed · Modell: rule-based',
-    );
   });
 });
 

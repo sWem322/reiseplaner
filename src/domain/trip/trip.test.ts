@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   MISSING_SLOT_ORDER,
-  REQUIRED_SLOTS,
   canStartSearch,
   emptyTripDraft,
   iataCodeSchema,
@@ -73,8 +72,8 @@ describe('Fehlende Angaben', () => {
   it('meldet bei leerem Entwurf alle Pflichtangaben', () => {
     const missing = missingSlots(emptyTripDraft());
 
-    expect(missing).toHaveLength(REQUIRED_SLOTS.length);
-    expect(missing).toEqual(expect.arrayContaining([...REQUIRED_SLOTS]));
+    expect(missing).toHaveLength(MISSING_SLOT_ORDER.length);
+    expect(missing).toEqual(expect.arrayContaining([...MISSING_SLOT_ORDER]));
   });
 
   it('meldet bei vollstaendigem Entwurf nichts', () => {

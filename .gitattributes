@@ -1,0 +1,15 @@
+# Zeilenenden im Repository immer LF, im Arbeitsverzeichnis nach Betriebssystem.
+#
+# Ohne diese Zeile haengt das Ergebnis an der lokalen Git-Einstellung
+# `core.autocrlf`. Unter Windows landen dann CRLF im Repository, Prettier
+# beanstandet sie in der CI, und der naechste Beitragende sieht eine Datei
+# komplett als geaendert, obwohl niemand etwas geschrieben hat. Eine Datei im
+# Repository entscheidet das ein fuer alle Mal — eine Anleitung, die jeder
+# selbst befolgen muss, nicht.
+* text=auto eol=lf
+
+# Binaerdateien bleiben unangetastet.
+*.gif binary
+*.png binary
+*.jpg binary
+*.webm binary

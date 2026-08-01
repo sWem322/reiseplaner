@@ -25,7 +25,6 @@ import { createHotelSearchWithFallback } from './hotel-fallback';
 
 export interface ProviderConfig {
   readonly duffelAccessToken?: string | undefined;
-  readonly travelpayoutsToken?: string | undefined;
   readonly geminiApiKey?: string | undefined;
   /** Wunschmodell; es steht am Anfang der Kette, ersetzt sie aber nicht. */
   readonly geminiModel?: string | undefined;
@@ -42,7 +41,6 @@ export interface ProviderConfig {
 export type AdapterName =
   | 'seed'
   | 'duffel'
-  | 'travelpayouts'
   | 'open-meteo'
   /** Overpass zuerst, Seed-Katalog als Rueckfallebene. */
   | 'overpass+seed'
@@ -137,16 +135,4 @@ export function createSeedProviders(): Providers {
     geocoding: createSeedGeocoding(),
     weather: createSeedWeather(),
   };
-}
-
-export function describeSelection(selection: ProviderSelection): string {
-  const { active } = selection;
-
-  return [
-    `Flüge: ${active.flights}`,
-    `Unterkünfte: ${active.hotels}`,
-    `Orte: ${active.geocoding}`,
-    `Wetter: ${active.weather}`,
-    `Modell: ${active.llm}`,
-  ].join(' · ');
 }
