@@ -41,11 +41,22 @@ export default defineConfig({
      * nebeneinander passen, klein genug, dass das GIF unter zehn Megabyte
      * bleibt. GitHub zeigt es im README auf etwa 800 Pixel Breite an.
      */
-    viewport: { width: 1280, height: 800 },
     video: { mode: 'on', size: { width: 1280, height: 800 } },
   },
 
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  /*
+   * Der Blickausschnitt steht **im Projekt**, nicht oben im gemeinsamen
+   * `use` — sonst überschreibt ihn `devices['Desktop Chrome']` mit seinen
+   * eigenen 1280×720. Die Aufnahme hatte deshalb einen grauen Streifen am
+   * unteren Rand: eine Seite von 720 Pixeln, in eine Leinwand von 800
+   * gemalt.
+   */
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+    },
+  ],
 
   outputDir: './demo/aufnahme',
 });

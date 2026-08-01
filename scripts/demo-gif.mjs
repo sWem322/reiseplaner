@@ -25,6 +25,15 @@ const ZIEL = join(process.cwd(), 'docs', 'demo.gif');
 const BREITE = 960;
 const BILDER_JE_SEKUNDE = 12;
 
+/**
+ * Wie viel am Anfang wegfaellt, in Sekunden.
+ *
+ * Playwright beginnt die Aufnahme mit dem Browserfenster, nicht mit der
+ * Seite — die ersten Bilder zeigen deshalb eine weisse Flaeche. In einer
+ * Vorschau, die nur das erste Bild anzeigt, sieht das GIF damit leer aus.
+ */
+const VORLAUF_SEKUNDEN = 1.2;
+
 const video = await juengstesVideo(AUFNAHME);
 
 if (video === null) {
@@ -40,7 +49,23 @@ const filter =
   `fps=${String(BILDER_JE_SEKUNDE)},scale=${String(BREITE)}:-1:flags=lanczos,` +
   'split[a][b];[a]palettegen=max_colors=192[p];[b][p]paletteuse=dither=bayer:bayer_scale=3';
 
-await ffmpeg(['-y', '-i', video, '-filter_complex', filter, '-loop', '0', ZIEL]);
+await ffmpeg([
+  '-hide_banner',
+  '-loglevel',
+  'error',
+  '-y',
+  // `-ss` vor `-i`: So springt ffmpeg gleich an die Stelle, statt den
+  // Vorlauf erst zu dekodieren und dann wegzuwerfen.
+  '-ss',
+  String(VORLAUF_SEKUNDEN),
+  '-i',
+  video,
+  '-filter_complex',
+  filter,
+  '-loop',
+  '0',
+  ZIEL,
+]);
 
 const groesse = (await stat(ZIEL)).size / 1_048_576;
 
