@@ -49,18 +49,24 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
     <ul
       aria-label="Werkzeuge dieses Laufs"
       /*
-       * `flex-nowrap` und `shrink-0` je Eintrag halten alles in einer Zeile;
-       * was nicht hineinpasst, laesst sich seitlich schieben. Ein Umbruch
-       * ueber drei Zeilen wog schwerer als die Nachricht, zu der er gehoert.
+       * Umbruch statt einer festen Zeile.
+       *
+       * Die erste Fassung hielt alles nebeneinander und liess den Rest
+       * seitlich wegschieben. Bei einem langen Lauf — fünf Züge, dazu die
+       * Werkzeuge — entstand daraus eine waagerechte Bildlaufleiste mitten im
+       * Gespräch, und das ist schlimmer als zwei Zeilen: Ein Chat scrollt
+       * senkrecht, alles andere ist eine Falle.
+       *
+       * Der enge Zeilenabstand (`gap-y-1`) hält den Umbruch trotzdem ruhig.
        */
-      className="flex flex-nowrap items-center gap-x-3 overflow-x-auto text-[0.7rem] text-slate-400"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.7rem] text-slate-400"
     >
       {/* Die Denkzeit zuerst: Das Modell entscheidet, dann laufen die Werkzeuge. */}
       {modelTurns.map((turn) => (
         <li
           key={`turn-${String(turn.iteration)}`}
           data-testid="model-turn"
-          className="flex shrink-0 items-center gap-1"
+          className="flex max-w-full shrink-0 items-center gap-1"
         >
           <span>Modell</span>
           <span className="tabular-nums">{formatMillis(turn.durationMs)}</span>
@@ -73,7 +79,7 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
           data-testid="tool-activity"
           data-tool={tool.toolName}
           data-outcome={tool.outcome ?? 'running'}
-          className={`flex shrink-0 items-center gap-1 ${
+          className={`flex max-w-full shrink-0 items-center gap-1 ${
             tool.outcome !== null && tool.outcome !== 'ok' ? 'text-amber-700' : ''
           }`}
         >
@@ -96,7 +102,7 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
             nie.
           */}
           {tool.errorMessage !== null && (
-            <span data-testid="tool-error" title={tool.errorMessage} className="max-w-56 truncate">
+            <span data-testid="tool-error" title={tool.errorMessage} className="min-w-0 truncate">
               {tool.errorMessage}
             </span>
           )}
