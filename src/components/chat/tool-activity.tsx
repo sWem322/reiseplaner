@@ -96,12 +96,19 @@ export function ToolActivity({ tools, modelTurns = [] }: ToolActivityProps) {
           <span>{toolLabel(tool.toolName)}</span>
 
           {/*
-            Die Meldung des Anbieters im Klartext — gekürzt, damit sie die
-            Zeile nicht sprengt, vollständig im Titel. Sie ersetzt das frühere
-            „Anbieter nicht erreichbar": Welcher, und woran lag es, stand dort
-            nie.
+            Nur die Meldung eines **fremden** Dienstes wird angezeigt.
+
+            Ein `validation_error` stammt aus diesem Projekt selbst und ist an
+            das Modell gerichtet: „Frage zuerst, wie viele Erwachsene
+            mitreisen, halte die Antwort mit update_trip_draft fest." Das ist
+            eine Anweisung, keine Auskunft — auf dem Bildschirm sah sie aus wie
+            eine vergessene Debug-Ausgabe. Sichtbar bleibt, dass der Aufruf
+            scheiterte; was daraus folgte, steht als nächste Frage im Chat.
+
+            Ein `upstream_error` dagegen gehört hin: Dass Overpass mit 406
+            abweist, kann die reisende Person sonst nirgends erfahren.
           */}
-          {tool.errorMessage !== null && (
+          {tool.outcome === 'upstream_error' && tool.errorMessage !== null && (
             <span data-testid="tool-error" title={tool.errorMessage} className="min-w-0 truncate">
               {tool.errorMessage}
             </span>
