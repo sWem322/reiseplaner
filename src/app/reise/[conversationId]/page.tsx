@@ -54,6 +54,12 @@ export default async function ConversationPage({
         initialMessages={daten.messages}
         initialDraft={daten.draft}
         ruleBasedOnly={env.GEMINI_API_KEY === undefined}
+        /*
+         * Dieselbe Bedingung wie in der Fabrik: Ohne Netz zaehlt auch ein
+         * vorhandener Schluessel nicht. Sonst boete die Oberflaeche einen Weg
+         * an, den der Server gar nicht gehen kann.
+         */
+        speechOnServer={env.ELEVENLABS_API_KEY !== undefined && env.USE_NETWORK_PROVIDERS}
       />
     </main>
   );

@@ -43,16 +43,19 @@ function describeStatus(status: number, provider: string): Result<never> {
 }
 
 /**
- * Fuehrt eine Anfrage aus und prueft die Antwort gegen ein Schema.
+ * Anfrage, Zeitbegrenzung, Statuszuordnung — und dann erst das Lesen.
  *
- * `fetchImpl` ist ueberschreibbar, damit Tests ohne Netzwerk auskommen — die
- * Alternative waere ein globaler Mock, der Nebenwirkungen zwischen Tests
- * verschleppt.
+ * Das Lesen des Rumpfes kommt als Funktion herein, statt dass es zwei fast
+ * gleiche Kopien dieses Ablaufs gaebe: eine fuer JSON, eine fuer Bytes. Wichtig
+ * ist dabei, dass es **innerhalb** der Zeitbegrenzung geschieht — ein Anbieter,
+ * der den Kopf sofort schickt und den Rumpf nie zu Ende, waere sonst wieder
+ * genau das haengende Gegenueber, gegen das die Frist gedacht ist.
  */
-export async function fetchJson<T>(
+async function fetchWithTimeout<T>(
   options: FetchJsonOptions,
-  schema: z.ZodType<T>,
-  fetchImpl: typeof fetch = fetch,
+  accept: string,
+  fetchImpl: typeof fetch,
+  read: (response: Response) => Promise<Result<T>>,
 ): Promise<Result<T>> {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const controller = new AbortController();
@@ -64,7 +67,7 @@ export async function fetchJson<T>(
     const response = await fetchImpl(options.url, {
       method: options.method ?? 'GET',
       headers: {
-        accept: 'application/json',
+        accept,
         ...(options.body === undefined ? {} : { 'content-type': 'application/json' }),
         ...options.headers,
       },
@@ -76,18 +79,7 @@ export async function fetchJson<T>(
       return describeStatus(response.status, options.provider);
     }
 
-    const payload: unknown = await response.json();
-    const parsed = schema.safeParse(payload);
-
-    if (!parsed.success) {
-      // Bewusst upstream_error statt validation_error: Nicht unsere Eingabe
-      // war falsch, sondern die Antwort des Anbieters passt nicht mehr.
-      return fail('upstream_error', `${options.provider} lieferte ein unerwartetes Format`, {
-        issues: parsed.error.issues.slice(0, 5),
-      });
-    }
-
-    return ok(parsed.data);
+    return await read(response);
   } catch (error) {
     const aborted = error instanceof Error && error.name === 'AbortError';
 
@@ -101,4 +93,83 @@ export async function fetchJson<T>(
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Fuehrt eine Anfrage aus und prueft die Antwort gegen ein Schema.
+ *
+ * `fetchImpl` ist ueberschreibbar, damit Tests ohne Netzwerk auskommen — die
+ * Alternative waere ein globaler Mock, der Nebenwirkungen zwischen Tests
+ * verschleppt.
+ */
+export async function fetchJson<T>(
+  options: FetchJsonOptions,
+  schema: z.ZodType<T>,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Result<T>> {
+  return fetchWithTimeout(options, 'application/json', fetchImpl, async (response) => {
+    const payload: unknown = await response.json();
+    const parsed = schema.safeParse(payload);
+
+    if (!parsed.success) {
+      // Bewusst upstream_error statt validation_error: Nicht unsere Eingabe
+      // war falsch, sondern die Antwort des Anbieters passt nicht mehr.
+      return fail('upstream_error', `${options.provider} lieferte ein unerwartetes Format`, {
+        issues: parsed.error.issues.slice(0, 5),
+      });
+    }
+
+    return ok(parsed.data);
+  });
+}
+
+export interface FetchBytesOptions extends FetchJsonOptions {
+  /**
+   * Womit der Inhaltstyp der Antwort beginnen muss, etwa `audio/`.
+   *
+   * Ein Anbieter kann mit 200 antworten und trotzdem keine Nutzlast liefern,
+   * sondern eine Fehlermeldung als JSON. Ohne diese Pruefung landeten deren
+   * Bytes im `<audio>`-Element, und auf dem Bildschirm stuende ein
+   * Abspielgeraet, das schweigt.
+   */
+  readonly expects?: string;
+}
+
+/**
+ * Dieselbe Anfrage, nur dass der Rumpf Bytes sind statt JSON.
+ *
+ * Fuer Nutzlasten, die kein Schema haben, weil sie keine Struktur haben —
+ * Ton, Bilder, Dateien. Geprueft wird deshalb, was sich pruefen laesst: der
+ * Inhaltstyp und die Frage, ob ueberhaupt etwas ankam.
+ */
+export async function fetchBytes(
+  options: FetchBytesOptions,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Result<{ data: Uint8Array<ArrayBuffer>; mimeType: string }>> {
+  const erwartet = options.expects;
+
+  /*
+   * Als Accept geht "alles" hinaus, nicht der erwartete Typ: `expects` ist ein
+   * Praefix wie `audio/` und waere als Kopfzeile keine gueltige Angabe.
+   * Geprueft wird die Antwort, gefordert wird nichts.
+   */
+  return fetchWithTimeout(options, '*/*', fetchImpl, async (response) => {
+    const mimeType = response.headers.get('content-type') ?? '';
+
+    if (erwartet !== undefined && !mimeType.startsWith(erwartet)) {
+      return fail(
+        'upstream_error',
+        `${options.provider} antwortete mit ${mimeType === '' ? 'unbekanntem Inhaltstyp' : mimeType} statt mit ${erwartet}…`,
+        { contentType: mimeType },
+      );
+    }
+
+    const data = new Uint8Array(await response.arrayBuffer());
+
+    if (data.length === 0) {
+      return fail('upstream_error', `${options.provider} lieferte eine leere Antwort`);
+    }
+
+    return ok({ data, mimeType });
+  });
 }

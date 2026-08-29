@@ -34,6 +34,16 @@ const envSchema = z.object({
   GEMINI_MODEL: z.string().min(1).optional(),
   DUFFEL_ACCESS_TOKEN: z.string().min(1).optional(),
 
+  /**
+   * Sprachausgabe. Fehlt der Schluessel, liest der Browser selbst vor —
+   * `speechSynthesis` ist ueberall vorhanden und kostet nichts. Der Knopf
+   * verschwindet also nicht, er nimmt nur einen anderen Weg.
+   */
+  ELEVENLABS_API_KEY: z.string().min(1).optional(),
+  /** Stimme. Ohne Angabe die im Adapter hinterlegte. */
+  ELEVENLABS_VOICE_ID: z.string().min(1).optional(),
+  ELEVENLABS_MODEL: z.string().min(1).optional(),
+
   // --- Guardrails: Obergrenzen des Agenten-Loops. ---
   AGENT_MAX_ITERATIONS: z.coerce.number().int().min(1).max(20).default(8),
   AGENT_MAX_TOOL_CALLS: z.coerce.number().int().min(1).max(60).default(20),

@@ -1,6 +1,7 @@
-import type { ContentBlock, Message } from '@/domain/conversation';
+import { textOfBlocks, type ContentBlock, type Message } from '@/domain/conversation';
 import { readToolPayload } from '@/lib/tool-results';
 import { OfferCards } from './offer-cards';
+import { SpeakButton } from './speak-button';
 
 /**
  * Eine gespeicherte Nachricht mit ihren Bloecken.
@@ -9,14 +10,6 @@ import { OfferCards } from './offer-cards';
  * Angezeigt werden der Text und die Ergebnisse, die sich als Angebote lesen
  * lassen — die Aufrufe selbst stehen als Verlauf im Kopf der Nachricht.
  */
-
-function textOf(blocks: readonly ContentBlock[]): string {
-  return blocks
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('\n')
-    .trim();
-}
 
 /** Verknuepft ein Ergebnis mit dem Aufruf, zu dem es gehoert. */
 function toolNameFor(blocks: readonly ContentBlock[], toolCallId: string): string | null {
@@ -36,10 +29,12 @@ export interface MessageViewProps {
    * als sein Aufruf, und ohne den Aufruf ist der Werkzeugname unbekannt.
    */
   readonly allBlocks: readonly ContentBlock[];
+  /** Steht auf dem Server eine Stimme bereit? Sonst liest der Browser vor. */
+  readonly speechOnServer: boolean;
 }
 
-export function MessageView({ message, allBlocks }: MessageViewProps) {
-  const text = textOf(message.blocks);
+export function MessageView({ message, allBlocks, speechOnServer }: MessageViewProps) {
+  const text = textOfBlocks(message.blocks);
 
   const payloads = message.blocks
     .filter((block) => block.type === 'tool_result')
@@ -79,6 +74,12 @@ export function MessageView({ message, allBlocks }: MessageViewProps) {
           >
             {text}
           </div>
+        )}
+
+        {/* Vorgelesen wird nur, was der Assistent gesagt hat — die eigenen
+            Worte kennt die reisende Person bereits. */}
+        {!eigen && text !== '' && message.role === 'assistant' && (
+          <SpeakButton text={text} messageId={message.id} serverSpeech={speechOnServer} />
         )}
 
         {payloads.map((payload, index) => (

@@ -68,6 +68,7 @@ function recordingConversations(): ConversationRepository & {
 function messageRepository(messages: readonly Message[]): MessageRepository {
   return {
     append: () => Promise.reject(new Error('nicht benutzt')),
+    findById: (id) => Promise.resolve(messages.find((nachricht) => nachricht.id === id) ?? null),
     listByConversation: (_id, options) => {
       const afterSeq = options?.afterSeq;
 

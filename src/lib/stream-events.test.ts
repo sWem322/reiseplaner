@@ -161,6 +161,31 @@ describe('Ereignisstrom lesen', () => {
     expect(events[0]).toMatchObject({ type: 'model_turn', iteration: 2, durationMs: 3_120 });
   });
 
+  /*
+   * Ohne dieses Ereignis stünde der Knopf „Vorlesen" ausgerechnet an der
+   * gerade erhaltenen Antwort nicht zur Verfügung: Die Kennung entsteht erst
+   * beim Speichern, also nach `finished`.
+   */
+  it('liest die Kennung einer gespeicherten Antwort', async () => {
+    const events = await collect(
+      streamOf(
+        sse({
+          type: 'finished',
+          stopReason: 'completed',
+          iterations: 1,
+          toolCalls: 0,
+          inputTokens: 10,
+          outputTokens: 5,
+        }) + sse({ type: 'message_saved', messageId: 'b8f1c2e4-1111-4222-8333-444455556666' }),
+      ),
+    );
+
+    expect(events.at(-1)).toEqual({
+      type: 'message_saved',
+      messageId: 'b8f1c2e4-1111-4222-8333-444455556666',
+    });
+  });
+
   it('verwirft einen unvollständigen Block am Ende', async () => {
     // Reisst die Verbindung mitten im letzten Block ab, darf kein halbes
     // Ereignis in den Zustand geraten.

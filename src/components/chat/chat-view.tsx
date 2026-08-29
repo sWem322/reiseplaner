@@ -7,6 +7,7 @@ import { formatMillis } from '@/lib/format';
 import type { ToolPayload } from '@/lib/tool-results';
 import { MessageView } from './message-view';
 import { OfferCards } from './offer-cards';
+import { SpeakButton } from './speak-button';
 import { ToolActivity } from './tool-activity';
 import { TripDraftPanel } from './trip-draft-panel';
 import { useAgentRun, type ModelTurn, type RunningTool } from './use-agent-run';
@@ -26,6 +27,13 @@ export interface ChatViewProps {
   readonly initialDraft: TripDraft;
   /** Laeuft die Anwendung ohne Sprachmodell? Dann wird das offen gesagt. */
   readonly ruleBasedOnly: boolean;
+  /**
+   * Steht auf dem Server eine Stimme bereit?
+   *
+   * Wenn nicht, liest der Browser vor. Der Knopf ist in beiden Faellen da —
+   * verschieden ist nur, wer spricht.
+   */
+  readonly speechOnServer: boolean;
 }
 
 interface LocalMessage {
@@ -44,6 +52,13 @@ interface LocalMessage {
    */
   readonly tools: readonly RunningTool[];
   readonly modelTurns: readonly ModelTurn[];
+  /**
+   * Kennung dieser Antwort im Verlauf, sobald der Lauf sie gemeldet hat.
+   *
+   * `null` heisst nicht „geht nicht", sondern „nicht ueber den Server": Dann
+   * liest der Browser den Text vor, der ohnehin dasteht.
+   */
+  readonly messageId: string | null;
 }
 
 /**
@@ -95,6 +110,7 @@ export function ChatView({
   initialMessages,
   initialDraft,
   ruleBasedOnly,
+  speechOnServer,
 }: ChatViewProps) {
   const [draft, setDraft] = useState<TripDraft>(initialDraft);
   const [eingabe, setEingabe] = useState('');
@@ -133,6 +149,7 @@ export function ChatView({
         payloads: [],
         tools: [],
         modelTurns: [],
+        messageId: null,
       },
     ]);
 
@@ -152,6 +169,12 @@ export function ChatView({
           payloads: gefunden,
           tools: ergebnis.tools,
           modelTurns: ergebnis.modelTurns,
+          /*
+           * Die letzte gespeicherte Antwort traegt den Schlusstext. Die
+           * Zwischentexte („Ich suche jetzt nach Flügen …") stehen auf dem
+           * Bildschirm und müssen nicht gehört werden.
+           */
+          messageId: ergebnis.messageIds.at(-1) ?? null,
         },
       ]);
     }
@@ -162,7 +185,12 @@ export function ChatView({
       <section className="flex min-h-[70vh] flex-col">
         <ul className="flex flex-1 flex-col gap-3">
           {initialMessages.map((nachricht) => (
-            <MessageView key={nachricht.id} message={nachricht} allBlocks={alleBloecke} />
+            <MessageView
+              key={nachricht.id}
+              message={nachricht}
+              allBlocks={alleBloecke}
+              speechOnServer={speechOnServer}
+            />
           ))}
 
           {lokal.map((nachricht) => (
@@ -196,6 +224,14 @@ export function ChatView({
                   >
                     {nachricht.text}
                   </div>
+                )}
+
+                {nachricht.role === 'assistant' && nachricht.text !== '' && (
+                  <SpeakButton
+                    text={nachricht.text}
+                    messageId={nachricht.messageId}
+                    serverSpeech={speechOnServer}
+                  />
                 )}
 
                 {nachricht.payloads.map((payload, index) => (
@@ -318,6 +354,18 @@ export function ChatView({
           <p className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-500">
             Ohne <code>GEMINI_API_KEY</code> läuft ein regelbasierter Extraktor statt eines
             Sprachmodells. Er versteht Ziele, Daten und Reisendenzahl, formuliert aber nicht frei.
+          </p>
+        )}
+
+        {/*
+          Dieselbe Offenheit wie beim Modell: Wer „Vorlesen" drückt und eine
+          flache Systemstimme hört, soll wissen, woran das liegt — und dass es
+          eine bessere gibt.
+        */}
+        {!speechOnServer && (
+          <p className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-500">
+            Ohne <code>ELEVENLABS_API_KEY</code> liest der Browser die Antworten selbst vor. Das
+            kostet nichts und läuft überall, klingt aber deutlich flacher als eine echte Stimme.
           </p>
         )}
       </div>

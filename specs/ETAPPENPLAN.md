@@ -165,13 +165,57 @@ Gedächtnis und Angebotskarten, die erst nach dem Neuladen erschienen.
 - [x] Deployment, öffentliche Adresse
 - [ ] Prüfung gegen die Definition of Done der Aufgabenstellung
 
+## Etappe 7 — Sprachausgabe der Antworten ✔
+
+**Angestossen am 29.08.2026, zugestimmt am selben Tag.** Nach Regel 7 ein
+ausdrücklich zugestimmter Zusatz, kein stillschweigend hinzuerfundener Punkt.
+Die Begründung steht vollständig in [`009-sprachausgabe.md`](009-sprachausgabe.md).
+
+**Was den Zuschnitt geprägt hat:** ElevenLabs ist der fünfte externe Anbieter
+und bekommt deshalb dieselbe Form wie die vier bestehenden. Zwei Dinge fallen
+dabei aus der Reihe und stehen darum ausdrücklich in der Liste — eine
+Seed-Implementierung, die spricht, gibt es nicht, und die gerade fertig
+gewordene Antwort hatte im Browser bisher keine Kennung, an der ein Knopf
+hängen könnte.
+
+- [x] `TextToSpeechPort` in der Domäne, `Result` statt Ausnahmen
+- [x] ElevenLabs als eigener HTTP-Adapter — kein SDK, Begründung in der Spec
+- [x] `fetchBytes` neben `fetchJson`: dieselbe Zeitbegrenzung, dieselbe
+      Statuszuordnung, nur ohne JSON
+- [x] In-Memory-Implementierung mit festen Bytes, damit jeder Test dieser Ebene
+      ohne Netz und ohne Schlüssel läuft
+- [x] Fabrik wählt ElevenLabs, sobald `ELEVENLABS_API_KEY` gesetzt ist, und
+      führt die Wahl in `active` wie jeden anderen Adapter — **mit einem Fund:**
+      protokolliert wird sie nirgends. `active` liest ausser den Tests niemand,
+      obwohl Spec 004 und der Kommentar an der Fabrik ein Startprotokoll
+      behaupten. Der Mangel ist älter als diese Etappe und bleibt hier offen
+      stehen, statt stillschweigend behoben zu werden
+- [x] Route `POST /api/speech` — nimmt `messageId`, niemals freien Text, prüft
+      Sitzung und Besitz. Die Entscheidungen liegen in
+      `src/server/speech/read-aloud.ts`, damit sie ohne HTTP prüfbar sind
+- [x] Ereignis `message_saved`, damit der Knopf auch an der soeben erhaltenen
+      Antwort steht
+- [x] `MessageRepository.findById` — die Route braucht genau eine Nachricht,
+      nicht den ganzen Verlauf
+- [x] Knopf „Vorlesen" an jeder Antwort des Assistenten, an keiner Nachricht
+      der reisenden Person
+- [x] Ohne Schlüssel spricht der Browser (`speechSynthesis`); die Oberfläche
+      sagt es in der Seitenleiste, wie beim regelbasierten Extraktor
+- [x] Negativfälle nach AGENTS.md § 4: ungültige Eingabe, Anbieter nicht
+      erreichbar, Kontingent erschöpft
+- [x] README um die Sprachausgabe ergänzt
+- [x] Etappe endet grün: Lint, Typecheck, alle Tests — 500 in 25 Dateien
+- [ ] **Offen:** ein Lauf gegen den echten Dienst. Der Schlüssel liegt bei der
+      auftraggebenden Person; bis dahin belegt ist die Fähigkeit, nicht der
+      Betrieb — dieselbe Lage wie bei Duffel
+
 ## Abgleich mit der Definition of Done
 
 Abschnitt 11 der Aufgabenstellung, Punkt für Punkt. Stand 01.08.2026.
 
 | Nr. | Forderung                                               | Stand   | Beleg                                                                                                |
 | --- | ------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| 1   | Lint, Typecheck, Unit, Integration, E2E — lokal und CI  | offen   | Lokal grün: 464 Tests in 23 Dateien. Die CI-Zeile gilt erst mit dem nächsten Push als belegt         |
+| 1   | Lint, Typecheck, Unit, Integration, E2E — lokal und CI  | offen   | Lokal grün: 500 Tests in 25 Dateien. Die CI-Zeile gilt erst mit dem nächsten Push als belegt         |
 | 2   | Kein `any`, keine Typunterdrückung im Servercode        | erfüllt | Keine Fundstelle ausserhalb der Tests; ESLint verbietet `any`, `@ts-ignore` und Nicht-Null-Assertion |
 | 3   | README auf Deutsch: Aufgabe, Architektur, Start, Gründe | erfüllt | Zehn Abschnitte, darunter alle vier geforderten                                                      |
 | 4   | Lebende öffentliche Demo-Adresse                        | erfüllt | `reiseplaner-sooty.vercel.app`, erste Zeile des README                                               |

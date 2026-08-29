@@ -59,6 +59,11 @@ const finished = z.object({
   outputTokens: z.number(),
 });
 
+const messageSaved = z.object({
+  type: z.literal('message_saved'),
+  messageId: z.string(),
+});
+
 /*
  * Diese beiden erzeugt der Route-Handler, nicht der Loop: das eine, wenn das
  * Gaestekontingent aufgebraucht ist, das andere, wenn der Strom selbst
@@ -81,6 +86,7 @@ export const streamEventSchema = z.discriminatedUnion('type', [
   modelTurn,
   draftUpdated,
   finished,
+  messageSaved,
   quotaExceeded,
   streamError,
 ]);

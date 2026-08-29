@@ -7,6 +7,13 @@ drizzle/meta
 package-lock.json
 .editorconfig
 
+# Werkzeuge des Arbeitsplatzes. `.claude/worktrees` enthaelt vollstaendige
+# Kopien dieses Projekts — sie noch einmal zu pruefen sagt nichts ueber das
+# Original aus und faerbte die CI rot. Git laesst sie ohnehin aussen vor,
+# Prettier liest dessen Ausschluesse aber nicht.
+.claude
+.impeccable
+
 # Wird von Next.js beim Build automatisch umgeschrieben (jsx-Modus, Typpfade).
 # Eine Formatpruefung darauf wuerde nach jedem Build fehlschlagen.
 tsconfig.json

@@ -1,6 +1,8 @@
 import type { LlmPort } from '@/domain/ports/llm';
 import type { Providers } from '@/domain/ports/providers';
+import type { TextToSpeechPort } from '@/domain/ports/speech';
 import { createGeminiLlm } from '../agent/llm/gemini';
+import { createElevenLabsSpeech } from './http/elevenlabs';
 import { buildModelChain, sharedRotation } from '../agent/llm/model-rotation';
 import { createRuleBasedLlm } from '../agent/llm/rule-based';
 import { createDuffelFlightSearch } from './http/duffel';
@@ -28,6 +30,10 @@ export interface ProviderConfig {
   readonly geminiApiKey?: string | undefined;
   /** Wunschmodell; es steht am Anfang der Kette, ersetzt sie aber nicht. */
   readonly geminiModel?: string | undefined;
+  readonly elevenLabsApiKey?: string | undefined;
+  /** Stimme der Sprachausgabe. Ohne Angabe waehlt der Adapter seine eigene. */
+  readonly elevenLabsVoiceId?: string | undefined;
+  readonly elevenLabsModel?: string | undefined;
   /**
    * Schalter fuer alles, was ueber das Netz geht — auch fuer Gemini und
    * Duffel, nicht nur fuer die schluessellosen Dienste. Auf `false` laeuft
@@ -45,11 +51,22 @@ export type AdapterName =
   /** Overpass zuerst, Seed-Katalog als Rueckfallebene. */
   | 'overpass+seed'
   | 'rule-based'
-  | 'gemini';
+  | 'gemini'
+  | 'elevenlabs'
+  /** Kein Serverdienst: Die Sprachausgabe uebernimmt der Browser. */
+  | 'browser';
 
 export interface ProviderSelection {
   readonly providers: Providers;
   readonly llm: LlmPort;
+  /**
+   * Sprachausgabe — oder `null`, wenn keine auf dem Server stattfindet.
+   *
+   * `null` ist hier keine fehlende Implementierung, sondern eine Aussage:
+   * Ohne Schluessel spricht der Browser, und der braucht keinen Port. Eine
+   * stille Attrappe an dieser Stelle waere ein Knopf, der nichts tut.
+   */
+  readonly speech: TextToSpeechPort | null;
   /** Welche Implementierung je Port aktiv ist — wird beim Start protokolliert. */
   readonly active: {
     readonly flights: AdapterName;
@@ -57,6 +74,7 @@ export interface ProviderSelection {
     readonly geocoding: AdapterName;
     readonly weather: AdapterName;
     readonly llm: AdapterName;
+    readonly speech: AdapterName;
   };
 }
 
@@ -114,15 +132,34 @@ export function createProviders(config: ProviderConfig = {}): ProviderSelection 
       })
     : createRuleBasedLlm();
 
+  /*
+   * Die Sprachausgabe folgt derselben Regel wie jeder Anbieter: ohne
+   * Schluessel kein Dienst. Sie faellt aber nicht auf eine Attrappe zurueck,
+   * sondern auf den Browser — deshalb `null` statt einer Implementierung.
+   */
+  const hasElevenLabs =
+    useNetwork && config.elevenLabsApiKey !== undefined && config.elevenLabsApiKey.length > 0;
+
+  const speech = hasElevenLabs
+    ? createElevenLabsSpeech({
+        apiKey: config.elevenLabsApiKey ?? '',
+        voiceId: config.elevenLabsVoiceId,
+        model: config.elevenLabsModel,
+        fetchImpl,
+      })
+    : null;
+
   return {
     providers: { flights, hotels, geocoding, weather },
     llm,
+    speech,
     active: {
       flights: hasDuffel ? 'duffel' : 'seed',
       hotels: useNetwork ? 'overpass+seed' : 'seed',
       geocoding: useNetwork ? 'open-meteo' : 'seed',
       weather: useNetwork ? 'open-meteo' : 'seed',
       llm: hasGemini ? 'gemini' : 'rule-based',
+      speech: hasElevenLabs ? 'elevenlabs' : 'browser',
     },
   };
 }

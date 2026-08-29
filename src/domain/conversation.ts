@@ -65,6 +65,23 @@ export type TextBlock = z.infer<typeof textBlockSchema>;
 export type ToolUseBlock = z.infer<typeof toolUseBlockSchema>;
 export type ToolResultBlock = z.infer<typeof toolResultBlockSchema>;
 
+/**
+ * Der Fliesstext einer Nachricht.
+ *
+ * Werkzeugaufrufe und ihre Ergebnisse bleiben aussen vor: Sie gehoeren zum
+ * Zug, aber niemand hat sie gesagt. Zwei Stellen brauchen genau diese
+ * Auswahl — die Sprechblase auf dem Bildschirm und die Sprachausgabe. Dass
+ * beide dieselbe Funktion benutzen, ist der Punkt: Vorgelesen wird, was
+ * dasteht.
+ */
+export function textOfBlocks(blocks: readonly ContentBlock[]): string {
+  return blocks
+    .filter((block) => block.type === 'text')
+    .map((block) => block.text)
+    .join('\n')
+    .trim();
+}
+
 // --- Nachricht ---------------------------------------------------------
 
 export const messageSchema = z.object({

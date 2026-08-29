@@ -39,9 +39,10 @@ DUFFEL_ACCESS_TOKEN="duffel_test_…"
 
 Ab dem nächsten Start kommen die Flüge vom echten Dienst. Kein Umbau, keine
 zweite Codepfad-Variante, keine Zeile Fachlogik. Dieselbe Mechanik gilt für
-das Sprachmodell (`GEMINI_API_KEY`) und für die Datenbank. Was einen Schlüssel
-hat, spricht mit dem Anbieter; was keinen hat, greift auf Seed-Daten zurück und
-**sagt es** — im Text des Assistenten und als Markierung auf jeder Karte.
+das Sprachmodell (`GEMINI_API_KEY`), für die Sprachausgabe
+(`ELEVENLABS_API_KEY`) und für die Datenbank. Was einen Schlüssel hat, spricht
+mit dem Anbieter; was keinen hat, greift auf Seed-Daten zurück und **sagt es** —
+im Text des Assistenten und als Markierung auf jeder Karte.
 
 Genau dafür gibt es Ports und Adapter. Der Beleg steht in der
 Versionsgeschichte: Der Wechsel von Prisma zu Drizzle und der Tausch von
@@ -126,6 +127,29 @@ die Meldung des Anbieters im Klartext. Angebote erscheinen als Karten, sobald
 die Suche fertig ist, nicht erst mit dem Schlusstext. Der Text des Modells
 läuft ein, während es ihn schreibt.
 
+### Antworten lassen sich anhören
+
+An jeder Antwort steht „Vorlesen". Mit `ELEVENLABS_API_KEY` spricht eine
+Stimme von ElevenLabs, ohne ihn der Browser selbst — der Knopf ist in beiden
+Fällen da, verschieden ist nur, wer spricht.
+
+Zwei Entscheidungen daran sind erzählenswert:
+
+**Die Route nimmt eine Kennung, keinen Text.** Eine Route, die `{ text }`
+entgegennähme, wäre ein offener Sprachdienst auf fremde Rechnung — einen
+Gastzugang bekommt jeder mit einem Klick. So wird ausschliesslich vertont, was
+der Assistent tatsächlich gesagt hat, und nur in einem Gespräch, das der
+anfragenden Person gehört.
+
+**Die Sprachausgabe ist kein siebtes Werkzeug.** Ob etwas vorgelesen wird,
+entscheidet die reisende Person, nicht das Modell — und ein Werkzeugergebnis
+aus Audiobytes könnte das Modell ohnehin nicht lesen. Sie hängt deshalb an
+einer eigenen Route, nicht am Loop.
+
+Ausführlich in [`specs/009-sprachausgabe.md`](specs/009-sprachausgabe.md),
+samt der Stelle, an der dieser Port aus der Reihe fällt: Eine
+Seed-Implementierung, die spricht, gibt es nicht.
+
 ## Gemessen statt vermutet
 
 Zweiundzwanzig Gespräche liegen als Datensatz vor, mit dem erwarteten Zustand
@@ -193,16 +217,24 @@ mit `406` ab. Statt einer Absage übernimmt dann der Seed-Katalog, und der
 Assistent nennt die Herkunft im ersten Satz. Ausgedachte Daten sind vertretbar,
 solange sie als solche benannt werden.
 
+**Der Browser als Rückfallebene.** Beim Vorlesen gibt es keinen Seed-Adapter,
+der einspringen könnte — deterministische Sprache lässt sich nicht ausrechnen.
+Ohne `ELEVENLABS_API_KEY` spricht deshalb `speechSynthesis`: vorhanden auf
+jedem Zielsystem, ohne Netz, ohne Kontingent. Es klingt schlechter, und das ist
+der ganze Unterschied.
+
 ## Architektur
 
 ```
 src/domain/     Fachlichkeit: Schemata, Ports, Result-Typ. Kennt kein HTTP,
                 keine Datenbank, kein Sprachmodell — von ESLint erzwungen.
 src/server/
-  adapters/     Anbieter hinter Ports: Duffel, Open-Meteo, Overpass, Seed
+  adapters/     Anbieter hinter Ports: Duffel, Open-Meteo, Overpass,
+                ElevenLabs, Seed
   agent/        Loop, Werkzeuge, Guardrails, LLM-Adapter, Systemprompt
   auth/         Konten, Sitzungen, Gästekontingent
   db/           Drizzle-Schema und Repositories
+  speech/       Vorlesen einer gespeicherten Antwort, ohne HTTP
   trpc/         Prozeduren und Kontext
 src/app/        Next.js: Seiten und Routen
 eval/           Datensatz, Runner, Ergebnisse
@@ -323,7 +355,7 @@ npm run llm:check        # ein echter Aufruf gegen Gemini, mit zweitem Zug
 npm run providers:check  # ein echter Aufruf gegen jeden fremden Dienst
 ```
 
-464 Tests in 23 Dateien, Durchlauf in gut fünf Sekunden: Domäne, Adapter gegen
+500 Tests in 25 Dateien, Durchlauf in gut sieben Sekunden: Domäne, Adapter gegen
 untergeschobene Antworten, Agenten-Loop gegen ein skriptgesteuertes Modell,
 Repositories und Prozeduren gegen echtes PostgreSQL, vier E2E-Fälle im
 Browser.

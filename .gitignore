@@ -36,6 +36,16 @@ demo/aufnahme/
 *.tsbuildinfo
 .vercel
 
+# Werkzeuge des Arbeitsplatzes, nicht des Projekts. Sie waren einmal im Index
+# gelandet — knapp 300 Dateien und 6,8 MB fremder Skripte, an denen ESLint und
+# Prettier scheiterten und damit die CI. Wer sie erneut installiert, soll sie
+# lokal haben, ohne dass sie ins Repository zurueckwandern.
+.claude/skills/
+.impeccable/
+.github/skills/
+.github/agents/
+.github/hooks/
+
 # Betriebssystem und Editoren
 .DS_Store
 Thumbs.db

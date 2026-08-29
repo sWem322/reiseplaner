@@ -128,13 +128,31 @@ export interface FinishedEvent {
   readonly outputTokens: number;
 }
 
+/**
+ * Eine Antwort des Assistenten steht jetzt unter dieser Kennung im Verlauf.
+ *
+ * Das Ereignis kommt **nach** `finished`, und das ist keine Nachlaessigkeit,
+ * sondern die Reihenfolge der Dinge: Der Lauf endet, danach werden seine Zuege
+ * gespeichert, und erst dann gibt es eine Kennung.
+ *
+ * Gebraucht wird sie fuer die Sprachausgabe. Ohne sie kennt die Oberflaeche
+ * zwar den Text der gerade erhaltenen Antwort, hat aber nichts, womit sie ihn
+ * benennen koennte — und die Route der Sprachausgabe nimmt bewusst keinen
+ * freien Text entgegen (siehe specs/009).
+ */
+export interface MessageSavedEvent {
+  readonly type: 'message_saved';
+  readonly messageId: string;
+}
+
 export type AgentEvent =
   | TextDeltaEvent
   | ToolStartedEvent
   | ToolFinishedEvent
   | ModelTurnEvent
   | DraftUpdatedEvent
-  | FinishedEvent;
+  | FinishedEvent
+  | MessageSavedEvent;
 
 // --- Auswertung --------------------------------------------------------
 
@@ -167,6 +185,7 @@ export function summarize(events: readonly AgentEvent[]): AgentRunSummary {
       case 'tool_finished':
       case 'model_turn':
       case 'draft_updated':
+      case 'message_saved':
         break;
     }
   }

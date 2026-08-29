@@ -15,6 +15,7 @@ describe('Auswahl der Anbieter', () => {
       geocoding: 'seed',
       weather: 'seed',
       llm: 'rule-based',
+      speech: 'browser',
     });
   });
 
@@ -56,6 +57,7 @@ describe('Auswahl der Anbieter', () => {
     const selection = createProviders({
       geminiApiKey: 'AQ.beispiel',
       duffelAccessToken: 'duffel_test_abc',
+      elevenLabsApiKey: 'sk_beispiel',
       useNetworkProviders: false,
       fetchImpl: offlineFetch,
     });
@@ -66,7 +68,34 @@ describe('Auswahl der Anbieter', () => {
       geocoding: 'seed',
       weather: 'seed',
       llm: 'rule-based',
+      speech: 'browser',
     });
+    expect(selection.speech).toBeNull();
+  });
+
+  /*
+   * Die Sprachausgabe ist der einzige Port ohne Attrappe im Betrieb: Ohne
+   * Schluessel gibt es keine Implementierung, weil der Browser sie uebernimmt.
+   * `null` ist deshalb das erwartete Ergebnis und kein Versaeumnis.
+   */
+  it('haelt ohne Schluessel keine Sprachausgabe auf dem Server bereit', () => {
+    const selection = createProviders({ useNetworkProviders: false });
+
+    expect(selection.speech).toBeNull();
+    expect(selection.active.speech).toBe('browser');
+  });
+
+  it('waehlt ElevenLabs, sobald ein Schluessel vorliegt', () => {
+    const selection = createProviders({ elevenLabsApiKey: 'sk_beispiel', fetchImpl: offlineFetch });
+
+    expect(selection.active.speech).toBe('elevenlabs');
+    expect(selection.speech?.name).toContain('elevenlabs');
+  });
+
+  it('behandelt einen leeren Sprachschluessel wie einen fehlenden', () => {
+    const selection = createProviders({ elevenLabsApiKey: '', useNetworkProviders: false });
+
+    expect(selection.active.speech).toBe('browser');
   });
 
   it('behandelt ein leeres Token wie ein fehlendes', () => {

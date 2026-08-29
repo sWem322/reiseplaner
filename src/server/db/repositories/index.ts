@@ -126,6 +126,12 @@ function createMessageRepository(db: Database): MessageRepository {
       return toMessage(row);
     },
 
+    async findById(id): Promise<Message | null> {
+      const [row] = await db.select().from(message).where(eq(message.id, id)).limit(1);
+
+      return row === undefined ? null : toMessage(row);
+    },
+
     async listByConversation(conversationId, options): Promise<Message[]> {
       const afterSeq = options?.afterSeq;
       const condition =

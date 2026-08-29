@@ -61,6 +61,19 @@ export interface MessageRepository {
   append(message: NewMessage): Promise<Message>;
 
   /**
+   * Genau eine Nachricht.
+   *
+   * Die Sprachausgabe vertont eine einzelne Antwort und braucht dafuer weder
+   * den Verlauf noch dessen Reihenfolge. Sie ueber `listByConversation` zu
+   * suchen hiesse, ein ganzes Gespraech zu laden, um einen Textblock daraus
+   * vorzulesen.
+   *
+   * Die Nachricht traegt ihre `conversationId` bei sich — damit laesst sich
+   * der Besitz pruefen, ohne dass der Aufrufer ihn vorher kennen muesste.
+   */
+  findById(id: string): Promise<Message | null>;
+
+  /**
    * Nachrichten eines Dialogs, aelteste zuerst.
    *
    * `afterSeq` grenzt exakt ab — im Gegensatz zu einem Zeitstempel, der beim

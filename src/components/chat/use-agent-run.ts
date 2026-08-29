@@ -89,6 +89,14 @@ export interface AgentRunResult {
   readonly tools: readonly RunningTool[];
   readonly modelTurns: readonly ModelTurn[];
   readonly stopReason: StopReason | null;
+  /**
+   * Kennungen der Antworten, die dieser Lauf im Verlauf hinterlassen hat.
+   *
+   * Sie treffen erst nach `finished` ein, weil sie erst dann entstehen: Der
+   * Lauf endet, danach werden seine Zuege gespeichert. Gebraucht werden sie
+   * fuer die Sprachausgabe, die eine Kennung vertont und keinen freien Text.
+   */
+  readonly messageIds: readonly string[];
 }
 
 export interface UseAgentRun {
@@ -130,6 +138,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
       let tools: RunningTool[] = [];
       let modelTurns: ModelTurn[] = [];
       let stopReason: StopReason | null = null;
+      const messageIds: string[] = [];
 
       try {
         const response = await fetch('/api/agent/stream', {
@@ -143,7 +152,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
 
           setState((vorher) => ({ ...IDLE, error: grund, quotaNotice: vorher.quotaNotice }));
 
-          return { text: '', tools: [], modelTurns: [], stopReason: null };
+          return { text: '', tools: [], modelTurns: [], stopReason: null, messageIds: [] };
         }
 
         for await (const event of readEventStream(response.body)) {
@@ -199,6 +208,10 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
               stopReason = event.stopReason;
               break;
 
+            case 'message_saved':
+              messageIds.push(event.messageId);
+              break;
+
             case 'quota_exceeded':
               /*
                * Nicht als Fehler des Laufs, sondern als Zustand: Ab hier
@@ -225,7 +238,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
           quotaNotice: vorher.quotaNotice,
         }));
 
-        return { text, tools, modelTurns, stopReason: null };
+        return { text, tools, modelTurns, stopReason: null, messageIds };
       }
 
       /*
@@ -242,7 +255,7 @@ export function useAgentRun({ conversationId, onDraft }: UseAgentRunOptions): Us
         notice: satz === '' || doppelt ? null : satz,
       }));
 
-      return { text, tools, modelTurns, stopReason };
+      return { text, tools, modelTurns, stopReason, messageIds };
     },
     [conversationId],
   );

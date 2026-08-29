@@ -128,11 +128,21 @@ export async function* runConversationTurn(
    */
   for (const zug of zuege) {
     if (zug.blocks.length > 0) {
-      await repositories.messages.append({
+      const gespeichert = await repositories.messages.append({
         conversationId,
         role: zug.role,
         blocks: [...zug.blocks],
       });
+
+      /*
+       * Erst hier gibt es eine Kennung, und erst mit ihr laesst sich eine
+       * Antwort benennen — die Sprachausgabe vertont eine Nachricht, nicht
+       * einen zugeschickten Text. Ohne dieses Ereignis stuende der Knopf
+       * ausgerechnet an der gerade erhaltenen Antwort nicht zur Verfuegung.
+       */
+      if (gespeichert.role === 'assistant') {
+        yield { type: 'message_saved', messageId: gespeichert.id };
+      }
     }
   }
 
