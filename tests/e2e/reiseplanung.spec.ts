@@ -10,9 +10,19 @@ import { expect, test, type Page } from '@playwright/test';
  * tatsaechlich den Ablauf und nicht die Tagesform eines Fremddienstes.
  */
 
+/**
+ * Ein Abflugtag, der immer in der Zukunft liegt.
+ *
+ * Hier stand einmal ein festes Datum. Der Lauf blieb gruen, bis dieser Tag
+ * vorbei war, und wurde dann rot, ohne dass sich am Code etwas geaendert
+ * haette: `tripDraftSchema` lehnt ein vergangenes Abflugdatum ab, und der
+ * Entwurf blieb bei 4/5 stehen. Die Seed-Fluege haengen an der Strecke, nicht
+ * am Tag — ein wanderndes Datum aendert deshalb nichts am Ablauf.
+ */
+const ABFLUG = new Date(Date.now() + 60 * 86_400_000).toISOString().slice(0, 10);
+
 /** Eine Nachricht, aus der der Extraktor alle Pflichtangaben lesen kann. */
-const ANFRAGE =
-  'Ich möchte am 2026-10-08 von Düsseldorf nach Mallorca fliegen, eine Woche, zu zweit.';
+const ANFRAGE = `Ich möchte am ${ABFLUG} von Düsseldorf nach Mallorca fliegen, eine Woche, zu zweit.`;
 
 async function starteReise(page: Page): Promise<void> {
   await page.goto('/');

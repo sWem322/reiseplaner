@@ -15,8 +15,11 @@
 
 const BASE_URL = process.env.BASE_URL ?? 'http://127.0.0.1:3000';
 
-const NACHRICHT =
-  'Ich möchte am 2026-10-08 von Düsseldorf nach Mallorca fliegen, eine Woche, zu zweit.';
+// Immer in der Zukunft: Ein vergangenes Abflugdatum lehnt der Entwurf ab, und
+// ein festes Datum liesse dieses Skript an einem bestimmten Tag rot werden.
+const ABFLUG = new Date(Date.now() + 60 * 86_400_000).toISOString().slice(0, 10);
+
+const NACHRICHT = `Ich möchte am ${ABFLUG} von Düsseldorf nach Mallorca fliegen, eine Woche, zu zweit.`;
 
 function fehler(text) {
   console.error(`✗ ${text}`);
