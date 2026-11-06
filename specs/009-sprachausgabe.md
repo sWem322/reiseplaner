@@ -95,9 +95,17 @@ Fragen:
   gibt keinen Serveraufruf.
 
 Damit bleibt die Regel gewahrt, die dieses Projekt trägt — ohne einen einzigen
-Schlüssel ist die Anwendung vollständig bedienbar. Die Oberfläche sagt offen,
-welcher der beiden Wege gerade aktiv ist, so wie sie es beim regelbasierten
-Extraktor schon tut.
+Schlüssel ist die Anwendung vollständig bedienbar.
+
+**Ohne Hinweis in der Oberfläche.** Zuerst stand dort einer, nach dem Vorbild
+des regelbasierten Extraktors: ein Kasten in der Seitenleiste, der den
+fehlenden Schlüssel erklärte. Er ist wieder verschwunden, und der Unterschied
+zum Extraktor ist der Grund. Dort ändert der fehlende Schlüssel, **was** der
+Assistent kann — er formuliert nicht mehr frei, und wer das nicht weiss, hält
+die Anwendung für kaputt. Hier ändert er nur, **wie gut** etwas klingt, und
+das hört man im selben Moment, in dem man den Knopf drückt. Ein Kasten, der
+dauerhaft Platz nimmt, um etwas anzukündigen, das sich von selbst erklärt,
+erklärt nichts — er steht nur im Weg.
 
 ## Der Weg des Tons
 

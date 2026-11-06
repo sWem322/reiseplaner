@@ -199,8 +199,11 @@ hängen könnte.
       nicht den ganzen Verlauf
 - [x] Knopf „Vorlesen" an jeder Antwort des Assistenten, an keiner Nachricht
       der reisenden Person
-- [x] Ohne Schlüssel spricht der Browser (`speechSynthesis`); die Oberfläche
-      sagt es in der Seitenleiste, wie beim regelbasierten Extraktor
+- [x] Ohne Schlüssel spricht der Browser (`speechSynthesis`) — ohne Hinweis in
+      der Seitenleiste. Einer stand dort, nach dem Vorbild des regelbasierten
+      Extraktors, und wurde wieder entfernt: Dort ändert der fehlende Schlüssel,
+      **was** der Assistent kann, hier nur, **wie gut** es klingt — und das hört
+      man beim ersten Klick
 - [x] Negativfälle nach AGENTS.md § 4: ungültige Eingabe, Anbieter nicht
       erreichbar, Kontingent erschöpft
 - [x] README um die Sprachausgabe ergänzt

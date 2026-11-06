@@ -356,18 +356,6 @@ export function ChatView({
             Sprachmodells. Er versteht Ziele, Daten und Reisendenzahl, formuliert aber nicht frei.
           </p>
         )}
-
-        {/*
-          Dieselbe Offenheit wie beim Modell: Wer „Vorlesen" drückt und eine
-          flache Systemstimme hört, soll wissen, woran das liegt — und dass es
-          eine bessere gibt.
-        */}
-        {!speechOnServer && (
-          <p className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-500">
-            Ohne <code>ELEVENLABS_API_KEY</code> liest der Browser die Antworten selbst vor. Das
-            kostet nichts und läuft überall, klingt aber deutlich flacher als eine echte Stimme.
-          </p>
-        )}
       </div>
     </div>
   );
